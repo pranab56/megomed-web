@@ -11,7 +11,8 @@ function JobTenderCard({ type = "tender", data }) {
   const showToast = useToast();
   const [applyTender, { isLoading: isApplyingTender }] =
     useApplyTenderMutation();
-
+  const currentUser = localStorage.getItem("role");
+  const userType = currentUser;
   const defaultJobData = {
     jobImg: "/jobtender/job_tender.png",
     name: "CONLINE",
@@ -85,17 +86,19 @@ function JobTenderCard({ type = "tender", data }) {
               >
                 {type === "job" ? "View Job" : "View Tender"}
               </button>
-              <button
-                onClick={handleApplyJob}
-                disabled={isApplyingTender}
-                className="px-4 py-2 bg-white text-black rounded-lg cursor-pointer font-medium hover:bg-gray-100 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isApplyingTender
-                  ? "Applying..."
-                  : type === "job"
-                  ? "Apply Job"
-                  : "Apply Tender"}
-              </button>
+              {userType === "freelancer" && (
+                <button
+                  onClick={handleApplyJob}
+                  disabled={isApplyingTender}
+                  className="px-4 py-2 bg-white text-black rounded-lg cursor-pointer font-medium hover:bg-gray-100 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isApplyingTender
+                    ? "Applying..."
+                    : type === "job"
+                    ? "Apply Job"
+                    : "Apply Tender"}
+                </button>
+              )}
             </div>
           </div>
         </CardContent>
