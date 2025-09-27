@@ -15,7 +15,7 @@ import { Input } from "../ui/input";
 const JobBoardLayoutContent = () => {
   const currentUser = localStorage.getItem("role");
   const userType = currentUser;
-  // const userType = "client";
+  // const userType = "client";kdjfkdsj
 
   const setJobBannerFreelancer = {
     src: "/jobtender/job_banner.png",
