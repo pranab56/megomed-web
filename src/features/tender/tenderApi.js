@@ -1,4 +1,4 @@
-import { baseApi } from '../../utils/apiBaseQuery';
+import { baseApi } from "../../utils/apiBaseQuery";
 
 export const tenderApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -6,63 +6,87 @@ export const tenderApi = baseApi.injectEndpoints({
       query: (data) => ({
         url: "/tender/create-tender",
         method: "POST",
-        body: data
+        body: data,
+      }),
+      invalidatesTags: ["tender"],
+    }),
+    applyTender: builder.mutation({
+      query: (id) => ({
+        url: `/tender/respond/${id}`,
+        method: "PATCH",
       }),
       invalidatesTags: ["tender"],
     }),
 
+    getAllTenderByClient: builder.query({
+      query: ({ categoryName, serviceTypeName, searchTerm }) => {
+        let url = `/tender/me`;
+        const params = [];
 
-    getAllTenderByClient : builder.query({
-      query: ({ categoryName , serviceTypeName, searchTerm }) => {
-        let url = `/tender/me?`;
-        if(categoryName) {
-          url += `categoryName=${categoryName}&`;
+        if (categoryName && categoryName.trim()) {
+          params.push(`categoryName=${encodeURIComponent(categoryName)}`);
         }
-        if(serviceTypeName) {
-          url += `serviceTypeName=${serviceTypeName}&`;
+        if (serviceTypeName && serviceTypeName.trim()) {
+          params.push(`serviceTypeName=${encodeURIComponent(serviceTypeName)}`);
         }
-        if(searchTerm) {
-          url += `searchTerm=${searchTerm}&`;
+        if (searchTerm && searchTerm.trim()) {
+          params.push(`searchTerm=${encodeURIComponent(searchTerm)}`);
         }
-       return {
-        url: url,
-        method: "GET",
+
+        if (params.length > 0) {
+          url += `?${params.join("&")}`;
         }
+
+        return {
+          url: url,
+          method: "GET",
+        };
       },
       providesTags: ["tender"],
     }),
 
-      getAllTender : builder.query({
-       query: ({ categoryName , serviceTypeName, searchTerm }) => {
-        let url = `/tender?`;
-        // `/jobs/me?categoryName=${categoryName}&serviceTypeName=${serviceTypeName}&searchTerm=${searchTerm}`,
-        if(categoryName) {
-          url += `categoryName=${categoryName}&`;
+    getAllTender: builder.query({
+      query: ({ categoryName, serviceTypeName, searchTerm }) => {
+        let url = `/tender`;
+        const params = [];
+
+        if (categoryName && categoryName.trim()) {
+          params.push(`categoryName=${encodeURIComponent(categoryName)}`);
         }
-        if(serviceTypeName) {
-          url += `serviceTypeName=${serviceTypeName}&`;
+        if (serviceTypeName && serviceTypeName.trim()) {
+          params.push(`serviceTypeName=${encodeURIComponent(serviceTypeName)}`);
         }
-        if(searchTerm) {
-          url += `searchTerm=${searchTerm}&`;
+        if (searchTerm && searchTerm.trim()) {
+          params.push(`searchTerm=${encodeURIComponent(searchTerm)}`);
         }
-       return {
-        url: url,
-        method: "GET",
+
+        if (params.length > 0) {
+          url += `?${params.join("&")}`;
         }
+
+        return {
+          url: url,
+          method: "GET",
+        };
       },
       providesTags: ["tender"],
     }),
 
-
-
-    
-
-  })
+    singleTender: builder.query({
+      query: (id) => ({
+        url: `/tender/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["tender"],
+    }),
+  }),
 });
 
 // Export hooks
 export const {
   useCreateTenderMutation,
   useGetAllTenderByClientQuery,
-  useGetAllTenderQuery
+  useGetAllTenderQuery,
+  useApplyTenderMutation,
+  useSingleTenderQuery,
 } = tenderApi;

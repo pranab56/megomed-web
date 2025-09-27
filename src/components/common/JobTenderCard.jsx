@@ -3,9 +3,15 @@ import Image from "next/image";
 import { baseURL } from "../../utils/BaseURL";
 import { Card, CardContent, CardFooter } from "../ui/card";
 import { useRouter } from "next/navigation";
+import { useApplyTenderMutation } from "../../features/tender/tenderApi";
+import useToast from "@/hooks/showToast/ShowToast";
 
 function JobTenderCard({ type = "tender", data }) {
   const router = useRouter();
+  const showToast = useToast();
+  const [applyTender, { isLoading: isApplyingTender }] =
+    useApplyTenderMutation();
+
   const defaultJobData = {
     jobImg: "/jobtender/job_tender.png",
     name: "CONLINE",
@@ -28,20 +34,35 @@ function JobTenderCard({ type = "tender", data }) {
 
   const handleViewJob = (e) => {
     e.preventDefault();
-    // Navigate to job details page
-    window.location.href = `/${
-      type === "job" ? "job-details" : "tenders-details"
-    }/${cardData._id}`;
-  };
-
-  const handleApplyJob = (e) => {
-    e.preventDefault();
-    // Handle apply job logic here
-    console.log("Apply for job:", cardData._id);
+    // Navigate to job details page with smooth transition
     router.push(
       `/${type === "job" ? "job-details" : "tenders-details"}/${cardData._id}`
     );
-    // You can add your apply logic here
+  };
+
+  const handleApplyJob = async (e) => {
+    e.preventDefault();
+
+    if (type === "tender") {
+      // Handle tender application
+      try {
+        console.log("Applying for tender:", cardData._id);
+        await applyTender(cardData._id).unwrap();
+
+        // Show success message
+        showToast.success("Tender applied successfully!");
+
+        // Redirect to chat
+        router.push(`/chat/${cardData._id}`);
+      } catch (error) {
+        console.error("Error applying to tender:", error);
+        showToast.error("Failed to apply for tender. Please try again.");
+      }
+    } else {
+      // Handle job application (redirect to job details)
+      console.log("Apply for job:", cardData._id);
+      router.push(`/job-details/${cardData._id}`);
+    }
   };
 
   return (
@@ -62,13 +83,18 @@ function JobTenderCard({ type = "tender", data }) {
                 onClick={handleViewJob}
                 className="px-4 py-2 bg-transparent border-2 cursor-pointer border-white text-white rounded-lg font-medium hover:bg-white hover:text-black transition-all duration-200 text-sm"
               >
-                View Job
+                {type === "job" ? "View Job" : "View Tender"}
               </button>
               <button
                 onClick={handleApplyJob}
-                className="px-4 py-2 bg-white text-black rounded-lg cursor-pointer font-medium hover:bg-gray-100 transition-all duration-200 text-sm"
+                disabled={isApplyingTender}
+                className="px-4 py-2 bg-white text-black rounded-lg cursor-pointer font-medium hover:bg-gray-100 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Apply Job
+                {isApplyingTender
+                  ? "Applying..."
+                  : type === "job"
+                  ? "Apply Job"
+                  : "Apply Tender"}
               </button>
             </div>
           </div>

@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { baseURL } from "../../utils/BaseURL";
 import { DialogDescription } from "../ui/dialog";
 import ShowLoginDialog from "./showLoginDialog/ShowLoginDialog";
+import { useApplyTenderMutation } from "../../features/tender/tenderApi";
 
 function JobTenderSidebar({ jobData }) {
   const [isClient, setIsClient] = useState(false);
@@ -24,6 +25,10 @@ function JobTenderSidebar({ jobData }) {
   const [respondedToTender, setRespondedToTender] = useState(false);
   const [respondedToJob, setRespondedToJob] = useState(false);
   const showToast = useToast();
+
+  // Tender mutation hook
+  const [applyTender, { isLoading: isApplyingTender }] =
+    useApplyTenderMutation();
 
   console.log(jobData);
 
@@ -100,14 +105,43 @@ function JobTenderSidebar({ jobData }) {
     }
   };
 
-  const handleRespondToTender = () => {
+  const handleRespondToTender = async () => {
+    // console.log("handleRespondToTender called");
+    // console.log("jobData:", jobData);
+    // console.log("respondedToTender:", respondedToTender);
+
     if (respondedToTender) {
+      console.log("Already responded, showing error");
       showToast.error(
         jobTenderSidebarTranslations.alreadyRespondedToTenderError ||
           "You have already responded to this tender"
       );
-    } else {
+      return;
+    }
+
+    // Check if jobData exists and has _id
+    if (!jobData || !jobData._id) {
+      console.log("No jobData or _id found");
+      showToast.error(
+        jobTenderSidebarTranslations.tenderDataError ||
+          "Tender data is not available. Please refresh the page."
+      );
+      return;
+    }
+
+    console.log("Calling API with tender ID:", jobData._id);
+
+    try {
+      // Call the API to apply for tender
+      const result = await applyTender(jobData._id).unwrap();
+      console.log("API call successful:", result);
+
+      // Update local state
       setRespondedToTender(true);
+
+      router.push(`/chat/${jobData._id}`);
+
+      // Show success message
       showToast.success(
         jobTenderSidebarTranslations.tenderRespondedSuccess ||
           "Tender responded successfully",
@@ -117,6 +151,14 @@ function JobTenderSidebar({ jobData }) {
             "You can now view your response in the tender page",
         }
       );
+    } catch (error) {
+      console.log("API call failed:", error);
+      // Show error message
+      showToast.error(
+        jobTenderSidebarTranslations.tenderRespondError ||
+          "Failed to respond to tender. Please try again."
+      );
+      console.error("Error applying to tender:", error);
     }
   };
 
@@ -209,16 +251,31 @@ function JobTenderSidebar({ jobData }) {
                 ? "bg-gray-500 cursor-not-allowed"
                 : "button-gradient"
             }`}
-            onClick={
-              isLoggedIn
-                ? isTenderPage
-                  ? handleRespondToTender
-                  : handleRespondToJob
-                : handleApplyForThisPosition
-            }
+            disabled={isTenderPage && (respondedToTender || isApplyingTender)}
+            onClick={() => {
+              console.log("Button clicked!");
+              console.log("isLoggedIn:", isLoggedIn);
+              console.log("isTenderPage:", isTenderPage);
+              console.log("role:", role);
+
+              if (isLoggedIn) {
+                if (isTenderPage) {
+                  console.log("Calling handleRespondToTender");
+                  handleRespondToTender();
+                } else {
+                  console.log("Calling handleRespondToJob");
+                  handleRespondToJob();
+                }
+              } else {
+                console.log("Calling handleApplyForThisPosition");
+                handleApplyForThisPosition();
+              }
+            }}
           >
             {isTenderPage
-              ? respondedToTender
+              ? isApplyingTender
+                ? "Responding..."
+                : respondedToTender
                 ? jobTenderSidebarTranslations.respondedButtonText ||
                   "Responded"
                 : jobTenderSidebarTranslations.respondToTenderButtonText ||
