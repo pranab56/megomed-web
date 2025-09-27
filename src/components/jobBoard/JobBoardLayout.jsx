@@ -1,78 +1,81 @@
 "use client";
+
 import { useState } from "react";
+
 import { IoSearchOutline } from "react-icons/io5";
-import {
-  useAllProjectByClientQuery,
-  useGetAllJobsQuery,
-} from "../../features/jobBoard/jobBoardApi";
+
+import { useAllProjectByClientQuery } from "../../features/jobBoard/jobBoardApi";
+
 import SideBar from "../common/SideBar";
+
 import Banner from "../common/banner/Banner";
+
 import Heading from "../common/heading/Heading";
+
 import MainContent from "../common/maincontent/MainContent";
+
 import { Input } from "../ui/input";
 
 // ✅ Real component — hooks at top level
+
 const JobBoardLayoutContent = () => {
-  const currentUser = localStorage.getItem("role");
-  const userType = currentUser;
-  // const userType = "client";
+  const userType = "client";
 
   const setJobBannerFreelancer = {
     src: "/jobtender/job_banner.png",
+
     header: "Find Your Next Opportunity!",
+
     text: "Discover exciting job opportunities that match your skills and career goals. Our platform connects talented professionals with innovative companies.",
+
     buttonName: "",
   };
 
+  //sdfsdfsdf
+
   const setJobBannerClient = {
     src: "/jobtender/job_banner.png",
+
     header: "Post Jobs & Find Talent",
+
     text: "Welcome to our Job Board, where businesses can post job opportunities and connect with qualified candidates. Whether you're hiring for a full-time position or seeking freelance talent, we provide the tools and platform to make your recruitment process efficient and successful.",
+
     buttonName: "Post a Job",
+
     buttonLink: "/create-job-client",
   };
 
   const [searchTerm, setSearchTerm] = useState("");
+
   const [selectedServices, setSelectedServices] = useState([]);
+
   const [selectedCategories, setSelectedCategories] = useState([]);
 
   // Construct query parameters
+
   const serviceTypeName =
     selectedServices.length > 0 ? selectedServices.join(",") : "";
+
   const categoryName =
     selectedCategories.length > 0 ? selectedCategories.join(",") : "";
 
   // Debug logs (optional — remove in production)
+
   console.log("serviceTypeName", serviceTypeName);
+
   console.log("categoryName", categoryName);
+
   console.log("searchTerm", searchTerm);
 
-  // ✅ RTK Query hooks — conditional based on user type
-  const clientQuery = useAllProjectByClientQuery(
-    {
-      categoryName: categoryName || "",
-      serviceTypeName: serviceTypeName || "",
-      searchTerm: searchTerm || "",
-    },
-    {
-      skip: userType !== "client",
-    }
-  );
+  // ✅ RTK Query hook — now works correctly
 
-  const freelancerQuery = useGetAllJobsQuery(
-    {
-      categoryName: categoryName || "",
-      serviceTypeName: serviceTypeName || "",
-      searchTerm: searchTerm || "",
-    },
-    {
-      skip: userType !== "freelancer",
-    }
-  );
+  const { data, isLoading, isError } = useAllProjectByClientQuery({
+    categoryName,
 
-  // Use the appropriate query result based on user type
-  const { data, isLoading, isError } =
-    userType === "client" ? clientQuery : freelancerQuery;
+    serviceTypeName,
+
+    searchTerm,
+  });
 
   console.log("API Response Data:", data);
 
@@ -153,7 +156,9 @@ const JobBoardLayoutContent = () => {
 };
 
 // ✅ Dynamically import with SSR disabled — correct usage
+
 import dynamic from "next/dynamic";
+
 export default dynamic(() => Promise.resolve(JobBoardLayoutContent), {
   ssr: false,
 });
