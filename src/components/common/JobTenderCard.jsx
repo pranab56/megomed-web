@@ -1,8 +1,11 @@
+"use client";
 import Image from "next/image";
-import { baseURL } from '../../utils/BaseURL';
+import { baseURL } from "../../utils/BaseURL";
 import { Card, CardContent, CardFooter } from "../ui/card";
+import { useRouter } from "next/navigation";
 
 function JobTenderCard({ type = "tender", data }) {
+  const router = useRouter();
   const defaultJobData = {
     jobImg: "/jobtender/job_tender.png",
     name: "CONLINE",
@@ -18,7 +21,7 @@ function JobTenderCard({ type = "tender", data }) {
     deadline: "05/2023",
   };
 
-  console.log("job portal", data)
+  console.log("job portal", data);
 
   const cardData =
     data || (type === "job" ? defaultJobData : defaultTenderData);
@@ -26,13 +29,18 @@ function JobTenderCard({ type = "tender", data }) {
   const handleViewJob = (e) => {
     e.preventDefault();
     // Navigate to job details page
-    window.location.href = `/${type === "job" ? "job-details" : "tenders-details"}/${cardData._id}`;
+    window.location.href = `/${
+      type === "job" ? "job-details" : "tenders-details"
+    }/${cardData._id}`;
   };
 
   const handleApplyJob = (e) => {
     e.preventDefault();
     // Handle apply job logic here
     console.log("Apply for job:", cardData._id);
+    router.push(
+      `/${type === "job" ? "job-details" : "tenders-details"}/${cardData._id}`
+    );
     // You can add your apply logic here
   };
 
