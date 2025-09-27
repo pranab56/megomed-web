@@ -51,5 +51,3 @@ export function useTranslations(namespace = "client") {
 export function useNamespaceTranslations(namespace) {
   return useTranslations(namespace);
 }
-
-// sfsdhf
