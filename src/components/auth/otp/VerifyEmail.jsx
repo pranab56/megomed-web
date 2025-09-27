@@ -2,14 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useResendOtpMutation, useVerifyOtpMutation } from '../../../features/auth/authApi';
 import toast from 'react-hot-toast';
+import { useResendOtpMutation, useVerifyOtpMutation } from '../../../features/auth/authApi';
 
 const OTPForm = () => {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+  const searchParams = useParams();
+  const token = searchParams?.token;
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef([]);
   const router = useRouter();
@@ -80,14 +80,14 @@ const OTPForm = () => {
       const response = await verify({ value: { otp: otpValue }, token: token }).unwrap();
       console.log("response", response)
       // router.push("/auth/login")
-      if(response?.success){
+      if (response?.success) {
         router.push("/auth/login")
         toast.success("Email verified successfully. Please log in.");
       }
       // Handle successful verification (e.g., redirect user)
     } catch (error) {
       console.log(error);
-      toast.error(error?.data?.message || "Verification failed. Please try again.");  
+      toast.error(error?.data?.message || "Verification failed. Please try again.");
       // Error is already handled by Redux Query's error state
     }
   };

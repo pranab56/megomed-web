@@ -5,13 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import provideIcon from "@/utils/IconProvider/provideIcon";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useResetPasswordMutation } from '../../../features/auth/authApi';
 
 const ResetPasswordForm = () => {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+  const searchParams = useParams();
+  const token = searchParams?.token;
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -25,27 +25,27 @@ const ResetPasswordForm = () => {
 
   const validatePassword = (password) => {
     const errors = [];
-    
+
     // Check minimum length
     if (password.length < 8) {
       errors.push("at least 8 characters");
     }
-    
+
     // Check for uppercase letter
     if (!/(?=.*[A-Z])/.test(password)) {
       errors.push("one uppercase letter");
     }
-    
+
     // Check for lowercase letter
     if (!/(?=.*[a-z])/.test(password)) {
       errors.push("one lowercase letter");
     }
-    
+
     // Check for number
     if (!/(?=.*\d)/.test(password)) {
       errors.push("one number");
     }
-    
+
     setPasswordErrors(errors);
     return errors.length === 0;
   };
@@ -205,7 +205,7 @@ const ResetPasswordForm = () => {
                 )}
               </button>
             </div>
-            
+
             {/* Password Requirements */}
             <div className="mt-2 text-xs text-gray-500">
               <p>Password must include:</p>

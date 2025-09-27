@@ -2,14 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import toast from 'react-hot-toast';
 import { useResendOtpMutation, useVerifyForgotOtpMutation } from '../../../features/auth/authApi';
 
 const ForgotVerify = () => {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+  const searchParams = useParams();
+  const token = searchParams?.token;
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef([]);
   const router = useRouter();

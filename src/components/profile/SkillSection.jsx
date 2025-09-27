@@ -1,9 +1,15 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Edit3, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useGetMyprofileQuery, useUpdateProfileInfoMutation } from '../../features/clientProfile/ClientProfile';
+import toast from "react-hot-toast";
+import {
+  useGetMyprofileQuery,
+  useUpdateProfileInfoMutation,
+} from "../../features/clientProfile/ClientProfile";
 import SkillsDialogAddEdit from "./SkillsDialogAddEdit";
+
 
 function SkillsSection() {
   const isFreelancerAndLoggedIn = true;
@@ -11,26 +17,42 @@ function SkillsSection() {
   const [currentSkillCategory, setCurrentSkillCategory] = useState("");
   const [editingSkill, setEditingSkill] = useState(null);
   const { data, isLoading } = useGetMyprofileQuery();
-  const [updateSkills, { isLoading: updatingLoading }] = useUpdateProfileInfoMutation();
+  const [updateSkills, { isLoading: updatingLoading }] =
+    useUpdateProfileInfoMutation();
+
 
   // Get skills data from API response
   const apiSkills = data?.data?.freelancerId?.skills || [];
+
 
   // Categorize skills based on their category from API
   const categorizeSkills = (skills) => {
     const categorized = {
       soft: [],
       technical: [],
-      functional: []
+      functional: [],
     };
 
-    skills.forEach(skill => {
+
+    skills.forEach((skill) => {
       const category = skill.category?.toLowerCase();
-      if (category.includes('soft') || category.includes('communication') || category.includes('team')) {
+      if (
+        category.includes("soft") ||
+        category.includes("communication") ||
+        category.includes("team")
+      ) {
         categorized.soft.push(skill);
-      } else if (category.includes('technical') || category.includes('programming') || category.includes('development')) {
+      } else if (
+        category.includes("technical") ||
+        category.includes("programming") ||
+        category.includes("development")
+      ) {
         categorized.technical.push(skill);
-      } else if (category.includes('functional') || category.includes('project') || category.includes('management')) {
+      } else if (
+        category.includes("functional") ||
+        category.includes("project") ||
+        category.includes("management")
+      ) {
         categorized.functional.push(skill);
       } else {
         // Default to technical if no clear category
@@ -38,10 +60,13 @@ function SkillsSection() {
       }
     });
 
+
     return categorized;
   };
 
+
   const categorizedSkills = categorizeSkills(apiSkills);
+
 
   const handleAddSkill = (category) => {
     setCurrentSkillCategory(category);
@@ -49,27 +74,30 @@ function SkillsSection() {
     setIsSkillsDialogOpen(true);
   };
 
+
   const handleEditSkill = (skill) => {
     setCurrentSkillCategory(skill.category?.toLowerCase() || "technical");
     setEditingSkill(skill);
     setIsSkillsDialogOpen(true);
   };
 
+
   const handleDeleteSkill = async (skillId) => {
     if (window.confirm("Are you sure you want to delete this skill?")) {
       try {
-        // You might need a separate delete API or handle deletion differently
-        // This is a placeholder - adjust based on your API
         await updateSkills({
           type: "skill",
-          action: "delete", // You might need this field
-          id: skillId
+          operation: "delete",
+          _id: skillId,
         }).unwrap();
+        toast.success("Skill deleted successfully!");
       } catch (error) {
         console.error("Error deleting skill:", error);
+        toast.error("Failed to delete skill. Please try again.");
       }
     }
   };
+
 
   if (isLoading) {
     return (
@@ -86,7 +114,10 @@ function SkillsSection() {
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {[...Array(4)].map((_, skillIndex) => (
-                    <div key={skillIndex} className="h-8 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+                    <div
+                      key={skillIndex}
+                      className="h-8 w-20 bg-gray-200 rounded-full animate-pulse"
+                    ></div>
                   ))}
                 </div>
               </CardContent>
@@ -96,6 +127,7 @@ function SkillsSection() {
       </div>
     );
   }
+
 
   return (
     <div className="w-full py-6">
@@ -134,13 +166,16 @@ function SkillsSection() {
                     </Badge>
                     {isFreelancerAndLoggedIn && (
                       <div className="absolute right-1 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                        <span
+                        <Edit3
                           className="w-3 h-3 text-blue-600 cursor-pointer hover:text-blue-800"
                           onClick={() => handleEditSkill(skill)}
                           title="Edit skill"
-                        >
-                          ✏
-                        </span>
+                        />
+                        <Trash2
+                          className="w-3 h-3 text-red-600 cursor-pointer hover:text-red-800"
+                          onClick={() => handleDeleteSkill(skill._id)}
+                          title="Delete skill"
+                        />
                       </div>
                     )}
                   </div>
@@ -151,6 +186,7 @@ function SkillsSection() {
             </div>
           </CardContent>
         </Card>
+
 
         {/* Technical Skills */}
         <Card className="max-h-auto relative">
@@ -185,23 +221,29 @@ function SkillsSection() {
                     </Badge>
                     {isFreelancerAndLoggedIn && (
                       <div className="absolute right-1 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                        <span
+                        <Edit3
                           className="w-3 h-3 text-blue-600 cursor-pointer hover:text-blue-800"
                           onClick={() => handleEditSkill(skill)}
                           title="Edit skill"
-                        >
-                          ✏
-                        </span>
+                        ></Edit3>
+                        <Trash2
+                          className="w-3 h-3 text-red-600 cursor-pointer hover:text-red-800"
+                          onClick={() => handleDeleteSkill(skill._id)}
+                          title="Delete skill"
+                        />
                       </div>
                     )}
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 text-sm">No technical skills added</p>
+                <p className="text-gray-500 text-sm">
+                  No technical skills added
+                </p>
               )}
             </div>
           </CardContent>
         </Card>
+
 
         {/* Functional Skills */}
         <Card className="max-h-auto relative">
@@ -236,24 +278,30 @@ function SkillsSection() {
                     </Badge>
                     {isFreelancerAndLoggedIn && (
                       <div className="absolute right-1 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                        <span
+                        <Edit3
                           className="w-3 h-3 text-blue-600 cursor-pointer hover:text-blue-800"
                           onClick={() => handleEditSkill(skill)}
                           title="Edit skill"
-                        >
-                          ✏
-                        </span>
+                        />
+                        <Trash2
+                          className="w-3 h-3 text-red-600 cursor-pointer hover:text-red-800"
+                          onClick={() => handleDeleteSkill(skill._id)}
+                          title="Delete skill"
+                        />
                       </div>
                     )}
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 text-sm">No functional skills added</p>
+                <p className="text-gray-500 text-sm">
+                  No functional skills added
+                </p>
               )}
             </div>
           </CardContent>
         </Card>
       </div>
+
 
       {/* Skills Dialog */}
       {isSkillsDialogOpen && (
@@ -272,4 +320,8 @@ function SkillsSection() {
   );
 }
 
+
 export default SkillsSection;
+
+
+

@@ -17,26 +17,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getImageUrl } from "@/utils/getImageUrl";
 import { DollarSign, Edit, Shield, Upload } from "lucide-react";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useGetMyprofileQuery } from '../../features/clientProfile/ClientProfile';
-import { baseURL } from '../../utils/BaseURL';
-import { useGetAllCategoryQuery } from '../../features/category/categoryApi';
-import { useGetAllServicesQuery } from '../../features/services/servicesApi';
+import toast from "react-hot-toast";
+import { useGetAllCategoryQuery } from "../../features/category/categoryApi";
+import {
+  useGetMyprofileQuery,
+  useUpdateMyprofileMutation,
+} from "../../features/clientProfile/ClientProfile";
+import { useGetAllServicesQuery } from "../../features/services/servicesApi";
 
 
-
-
-
-
-function ProfileHeader() {
+function ProfileHeader({ setCoverPhoto }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [profileImage, setProfileImage] = useState("/client/profile/client.png");
+  const [profileImage, setProfileImage] = useState(
+    "/client/profile/client.png"
+  );
   const [coverImage, setCoverImage] = useState(null);
+  const [profileImageFile, setProfileImageFile] = useState(null);
+  const [coverImageFile, setCoverImageFile] = useState(null);
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
+
 
   const [profileData, setProfileData] = useState({
     name: "Sabbir Ahmed",
@@ -45,11 +50,25 @@ function ProfileHeader() {
     categoryType: "",
     location: "Bangladesh",
     language: "Bengali",
+    designation: "",
+    yearsOfExperience: "",
   });
 
+
   const { data, isLoading } = useGetMyprofileQuery();
-  const { data: categoryData, isLoading: categoryLoading, isError: categoryError } = useGetAllCategoryQuery();
-  const { data: serviceData, isLoading: serviceLoading, isError: serviceError } = useGetAllServicesQuery();
+  const [updateMyprofile, { isLoading: isUpdating }] =
+    useUpdateMyprofileMutation();
+  const {
+    data: categoryData,
+    isLoading: categoryLoading,
+    isError: categoryError,
+  } = useGetAllCategoryQuery();
+  const {
+    data: serviceData,
+    isLoading: serviceLoading,
+    isError: serviceError,
+  } = useGetAllServicesQuery();
+
 
   // Set categories and services when data is loaded
   useEffect(() => {
@@ -58,11 +77,13 @@ function ProfileHeader() {
     }
   }, [categoryData]);
 
+
   useEffect(() => {
     if (serviceData?.success && serviceData.data) {
       setServices(serviceData.data);
     }
   }, [serviceData]);
+
 
   const {
     control,
@@ -75,9 +96,15 @@ function ProfileHeader() {
     mode: "onChange",
   });
 
+
   // Update form values when profile data changes
   useEffect(() => {
     if (data?.data) {
+      console.log("Profile data loaded:", data.data);
+      console.log("Profile image URL:", data.data.profile);
+      console.log("Processed profile URL:", getImageUrl(data.data.profile));
+
+
       const newProfileData = {
         name: data.data.fullName || "Sabbir Ahmed",
         dailyRate: data.data.dailyRate?.toString() || "500",
@@ -85,14 +112,31 @@ function ProfileHeader() {
         categoryType: data.data.categoryType || "",
         location: data.data.location || "Bangladesh",
         language: data.data.language || "Bengali",
+        designation: data.data.designation || "",
+        yearsOfExperience: data.data.yearsOfExperience || "",
       };
+
 
       setProfileData(newProfileData);
 
+
       // Reset form with new values
       reset(newProfileData);
+
+
+      // Set profile image preview
+      if (data.data.profile) {
+        setProfileImage(getImageUrl(data.data.profile));
+      }
+
+
+      // Set cover photo for MyProfileLayout
+      if (data.data.coverPhoto && setCoverPhoto) {
+        setCoverPhoto(data.data.coverPhoto);
+      }
     }
-  }, [data, reset]);
+  }, [data, reset, setCoverPhoto]);
+
 
   const handleImageUpload = (event, type) => {
     const file = event.target.files[0];
@@ -104,34 +148,100 @@ function ProfileHeader() {
         return;
       }
 
+
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert("Image size should be less than 5MB");
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (type === "profile") {
-          setProfileImage(e.target.result);
-        } else {
-          setCoverImage(e.target.result);
-        }
-      };
-      reader.readAsDataURL(file);
+
+      // Store the file for upload
+      if (type === "profile") {
+        setProfileImageFile(file);
+        // Create preview URL for display
+        const previewUrl = URL.createObjectURL(file);
+        setProfileImage(previewUrl);
+      } else {
+        setCoverImageFile(file);
+        // Create preview URL for display
+        const previewUrl = URL.createObjectURL(file);
+        setCoverImage(previewUrl);
+      }
     }
   };
 
-  const onSubmit = (data) => {
-    // Update profile data
-    setProfileData(data);
-    console.log("Form data:", data);
-    console.log("Profile image:", profileImage);
-    console.log("Cover image:", coverImage);
 
-    // Close dialog
-    setIsDialogOpen(false);
+  const onSubmit = async (formData) => {
+    console.log("=== FORM SUBMISSION STARTED ===");
+    console.log("Form submitted with data:", formData);
+
+
+    try {
+      // Create FormData for file upload
+      const submitData = new FormData();
+
+
+      // Add text fields
+      submitData.append("fullName", formData.name);
+      submitData.append("dailyRate", formData.dailyRate);
+      submitData.append("serviceType", formData.serviceType);
+      submitData.append("categoryType", formData.categoryType);
+      submitData.append("location", formData.location);
+      submitData.append("language", formData.language);
+
+
+      // Add designation if available
+      if (formData.designation) {
+        submitData.append("designation", formData.designation);
+      }
+
+
+      // Add years of experience if available
+      if (formData.yearsOfExperience) {
+        submitData.append("yearsOfExperience", formData.yearsOfExperience);
+      }
+
+
+      // Add profile image file if selected
+      if (profileImageFile) {
+        submitData.append("profile", profileImageFile);
+        console.log("Adding profile image file:", profileImageFile.name);
+      }
+
+
+      // Add cover image file if selected
+      if (coverImageFile) {
+        submitData.append("coverPhoto", coverImageFile);
+        console.log("Adding cover photo file:", coverImageFile.name);
+      }
+
+
+      console.log("Sending FormData with files:", submitData);
+
+
+      // Call the API to update profile
+      const response = await updateMyprofile(submitData).unwrap();
+      console.log("API Response:", response);
+
+
+      // Update local state
+      setProfileData(formData);
+      console.log("Profile updated successfully:", formData);
+
+
+      // Show success message
+      toast.success("Profile updated successfully!");
+
+
+      // Close dialog
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      toast.error("Failed to update profile. Please try again.");
+    }
   };
+
 
   const handleCancel = () => {
     // Reset form to current profile data
@@ -139,13 +249,37 @@ function ProfileHeader() {
     setIsDialogOpen(false);
   };
 
+
   // Reset form when dialog opens
   const handleDialogOpen = (open) => {
     if (open) {
+      // Always reset to current profile data
       reset(profileData);
+
+
+      // Always set profile image preview to current profile image from API
+      if (data?.data?.profile) {
+        setProfileImage(getImageUrl(data.data.profile));
+      } else {
+        setProfileImage("/client/profile/client.png");
+      }
+
+
+      // Always set cover image preview to current cover image from API
+      if (data?.data?.coverPhoto) {
+        setCoverImage(getImageUrl(data.data.coverPhoto));
+      } else {
+        setCoverImage(null);
+      }
+
+
+      // Clear any selected files
+      setProfileImageFile(null);
+      setCoverImageFile(null);
     }
     setIsDialogOpen(open);
   };
+
 
   // Loading state for dropdowns
   if (categoryLoading || serviceLoading) {
@@ -165,6 +299,7 @@ function ProfileHeader() {
     );
   }
 
+
   return (
     <div className="w-full mx-auto relative bg-white my-5">
       {/* Edit button positioned absolutely */}
@@ -182,6 +317,7 @@ function ProfileHeader() {
                 Edit Profile
               </DialogTitle>
             </DialogHeader>
+
 
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -224,13 +360,16 @@ function ProfileHeader() {
                     </div>
                   </div>
 
+
                   {/* Cover Image */}
                   <div className="flex flex-col items-center space-y-3">
                     <div className="w-52 h-32 rounded-lg overflow-hidden relative">
-                      {coverImage ? (
-                        <img
-                          src={coverImage}
+                      {coverImage || data?.data?.coverPhoto ? (
+                        <Image
+                          src={coverImage || getImageUrl(data.data.coverPhoto)}
                           alt="Cover"
+                          width={208}
+                          height={128}
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -282,6 +421,7 @@ function ProfileHeader() {
                   </div>
                 </div>
 
+
                 {/* Right Column - Form Fields */}
                 <div className="space-y-4">
                   {/* Name */}
@@ -294,14 +434,6 @@ function ProfileHeader() {
                       control={control}
                       rules={{
                         required: "Name is required",
-                        minLength: {
-                          value: 2,
-                          message: "Name must be at least 2 characters",
-                        },
-                        maxLength: {
-                          value: 50,
-                          message: "Name must be less than 50 characters",
-                        },
                       }}
                       render={({ field }) => (
                         <Input
@@ -320,6 +452,7 @@ function ProfileHeader() {
                     )}
                   </div>
 
+
                   {/* Daily Rate */}
                   <div className="space-y-2">
                     <Label htmlFor="dailyRate" className="text-sm font-medium">
@@ -330,14 +463,6 @@ function ProfileHeader() {
                       control={control}
                       rules={{
                         required: "Daily rate is required",
-                        pattern: {
-                          value: /^\d+$/,
-                          message: "Please enter a valid number",
-                        },
-                        min: {
-                          value: 1,
-                          message: "Daily rate must be greater than 0",
-                        },
                       }}
                       render={({ field }) => (
                         <div className="relative">
@@ -362,6 +487,7 @@ function ProfileHeader() {
                     )}
                   </div>
 
+
                   {/* Service Type Dropdown */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">
@@ -380,16 +506,23 @@ function ProfileHeader() {
                             className={`w-full ${errors.serviceType ? "border-red-500" : ""
                               }`}
                           >
-                            <SelectValue placeholder={
-                              serviceLoading ? "Loading services..." :
-                                services.length === 0 ? "No services available" :
-                                  "Select service type"
-                            } />
+                            <SelectValue
+                              placeholder={
+                                serviceLoading
+                                  ? "Loading services..."
+                                  : services.length === 0
+                                    ? "No services available"
+                                    : "Select service type"
+                              }
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {services.length > 0 ? (
                               services.map((service) => (
-                                <SelectItem key={service._id} value={service._id}>
+                                <SelectItem
+                                  key={service._id}
+                                  value={service._id}
+                                >
                                   {service.name}
                                 </SelectItem>
                               ))
@@ -414,6 +547,7 @@ function ProfileHeader() {
                     )}
                   </div>
 
+
                   {/* Category Type Dropdown */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">
@@ -432,16 +566,23 @@ function ProfileHeader() {
                             className={`w-full ${errors.categoryType ? "border-red-500" : ""
                               }`}
                           >
-                            <SelectValue placeholder={
-                              categoryLoading ? "Loading categories..." :
-                                categories.length === 0 ? "No categories available" :
-                                  "Select category"
-                            } />
+                            <SelectValue
+                              placeholder={
+                                categoryLoading
+                                  ? "Loading categories..."
+                                  : categories.length === 0
+                                    ? "No categories available"
+                                    : "Select category"
+                              }
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {categories.length > 0 ? (
                               categories.map((category) => (
-                                <SelectItem key={category._id} value={category._id}>
+                                <SelectItem
+                                  key={category._id}
+                                  value={category._id}
+                                >
                                   {category.name}
                                 </SelectItem>
                               ))
@@ -465,6 +606,7 @@ function ProfileHeader() {
                       </p>
                     )}
                   </div>
+
 
                   {/* Location */}
                   <div className="space-y-2">
@@ -507,6 +649,53 @@ function ProfileHeader() {
                     )}
                   </div>
 
+
+                  {/* Designation */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="designation"
+                      className="text-sm font-medium"
+                    >
+                      Designation
+                    </Label>
+                    <Controller
+                      name="designation"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          id="designation"
+                          className="w-full"
+                          placeholder="Enter your designation"
+                        />
+                      )}
+                    />
+                  </div>
+
+
+                  {/* Years of Experience */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="yearsOfExperience"
+                      className="text-sm font-medium"
+                    >
+                      Years of Experience
+                    </Label>
+                    <Controller
+                      name="yearsOfExperience"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          id="yearsOfExperience"
+                          className="w-full"
+                          placeholder="e.g., 5 years"
+                        />
+                      )}
+                    />
+                  </div>
+
+
                   {/* Language */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">
@@ -548,6 +737,7 @@ function ProfileHeader() {
                 </div>
               </div>
 
+
               {/* Dialog Footer */}
               <div className="flex justify-end gap-3 pt-6 border-t mt-8">
                 <Button type="button" variant="outline" onClick={handleCancel}>
@@ -556,14 +746,16 @@ function ProfileHeader() {
                 <Button
                   type="submit"
                   className="bg-blue-600 hover:bg-blue-700 button-gradient"
+                  disabled={isUpdating}
                 >
-                  Save Changes
+                  {isUpdating ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
             </form>
           </DialogContent>
         </Dialog>
       </div>
+
 
       {/* Main profile content */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 py-6">
@@ -572,15 +764,23 @@ function ProfileHeader() {
           {/* Profile Image */}
           <div className="relative flex-shrink-0">
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-white shadow-lg">
-              {
-                data?.data?.profile && <Image
-                  src={baseURL + "/" + data?.data?.profile}
+              {data?.data?.profile ? (
+                <Image
+                  src={getImageUrl(data.data.profile)}
                   alt={profileData.name}
                   width={112}
                   height={112}
                   className="w-full h-full object-cover"
                 />
-              }
+              ) : (
+                <Image
+                  src={profileImage}
+                  alt={profileData.name}
+                  width={112}
+                  height={112}
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
             {/* Online Indicator */}
             <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
@@ -591,6 +791,7 @@ function ProfileHeader() {
               {data?.data?.fullName || profileData.name}
             </h1>
 
+
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-600 mb-3 text-sm sm:text-base">
               <p>{data?.data?.designation || "Professional"}</p>
               <span>|</span>
@@ -598,6 +799,7 @@ function ProfileHeader() {
               <span>|</span>
               <p>{data?.data?.location || profileData.location}</p>
             </div>
+
 
             {/* Country Flags */}
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
@@ -625,6 +827,7 @@ function ProfileHeader() {
           </div>
         </div>
 
+
         {/* Status & Info */}
         <div className="flex flex-col sm:flex-row lg:flex-col items-center sm:items-center lg:items-end gap-3 w-full lg:w-auto">
           {/* Available Badge */}
@@ -633,11 +836,13 @@ function ProfileHeader() {
             Available
           </Badge>
 
+
           {/* Verified Freelancer */}
           <div className="flex items-center gap-2 text-sm text-gray-700">
             <Shield className="w-4 h-4 text-blue-600" />
             <span>Verified Freelancer</span>
           </div>
+
 
           {/* Day Rate */}
           <div className="flex items-center gap-2 text-sm">
@@ -654,4 +859,8 @@ function ProfileHeader() {
   );
 }
 
+
 export default ProfileHeader;
+
+
+
