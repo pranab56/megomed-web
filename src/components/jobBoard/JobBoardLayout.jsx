@@ -1,7 +1,10 @@
 "use client";
 import { useState } from "react";
 import { IoSearchOutline } from "react-icons/io5";
-import { useAllProjectByClientQuery } from '../../features/jobBoard/jobBoardApi';
+import {
+  useAllProjectByClientQuery,
+  useGetAllJobsQuery,
+} from "../../features/jobBoard/jobBoardApi";
 import SideBar from "../common/SideBar";
 import Banner from "../common/banner/Banner";
 import Heading from "../common/heading/Heading";
@@ -10,7 +13,9 @@ import { Input } from "../ui/input";
 
 // ✅ Real component — hooks at top level
 const JobBoardLayoutContent = () => {
-  const userType = "client";
+  const currentUser = localStorage.getItem("role");
+  const userType = currentUser;
+  // const userType = "client";
 
   const setJobBannerFreelancer = {
     src: "/jobtender/job_banner.png",
@@ -18,8 +23,6 @@ const JobBoardLayoutContent = () => {
     text: "Discover exciting job opportunities that match your skills and career goals. Our platform connects talented professionals with innovative companies.",
     buttonName: "",
   };
-
-  //sdfsdfsdf
 
   const setJobBannerClient = {
     src: "/jobtender/job_banner.png",
@@ -34,20 +37,42 @@ const JobBoardLayoutContent = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
 
   // Construct query parameters
-  const serviceTypeName = selectedServices.length > 0 ? selectedServices.join(',') : "";
-  const categoryName = selectedCategories.length > 0 ? selectedCategories.join(',') : "";
+  const serviceTypeName =
+    selectedServices.length > 0 ? selectedServices.join(",") : "";
+  const categoryName =
+    selectedCategories.length > 0 ? selectedCategories.join(",") : "";
 
   // Debug logs (optional — remove in production)
   console.log("serviceTypeName", serviceTypeName);
   console.log("categoryName", categoryName);
   console.log("searchTerm", searchTerm);
 
-  // ✅ RTK Query hook — now works correctly
-  const { data, isLoading, isError } = useAllProjectByClientQuery({
-    categoryName,
-    serviceTypeName,
-    searchTerm,
-  });
+  // ✅ RTK Query hooks — conditional based on user type
+  const clientQuery = useAllProjectByClientQuery(
+    {
+      categoryName: categoryName || "",
+      serviceTypeName: serviceTypeName || "",
+      searchTerm: searchTerm || "",
+    },
+    {
+      skip: userType !== "client",
+    }
+  );
+
+  const freelancerQuery = useGetAllJobsQuery(
+    {
+      categoryName: categoryName || "",
+      serviceTypeName: serviceTypeName || "",
+      searchTerm: searchTerm || "",
+    },
+    {
+      skip: userType !== "freelancer",
+    }
+  );
+
+  // Use the appropriate query result based on user type
+  const { data, isLoading, isError } =
+    userType === "client" ? clientQuery : freelancerQuery;
 
   console.log("API Response Data:", data);
 
@@ -60,11 +85,31 @@ const JobBoardLayoutContent = () => {
       <div className="animate-fade-in-up">
         {/* Banner Section */}
         <Banner
-          src={userType === "client" ? setJobBannerClient.src : setJobBannerFreelancer.src}
-          header={userType === "client" ? setJobBannerClient.header : setJobBannerFreelancer.header}
-          text={userType === "client" ? setJobBannerClient.text : setJobBannerFreelancer.text}
-          buttonName={userType === "client" ? setJobBannerClient.buttonName : setJobBannerFreelancer.buttonName}
-          buttonLink={userType === "client" ? setJobBannerClient.buttonLink : setJobBannerFreelancer.buttonLink}
+          src={
+            userType === "client"
+              ? setJobBannerClient.src
+              : setJobBannerFreelancer.src
+          }
+          header={
+            userType === "client"
+              ? setJobBannerClient.header
+              : setJobBannerFreelancer.header
+          }
+          text={
+            userType === "client"
+              ? setJobBannerClient.text
+              : setJobBannerFreelancer.text
+          }
+          buttonName={
+            userType === "client"
+              ? setJobBannerClient.buttonName
+              : setJobBannerFreelancer.buttonName
+          }
+          buttonLink={
+            userType === "client"
+              ? setJobBannerClient.buttonLink
+              : setJobBannerFreelancer.buttonLink
+          }
         />
 
         {/* Heading + Search */}
@@ -107,8 +152,8 @@ const JobBoardLayoutContent = () => {
   );
 };
 
-// pronab 
-
 // ✅ Dynamically import with SSR disabled — correct usage
 import dynamic from "next/dynamic";
-export default dynamic(() => Promise.resolve(JobBoardLayoutContent), { ssr: false });
+export default dynamic(() => Promise.resolve(JobBoardLayoutContent), {
+  ssr: false,
+});
