@@ -47,7 +47,7 @@ const JobBoardLayoutContent = () => {
   console.log("categoryName", categoryName);
   console.log("searchTerm", searchTerm);
 
-  // ✅ RTK Query hooks — conditional based on user type with null checks
+  // ✅ RTK Query hooks — conditional based on user type
   const clientQuery = useAllProjectByClientQuery(
     {
       categoryName: categoryName || "",
@@ -55,9 +55,7 @@ const JobBoardLayoutContent = () => {
       searchTerm: searchTerm || "",
     },
     {
-      skip:
-        userType !== "client" ||
-        (!categoryName && !serviceTypeName && !searchTerm),
+      skip: userType !== "client",
     }
   );
 
@@ -68,9 +66,7 @@ const JobBoardLayoutContent = () => {
       searchTerm: searchTerm || "",
     },
     {
-      skip:
-        userType !== "freelancer" ||
-        (!categoryName && !serviceTypeName && !searchTerm),
+      skip: userType !== "freelancer",
     }
   );
 
