@@ -7,6 +7,7 @@ import { IoAddCircleOutline } from "react-icons/io5";
 import { FiEdit } from "react-icons/fi";
 import { Button } from "../ui/button";
 import useCheckUserAndLoggedIn from "@/hooks/checkUserTypeAndLoggedIn/CheckUserAndLoggedIn";
+import { useGetAllShowCaseProjectQuery } from "../../features/showcaseProject/showCaseProjectApi";
 
 function ShowcaseProjectLayout() {
   const { isClientAndLoggedIn, isLoggedIn, isFreelancerAndLoggedIn } =
@@ -71,6 +72,13 @@ function ShowcaseProjectLayout() {
     },
   };
 
+  // Fetch showcase projects data
+  const {
+    data: projectsData,
+    isLoading,
+    isError,
+  } = useGetAllShowCaseProjectQuery();
+
   const setShowcaseBanner = {
     src: "/showcase/showcase.png",
     header: safeTranslations.banner.header,
@@ -81,7 +89,8 @@ function ShowcaseProjectLayout() {
         : safeTranslations.banner.buttonName,
   };
 
-  const services = Array(8).fill({}); // or your service data
+  // Use real project data or fallback to empty array
+  const projects = projectsData?.data || [];
   return (
     <div className="max-w-7xl mx-auto">
       <Banner
@@ -108,11 +117,52 @@ function ShowcaseProjectLayout() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-center py-4 mx-auto">
-        {services.map((service, index) => (
-          <ServiceCard key={index} data={service} />
-        ))}
-      </div>
+      {/* Loading State */}
+      {isLoading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-center py-4 mx-auto">
+          {[...Array(4)].map((_, index) => (
+            <div
+              key={index}
+              className="h-80 bg-gray-200 rounded-lg animate-pulse"
+            ></div>
+          ))}
+        </div>
+      )}
+
+      {/* Error State */}
+      {isError && (
+        <div className="text-center py-8">
+          <p className="text-red-600">
+            Failed to load projects. Please try again.
+          </p>
+        </div>
+      )}
+
+      {/* Projects Grid */}
+      {!isLoading && !isError && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-center py-4 mx-auto">
+          {projects.length > 0 ? (
+            projects.map((project) => (
+              <ServiceCard key={project._id} data={project} />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-8">
+              <p className="text-gray-500">No projects found.</p>
+              {isFreelancerAndLoggedIn && (
+                <Button
+                  className="mt-4 button-gradient"
+                  onClick={() => {
+                    /* Add project dialog logic */
+                  }}
+                >
+                  <IoAddCircleOutline className="mr-2" />
+                  Add Your First Project
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

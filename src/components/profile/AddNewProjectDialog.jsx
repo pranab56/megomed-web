@@ -6,7 +6,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useCreateShowCaseProjectMutation } from "@/features/showcaseProject/showCaseProjectApi";
 import useToast from "@/hooks/showToast/ShowToast";
 import { Calendar, Edit2, ImageIcon, Upload, X } from "lucide-react";
 import Image from "next/image";
@@ -30,6 +31,8 @@ export default function AddNewProjectDialog({ isOpen, onClose }) {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const fileInputRef = useRef(null);
   const showToast = useToast();
+  const [createShowCaseProject, { isLoading: isCreatingShowCaseProject }] =
+    useCreateShowCaseProjectMutation();
 
   const translations = {
     title: "Add New Project",
@@ -48,7 +51,8 @@ export default function AddNewProjectDialog({ isOpen, onClose }) {
     saveChanges: "Save Changes",
     successMessage: "Project saved successfully!",
     updateThumbnail: "Update Thumbnail",
-    updateThumbnailDescription: "Choose an option to update your project thumbnail.",
+    updateThumbnailDescription:
+      "Choose an option to update your project thumbnail.",
     uploadNewImage: "Upload New Image",
     removeCurrentImage: "Remove Current Image",
   };
@@ -67,11 +71,41 @@ export default function AddNewProjectDialog({ isOpen, onClose }) {
     },
   });
 
-  const onSubmit = (data) => {
-    console.log("Project data:", data);
-    console.log("Thumbnail image:", thumbnailImage);
-    showToast.success(translations.successMessage);
-    onClose?.();
+  const onSubmit = async (data) => {
+    try {
+      // Create FormData object for multipart/form-data submission
+      const formData = new FormData();
+
+      // Add text fields
+      formData.append("name", data.name);
+      formData.append("title", data.title);
+      formData.append("completedDate", data.completeDate);
+      formData.append("description", data.description);
+
+      // Add image file if selected
+      if (thumbnailImage && fileInputRef.current?.files?.[0]) {
+        formData.append("image", fileInputRef.current.files[0]);
+      }
+
+      console.log("Submitting project data:", {
+        name: data.name,
+        title: data.title,
+        completedDate: data.completeDate,
+        description: data.description,
+        hasImage: !!thumbnailImage,
+      });
+
+      // Call the API
+      await createShowCaseProject(formData).unwrap();
+
+      showToast.success(translations.successMessage);
+      onClose?.();
+      reset();
+      setThumbnailImage(null);
+    } catch (error) {
+      console.error("Error creating project:", error);
+      showToast.error("Failed to create project. Please try again.");
+    }
   };
 
   const onCancel = () => {
@@ -166,7 +200,9 @@ export default function AddNewProjectDialog({ isOpen, onClose }) {
                   <Input
                     id="name"
                     className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    {...register("name", { required: translations.nameRequired })}
+                    {...register("name", {
+                      required: translations.nameRequired,
+                    })}
                   />
                   {errors.name && (
                     <p className="text-sm text-red-600">
@@ -186,7 +222,9 @@ export default function AddNewProjectDialog({ isOpen, onClose }) {
                   <Input
                     id="title"
                     className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    {...register("title", { required: translations.titleRequired })}
+                    {...register("title", {
+                      required: translations.titleRequired,
+                    })}
                   />
                   {errors.title && (
                     <p className="text-sm text-red-600">
@@ -254,9 +292,12 @@ export default function AddNewProjectDialog({ isOpen, onClose }) {
             <Button
               type="submit"
               onClick={handleSubmit(onSubmit)}
-              className="px-6 button-gradient py-2 bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isCreatingShowCaseProject}
+              className="px-6 button-gradient py-2 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {translations.saveChanges}
+              {isCreatingShowCaseProject
+                ? "Creating..."
+                : translations.saveChanges}
             </Button>
           </DialogFooter>
         </DialogContent>

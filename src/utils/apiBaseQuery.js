@@ -25,5 +25,17 @@ export const baseApi = createApi({
     },
   }),
   endpoints: () => ({}), // extended in other files
-  tagTypes: ["category", "services", "freelancer", "contact", "jobBoard", "tender", "plan", "subcription", "clientProfile", "post"], // useful for cache invalidation
+  tagTypes: [
+    "category",
+    "services",
+    "freelancer",
+    "contact",
+    "jobBoard",
+    "tender",
+    "plan",
+    "subcription",
+    "clientProfile",
+    "post",
+    "showcaseProject",
+  ], // useful for cache invalidation
 });
