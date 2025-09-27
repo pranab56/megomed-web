@@ -6,15 +6,17 @@ import Banner from "../common/banner/Banner";
 import Heading from "../common/heading/Heading";
 import ServiceCard from "../common/ServiceCard/ServiceCard";
 import PopularServices from "../home/PopularServices";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../ui/select';
 
 function ServicesLayout() {
   const [isClient, setIsClient] = useState(false);
+  const [selectedSkill, setSelectedSkill] = useState("backend"); // Default skill
   const messages = "EN";
   const servicesTranslations = messages?.home?.services || {};
 
-  const { data, isLoading, isError } = useGetAllFreeLancerQuery();
+  console.log(selectedSkill)
 
-  console.log(data?.data)
+  const { data, isLoading, isError, refetch } = useGetAllFreeLancerQuery(selectedSkill, { skip: !selectedSkill });
 
 
 
@@ -22,6 +24,18 @@ function ServicesLayout() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Handle skill change
+  const handleSkillChange = (skill) => {
+    setSelectedSkill(skill);
+  };
+
+  // Refetch data when skill changes
+  useEffect(() => {
+    if (isClient) {
+      refetch();
+    }
+  }, [selectedSkill, isClient, refetch]);
 
   // Show loading state on server, content on client
   if (!isClient || isLoading) {
@@ -79,6 +93,8 @@ function ServicesLayout() {
 
   const freelancers = data?.data || [];
 
+  console.log(freelancers)
+
   const setServiceBanner = {
     src: "/services/service_1.png",
     header:
@@ -100,23 +116,47 @@ function ServicesLayout() {
       />
 
       <div className="px-4 sm:px-6 2xl:px-0 py-4 md:py-12 ">
+        <div className='flex items-end justify-between mb-6'>
+          <div>
+            {/* You can add additional content here if needed */}
+          </div>
+          <Select value={selectedSkill} onValueChange={handleSkillChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select Skill" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Skills</SelectLabel>
+                <SelectItem value="ux">UX Design</SelectItem>
+                <SelectItem value="ui">UI Design</SelectItem>
+                <SelectItem value="frontend">Frontend Development</SelectItem>
+                <SelectItem value="backend">Backend Development</SelectItem>
+                <SelectItem value="fullstack">Full Stack Development</SelectItem>
+                <SelectItem value="mobile">Mobile Development</SelectItem>
+                <SelectItem value="devops">DevOps</SelectItem>
+                <SelectItem value="ai">AI/ML Engineering</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+
         <Heading
-          heading={servicesTranslations.heading?.title || "Top Freelancers"}
+          heading={servicesTranslations.heading?.title || `Top ${selectedSkill.charAt(0).toUpperCase() + selectedSkill.slice(1)} Freelancers`}
           subheading={
             servicesTranslations.heading?.subtitle ||
-            "Find the perfect talent for your projects from our curated list of professionals."
+            `Find the perfect ${selectedSkill} talent for your projects from our curated list of professionals.`
           }
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 py-4 px-4 sm:px-6 2xl:px-0 mx-auto">
-        {data?.data?.length > 0 ? (
-          data?.data?.map((freelancer) => (
+        {freelancers.length > 0 ? (
+          freelancers.map((freelancer) => (
             <ServiceCard key={freelancer._id} freelancer={freelancer} />
           ))
         ) : (
           <div className="col-span-full text-center py-12">
-            <p className="text-gray-600">No freelancers available at the moment.</p>
+            <p className="text-gray-600">No {selectedSkill} freelancers available at the moment.</p>
           </div>
         )}
       </div>
