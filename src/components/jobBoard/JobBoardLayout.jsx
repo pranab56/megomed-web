@@ -107,6 +107,8 @@ const JobBoardLayoutContent = () => {
   );
 };
 
+// pronab 
+
 // ✅ Dynamically import with SSR disabled — correct usage
 import dynamic from "next/dynamic";
 export default dynamic(() => Promise.resolve(JobBoardLayoutContent), { ssr: false });
