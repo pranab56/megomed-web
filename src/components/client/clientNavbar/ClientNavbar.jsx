@@ -74,9 +74,8 @@ function ClientNavBar() {
   };
 
   const handleSignOut = () => {
-    localStorage.removeItem("token");
-    setCurrentUser(null);
-    router.replace("/");
+    localStorage.clear();
+    router.push("/auth/login")
   };
 
   useEffect(() => {

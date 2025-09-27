@@ -9,6 +9,11 @@ import {
 import Image from "next/image";
 
 function ServiceCard({ freelancer }) {
+
+
+  // all All Freelancers data 
+
+
   // Safely extract top-level freelancer data
   const {
     profile = "/services/avatar.png",
