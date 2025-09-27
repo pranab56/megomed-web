@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { loadMessages } from '@/redux/features/languageSlice';
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { loadMessages } from "@/redux/features/languageSlice";
 
-export function useTranslations(namespace = 'client') {
+export function useTranslations(namespace = "client") {
   const dispatch = useDispatch();
   const [translations, setTranslations] = useState({});
   const messages = useSelector((state) => state.language.messages);
@@ -39,9 +39,9 @@ export function useTranslations(namespace = 'client') {
         billingPlans: "Billing & Plans",
         helpSupport: "Help & Support",
         signOut: "Sign Out",
-        client: "Client"
-      }
-    }
+        client: "Client",
+      },
+    },
   };
 
   // Return translations with fallback
@@ -51,3 +51,5 @@ export function useTranslations(namespace = 'client') {
 export function useNamespaceTranslations(namespace) {
   return useTranslations(namespace);
 }
+
+// sfsdhf
