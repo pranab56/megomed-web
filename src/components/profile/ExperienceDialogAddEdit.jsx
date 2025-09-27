@@ -20,7 +20,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 
 export default function ExperienceDialogAddEdit({
   isOpen,
@@ -34,32 +34,35 @@ export default function ExperienceDialogAddEdit({
 
   const isEditing = !!experience;
 
-  const translations = useMemo(() => ({
-    addTitle: "Add Experience",
-    editTitle: "Edit Experience",
-    companyNameLabel: "Company Name *",
-    companyNamePlaceholder: "Enter Company Name",
-    projectLabel: "Project *",
-    projectPlaceholder: "Enter Project Name",
-    descriptionLabel: "Description *",
-    descriptionPlaceholder: "Enter Experience Description",
-    startDateLabel: "Start Date *",
-    endDateLabel: "End Date",
-    startDatePlaceholder: "Pick a start date",
-    endDatePlaceholder: "Pick an end date",
-    presentLabel: "Present",
-    cancelButton: "Cancel",
-    saveButton: "Save Changes",
-    addSuccessMessage: "Experience added successfully!",
-    editSuccessMessage: "Experience updated successfully!",
-    errorMessage: "Failed to save experience. Please try again.",
-    validationMessages: {
-      companyRequired: "Company name is required",
-      projectRequired: "Project is required",
-      descriptionRequired: "Description is required",
-      startDateRequired: "Please select a start date",
-    },
-  }), []);
+  const translations = useMemo(
+    () => ({
+      addTitle: "Add Experience",
+      editTitle: "Edit Experience",
+      companyNameLabel: "Company Name *",
+      companyNamePlaceholder: "Enter Company Name",
+      projectLabel: "Project *",
+      projectPlaceholder: "Enter Project Name",
+      descriptionLabel: "Description *",
+      descriptionPlaceholder: "Enter Experience Description",
+      startDateLabel: "Start Date *",
+      endDateLabel: "End Date",
+      startDatePlaceholder: "Pick a start date",
+      endDatePlaceholder: "Pick an end date",
+      presentLabel: "Present",
+      cancelButton: "Cancel",
+      saveButton: "Save Changes",
+      addSuccessMessage: "Experience added successfully!",
+      editSuccessMessage: "Experience updated successfully!",
+      errorMessage: "Failed to save experience. Please try again.",
+      validationMessages: {
+        companyRequired: "Company name is required",
+        projectRequired: "Project is required",
+        descriptionRequired: "Description is required",
+        startDateRequired: "Please select a start date",
+      },
+    }),
+    []
+  );
 
   const {
     register,
@@ -83,7 +86,9 @@ export default function ExperienceDialogAddEdit({
     if (isOpen) {
       if (isEditing && experience) {
         // Set values for editing
-        const start = experience.startDate ? new Date(experience.startDate) : null;
+        const start = experience.startDate
+          ? new Date(experience.startDate)
+          : null;
         const end = experience.endDate ? new Date(experience.endDate) : null;
 
         setStartDate(start);
@@ -117,18 +122,23 @@ export default function ExperienceDialogAddEdit({
         project: data.project,
         startDate: format(startDate, "yyyy-MM-dd"),
         endDate: endDate ? format(endDate, "yyyy-MM-dd") : null,
-        description: data.description
+        description: data.description,
+        operation: isEditing ? "update" : "add", // 'add' | 'update' | 'delete'
       };
 
       // If editing, include the experience ID
       if (isEditing && experience) {
-        experienceData.id = experience._id;
+        experienceData._id = experience._id;
       }
 
       const response = await updateExperience(experienceData).unwrap();
       console.log("API Response:", response);
 
-      toast.success(isEditing ? translations.editSuccessMessage : translations.addSuccessMessage);
+      toast.success(
+        isEditing
+          ? translations.editSuccessMessage
+          : translations.addSuccessMessage
+      );
       handleClose();
     } catch (error) {
       console.error("API Error:", error);
@@ -168,7 +178,10 @@ export default function ExperienceDialogAddEdit({
           <div className="px-6 pb-6 space-y-6">
             {/* Company Name */}
             <div className="space-y-2">
-              <Label htmlFor="companyName" className="text-sm font-medium text-gray-900">
+              <Label
+                htmlFor="companyName"
+                className="text-sm font-medium text-gray-900"
+              >
                 {translations.companyNameLabel}
               </Label>
               <Input
@@ -179,13 +192,18 @@ export default function ExperienceDialogAddEdit({
                 })}
               />
               {errors.companyName && (
-                <p className="text-sm text-red-600">{errors.companyName.message}</p>
+                <p className="text-sm text-red-600">
+                  {errors.companyName.message}
+                </p>
               )}
             </div>
 
             {/* Project */}
             <div className="space-y-2">
-              <Label htmlFor="project" className="text-sm font-medium text-gray-900">
+              <Label
+                htmlFor="project"
+                className="text-sm font-medium text-gray-900"
+              >
                 {translations.projectLabel}
               </Label>
               <Input
@@ -202,7 +220,10 @@ export default function ExperienceDialogAddEdit({
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-medium text-gray-900">
+              <Label
+                htmlFor="description"
+                className="text-sm font-medium text-gray-900"
+              >
                 {translations.descriptionLabel}
               </Label>
               <Textarea
@@ -214,13 +235,18 @@ export default function ExperienceDialogAddEdit({
                 })}
               />
               {errors.description && (
-                <p className="text-sm text-red-600">{errors.description.message}</p>
+                <p className="text-sm text-red-600">
+                  {errors.description.message}
+                </p>
               )}
             </div>
 
             {/* Start Date */}
             <div className="space-y-2">
-              <Label htmlFor="startDate" className="text-sm font-medium text-gray-900">
+              <Label
+                htmlFor="startDate"
+                className="text-sm font-medium text-gray-900"
+              >
                 {translations.startDateLabel}
               </Label>
               <Popover>
@@ -231,8 +257,12 @@ export default function ExperienceDialogAddEdit({
                     type="button"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {startDate ? format(startDate, "PPP") : (
-                      <span className="text-gray-400">{translations.startDatePlaceholder}</span>
+                    {startDate ? (
+                      format(startDate, "PPP")
+                    ) : (
+                      <span className="text-gray-400">
+                        {translations.startDatePlaceholder}
+                      </span>
                     )}
                   </Button>
                 </PopoverTrigger>
@@ -242,7 +272,10 @@ export default function ExperienceDialogAddEdit({
                     selected={startDate}
                     onSelect={(date) => {
                       setStartDate(date);
-                      setValue("startDate", date ? format(date, "yyyy-MM-dd") : "");
+                      setValue(
+                        "startDate",
+                        date ? format(date, "yyyy-MM-dd") : ""
+                      );
                     }}
                     initialFocus
                   />
@@ -253,7 +286,10 @@ export default function ExperienceDialogAddEdit({
             {/* End Date */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="endDate" className="text-sm font-medium text-gray-900">
+                <Label
+                  htmlFor="endDate"
+                  className="text-sm font-medium text-gray-900"
+                >
                   {translations.endDateLabel}
                 </Label>
                 <div className="flex items-center space-x-2">
@@ -278,8 +314,12 @@ export default function ExperienceDialogAddEdit({
                     disabled={!endDate}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {endDate ? format(endDate, "PPP") : (
-                      <span className="text-gray-400">{translations.endDatePlaceholder}</span>
+                    {endDate ? (
+                      format(endDate, "PPP")
+                    ) : (
+                      <span className="text-gray-400">
+                        {translations.endDatePlaceholder}
+                      </span>
                     )}
                   </Button>
                 </PopoverTrigger>
@@ -289,7 +329,10 @@ export default function ExperienceDialogAddEdit({
                     selected={endDate}
                     onSelect={(date) => {
                       setEndDate(date);
-                      setValue("endDate", date ? format(date, "yyyy-MM-dd") : "");
+                      setValue(
+                        "endDate",
+                        date ? format(date, "yyyy-MM-dd") : ""
+                      );
                     }}
                     initialFocus
                   />

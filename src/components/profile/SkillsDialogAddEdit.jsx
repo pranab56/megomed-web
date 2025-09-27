@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 
 export default function SkillsDialogAddEdit({
   isOpen,
@@ -44,6 +44,8 @@ export default function SkillsDialogAddEdit({
     addSuccessMessage: "Skill added successfully!",
     editSuccessMessage: "Skill updated successfully!",
     errorMessage: "Failed to save skill. Please try again.",
+    duplicateSkillMessage:
+      "This skill already exists! Please choose a different skill name.",
   };
 
   const {
@@ -81,23 +83,37 @@ export default function SkillsDialogAddEdit({
       const skillData = {
         type: "skill",
         category: data.category,
-        skill: data.skill
+        skill: data.skill,
+        operation: isEditing ? "update" : "add", // 'add' | 'update' | 'delete'
       };
 
       // If editing, include the skill ID
       if (isEditing && editingSkill) {
-        skillData.id = editingSkill._id;
+        skillData._id = editingSkill._id;
       }
 
       const response = await updateSkills(skillData).unwrap();
       console.log("API Response:", response);
 
-      toast.success(isEditing ? translations.editSuccessMessage : translations.addSuccessMessage);
+      toast.success(
+        isEditing
+          ? translations.editSuccessMessage
+          : translations.addSuccessMessage
+      );
       reset();
       onClose?.();
     } catch (error) {
       console.error("API Error:", error);
-      toast.error(translations.errorMessage);
+
+      // Check if it's a duplicate skill error
+      if (
+        error?.data?.message?.includes("already exists") ||
+        error?.data?.message?.includes("skills item already exists")
+      ) {
+        toast.error(translations.duplicateSkillMessage);
+      } else {
+        toast.error(translations.errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -144,7 +160,10 @@ export default function SkillsDialogAddEdit({
                 className="flex flex-col space-y-2"
               >
                 {categories.map((category) => (
-                  <div key={category.value} className="flex items-center space-x-2">
+                  <div
+                    key={category.value}
+                    className="flex items-center space-x-2"
+                  >
                     <RadioGroupItem
                       value={category.value}
                       id={category.value}
@@ -172,8 +191,8 @@ export default function SkillsDialogAddEdit({
                   required: "Skill name is required",
                   minLength: {
                     value: 2,
-                    message: "Skill name must be at least 2 characters"
-                  }
+                    message: "Skill name must be at least 2 characters",
+                  },
                 })}
               />
               {errors.skill && (
