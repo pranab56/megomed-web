@@ -8,9 +8,10 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { Briefcase, Calendar, Globe, MapPin, Users } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { baseURL } from '../../utils/BaseURL';
+import { baseURL } from "../../utils/BaseURL";
 import { DialogDescription } from "../ui/dialog";
 import ShowLoginDialog from "./showLoginDialog/ShowLoginDialog";
+import { useApplyTenderMutation } from "../../features/tender/tenderApi";
 
 function JobTenderSidebar({ jobData }) {
   const [isClient, setIsClient] = useState(false);
@@ -25,7 +26,11 @@ function JobTenderSidebar({ jobData }) {
   const [respondedToJob, setRespondedToJob] = useState(false);
   const showToast = useToast();
 
-  console.log(jobData)
+  // Tender mutation hook
+  const [applyTender, { isLoading: isApplyingTender }] =
+    useApplyTenderMutation();
+
+  console.log(jobData);
 
   const [role, setRole] = useState(null);
   // Only render on client side to prevent hydration issues
@@ -39,10 +44,10 @@ function JobTenderSidebar({ jobData }) {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -59,8 +64,10 @@ function JobTenderSidebar({ jobData }) {
       id: apiData._id,
       company: {
         name: apiData.title || "Company",
-        logo: apiData.image ? `/${apiData.image}` : "/jobtender/job_tender_details.png",
-        website: apiData.websiteLink || "https://example.com"
+        logo: apiData.image
+          ? `/${apiData.image}`
+          : "/jobtender/job_tender_details.png",
+        website: apiData.websiteLink || "https://example.com",
       },
       title: apiData.title || "Position",
       jobType: apiData.jobType || "Full-Time",
@@ -70,25 +77,27 @@ function JobTenderSidebar({ jobData }) {
       startDate: formatDate(apiData.startDate),
       endDate: formatDate(apiData.endDate),
       category: apiData.categoryName || "Not specified",
-      serviceType: apiData.serviceTypeName || "Not specified"
+      serviceType: apiData.serviceTypeName || "Not specified",
     };
   };
 
-  const job = jobData ? mapSidebarData(jobData) : {
-    id: 1,
-    company: {
-      name: "CONLINE",
-      logo: "/jobtender/job_tender_details.png",
-      website: "https://example.com"
-    },
-    title: "CONLINE",
-    jobType: "Full Time",
-    totalApply: 20,
-    location: "Remote",
-    datePosted: formatDate(new Date()),
-    category: "Front-End Development",
-    serviceType: "Graphic Design"
-  };
+  const job = jobData
+    ? mapSidebarData(jobData)
+    : {
+        id: 1,
+        company: {
+          name: "CONLINE",
+          logo: "/jobtender/job_tender_details.png",
+          website: "https://example.com",
+        },
+        title: "CONLINE",
+        jobType: "Full Time",
+        totalApply: 20,
+        location: "Remote",
+        datePosted: formatDate(new Date()),
+        category: "Front-End Development",
+        serviceType: "Graphic Design",
+      };
 
   const handleApplyForThisPosition = () => {
     if (!isLoggedIn) {
@@ -96,44 +105,66 @@ function JobTenderSidebar({ jobData }) {
     }
   };
 
-  const handleRespondToTender = () => {
+  const handleRespondToTender = async () => {
+    // console.log("handleRespondToTender called");
+    // console.log("jobData:", jobData);
+    // console.log("respondedToTender:", respondedToTender);
+
     if (respondedToTender) {
+      console.log("Already responded, showing error");
       showToast.error(
         jobTenderSidebarTranslations.alreadyRespondedToTenderError ||
-        "You have already responded to this tender"
+          "You have already responded to this tender"
       );
-    } else {
+      return;
+    }
+
+    // Check if jobData exists and has _id
+    if (!jobData || !jobData._id) {
+      console.log("No jobData or _id found");
+      showToast.error(
+        jobTenderSidebarTranslations.tenderDataError ||
+          "Tender data is not available. Please refresh the page."
+      );
+      return;
+    }
+
+    console.log("Calling API with tender ID:", jobData._id);
+
+    try {
+      // Call the API to apply for tender
+      const result = await applyTender(jobData._id).unwrap();
+      console.log("API call successful:", result);
+
+      // Update local state
       setRespondedToTender(true);
+
+      router.push(`/chat/${jobData._id}`);
+
+      // Show success message
       showToast.success(
         jobTenderSidebarTranslations.tenderRespondedSuccess ||
-        "Tender responded successfully",
+          "Tender responded successfully",
         {
           description:
             jobTenderSidebarTranslations.tenderRespondedSuccessDescription ||
             "You can now view your response in the tender page",
         }
       );
+    } catch (error) {
+      console.log("API call failed:", error);
+      // Show error message
+      showToast.error(
+        jobTenderSidebarTranslations.tenderRespondError ||
+          "Failed to respond to tender. Please try again."
+      );
+      console.error("Error applying to tender:", error);
     }
   };
 
   const handleRespondToJob = () => {
-    if (respondedToJob) {
-      showToast.error(
-        jobTenderSidebarTranslations.alreadyAppliedToJobError ||
-        "You have already applied for this job"
-      );
-    } else {
-      setRespondedToJob(true);
-      showToast.success(
-        jobTenderSidebarTranslations.jobAppliedSuccess ||
-        "Job applied successfully",
-        {
-          description:
-            jobTenderSidebarTranslations.jobAppliedSuccessDescription ||
-            "You can now view your response in the job page",
-        }
-      );
-    }
+    // Redirect to the website directly
+    window.open(job.company.website, "_blank");
   };
 
   // Show loading state on server, content on client
@@ -183,7 +214,7 @@ function JobTenderSidebar({ jobData }) {
               src={baseURL + "/" + jobData?.image}
               alt={jobData?.title}
               onError={(e) => {
-                e.target.style.display = 'none';
+                e.target.style.display = "none";
               }}
             />
             <AvatarFallback className="bg-gray-900 text-white text-lg font-semibold">
@@ -196,7 +227,7 @@ function JobTenderSidebar({ jobData }) {
         <h3 className="text-xl font-bold text-gray-900 mb-2">{job.title}</h3>
 
         {/* Website Link */}
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <a
             href={job.company.website}
             target="_blank"
@@ -206,22 +237,53 @@ function JobTenderSidebar({ jobData }) {
             <Globe className="w-4 h-4" />
             {jobTenderSidebarTranslations.visitWebsite || "Visit Website"}
           </a>
-        </div>
+        </div> */}
 
         {/* Fixed conditional rendering for buttons */}
         {role !== "client" && (
           <Button
-            className={`max-w-60 mx-auto hover:bg-gray-400 text-white font-medium ${respondedToTender
-              ? "bg-gray-500 cursor-not-allowed"
-              : "button-gradient"
-              }`}
-            onClick={
-              isLoggedIn ? handleRespondToTender : handleApplyForThisPosition
-            }
+            className={`max-w-60 mx-auto hover:bg-gray-400 text-white font-medium ${
+              isTenderPage
+                ? respondedToTender
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "button-gradient"
+                : respondedToJob
+                ? "bg-gray-500 cursor-not-allowed"
+                : "button-gradient"
+            }`}
+            disabled={isTenderPage && (respondedToTender || isApplyingTender)}
+            onClick={() => {
+              console.log("Button clicked!");
+              console.log("isLoggedIn:", isLoggedIn);
+              console.log("isTenderPage:", isTenderPage);
+              console.log("role:", role);
+
+              if (isLoggedIn) {
+                if (isTenderPage) {
+                  console.log("Calling handleRespondToTender");
+                  handleRespondToTender();
+                } else {
+                  console.log("Calling handleRespondToJob");
+                  handleRespondToJob();
+                }
+              } else {
+                console.log("Calling handleApplyForThisPosition");
+                handleApplyForThisPosition();
+              }
+            }}
           >
-            {respondedToTender
-              ? jobTenderSidebarTranslations.respondedButtonText || "Responded"
-              : jobTenderSidebarTranslations.respondToTenderButtonText || "Respond to Tender"}
+            {isTenderPage
+              ? isApplyingTender
+                ? "Responding..."
+                : respondedToTender
+                ? jobTenderSidebarTranslations.respondedButtonText ||
+                  "Responded"
+                : jobTenderSidebarTranslations.respondToTenderButtonText ||
+                  "Respond to Tender"
+              : respondedToJob
+              ? jobTenderSidebarTranslations.appliedButtonText || "Applied"
+              : jobTenderSidebarTranslations.applyForJobButtonText ||
+                "Apply for this Job"}
           </Button>
         )}
 
@@ -309,10 +371,12 @@ function JobTenderSidebar({ jobData }) {
 
       <ShowLoginDialog open={openLoginDialog} onOpenChange={setOpenLoginDialog}>
         <DialogTitle className="text-2xl font-bold">
-          {jobTenderSidebarTranslations.loginDialogTitle || "Login to Apply for this Position"}
+          {jobTenderSidebarTranslations.loginDialogTitle ||
+            "Login to Apply for this Position"}
         </DialogTitle>
         <DialogDescription className="text-sm text-gray-600">
-          {jobTenderSidebarTranslations.loginDialogDescription || "Please login to apply for this position"}
+          {jobTenderSidebarTranslations.loginDialogDescription ||
+            "Please login to apply for this position"}
         </DialogDescription>
         <div className="flex justify-end">
           <Button

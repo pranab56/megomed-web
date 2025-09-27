@@ -1,8 +1,8 @@
 "use client";
-import { useParams } from 'next/navigation';
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { useSingleJobsQuery } from '../../features/jobBoard/jobBoardApi';
+import { useSingleJobsQuery } from "../../features/jobBoard/jobBoardApi";
 import JobTenderDetails from "../common/JobTenderDetails";
 import JobTenderSidebar from "../common/JobTenderSidebar";
 
@@ -11,7 +11,7 @@ function JobDetailsLayout() {
   const [isClient, setIsClient] = useState(false);
 
   const { data, isLoading, isError } = useSingleJobsQuery(params?.id, {
-    skip: !params?.id
+    skip: !params?.id,
   });
 
   // Extract job data from API response
@@ -20,6 +20,8 @@ function JobDetailsLayout() {
   // Only render on client side to prevent hydration issues
   useEffect(() => {
     setIsClient(true);
+    // Scroll to top when component mounts
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   // Show loading state on server, content on client
@@ -57,7 +59,9 @@ function JobDetailsLayout() {
     return (
       <div className="flex justify-center items-center min-h-96">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900">Error loading job details</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Error loading job details
+          </h2>
           <p className="text-gray-600">Please try again later</p>
         </div>
       </div>
@@ -65,7 +69,7 @@ function JobDetailsLayout() {
   }
 
   return (
-    <div className="flex flex-col w-full md:flex-row md:items-start gap-x-6 max-w-7xl mx-auto mt-10 px-4 sm:px-6 lg:px-8 2xl:px-0">
+    <div className="flex flex-col w-full md:flex-row md:items-start gap-x-6 max-w-7xl mx-auto mt-10 px-4 sm:px-6 lg:px-8 2xl:px-0 animate-fade-in-up">
       {/* Sidebar */}
       <div className="w-3/12 md:w-4/12 flex-shrink-0">
         <JobTenderSidebar jobData={jobData} />
@@ -76,7 +80,6 @@ function JobDetailsLayout() {
         <JobTenderDetails jobData={jobData} />
       </div>
     </div>
-
   );
 }
 

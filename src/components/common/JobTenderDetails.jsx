@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Copy, Share2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 import { DialogDescription, DialogTitle } from "../ui/dialog";
 import ShowLoginDialog from "./showLoginDialog/ShowLoginDialog";
 
@@ -16,7 +16,7 @@ function JobTenderDetails({ jobData }) {
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
   const router = useRouter();
 
-  console.log("job data", jobData)
+  console.log("job data", jobData);
 
   // Only render on client side to prevent hydration issues
   useEffect(() => {
@@ -27,10 +27,10 @@ function JobTenderDetails({ jobData }) {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -59,21 +59,24 @@ function JobTenderDetails({ jobData }) {
     return {
       title: apiData.title || "No Title",
       description: apiData.description || "No description available",
-      fullDescription: apiData.description ? [apiData.description] : ["No detailed description available"],
-      responsibilities: apiData.description ? [
-        "Key responsibilities include:",
-        apiData.description
-      ] : ["Responsibilities not specified"],
+      fullDescription: apiData.description
+        ? [apiData.description]
+        : ["No detailed description available"],
+      responsibilities: apiData.description
+        ? ["Key responsibilities include:", apiData.description]
+        : ["Responsibilities not specified"],
       requirements: [
         `Job Type: ${apiData.jobType || "Not specified"}`,
         `Service Type: ${apiData.serviceTypeName || "Not specified"}`,
         `Category: ${apiData.categoryName || "Not specified"}`,
-        `Duration: ${formatDate(apiData.startDate)} - ${formatDate(apiData.endDate)}`
+        `Duration: ${formatDate(apiData.startDate)} - ${formatDate(
+          apiData.endDate
+        )}`,
       ],
       benefits: [
         "Full-time position",
         "Professional development opportunities",
-        "Competitive compensation"
+        "Competitive compensation",
       ],
       // For tender data
       startDate: formatDate(apiData.startDate),
@@ -81,29 +84,33 @@ function JobTenderDetails({ jobData }) {
       postedOn: formatDate(apiData.createdAt),
       deadLine: formatDate(apiData.endDate), // Using endDate as deadline
       location: "Remote", // Default since API doesn't have location
-      role: apiData.serviceTypeName || "Professional"
+      role: apiData.serviceTypeName || "Professional",
     };
   };
 
-  const job = jobData ? mapJobData(jobData) : (isTenderPage ? {
-    title: "Project Details",
-    role: "Business Analyst",
-    fullDescription: ["Project details not available"],
-    location: "Remote",
-    datePosted: formatDate(new Date()),
-    deadLine: "N/A",
-    requirements: ["Details not specified"],
-    startDate: "N/A",
-    endDate: "N/A",
-    postedOn: "N/A",
-  } : {
-    title: "Job Details",
-    description: "Job information not available",
-    fullDescription: ["Job details not available"],
-    responsibilities: ["Responsibilities not specified"],
-    requirements: ["Requirements not specified"],
-    benefits: ["Benefits not specified"]
-  });
+  const job = jobData
+    ? mapJobData(jobData)
+    : isTenderPage
+    ? {
+        title: "Project Details",
+        role: "Business Analyst",
+        fullDescription: ["Project details not available"],
+        location: "Remote",
+        datePosted: formatDate(new Date()),
+        deadLine: "N/A",
+        requirements: ["Details not specified"],
+        startDate: "N/A",
+        endDate: "N/A",
+        postedOn: "N/A",
+      }
+    : {
+        title: "Job Details",
+        description: "Job information not available",
+        fullDescription: ["Job details not available"],
+        responsibilities: ["Responsibilities not specified"],
+        requirements: ["Requirements not specified"],
+        benefits: ["Benefits not specified"],
+      };
 
   const handleCopyLink = async () => {
     try {
@@ -123,23 +130,7 @@ function JobTenderDetails({ jobData }) {
       }
     } catch (err) {
       console.error("Failed to copy: ", err);
-      toast.error(`not copying I thing Some problem`)
-    }
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: job.title,
-        text: job.description,
-        url: window.location.href,
-      });
-    }
-  };
-
-  const handleApplyForThisPosition = () => {
-    if (!isLoggedIn) {
-      setOpenLoginDialog(true);
+      toast.error(`not copying I thing Some problem`);
     }
   };
 
@@ -164,7 +155,8 @@ function JobTenderDetails({ jobData }) {
             <div className="space-y-2">
               <p className="text-sm text-gray-500">
                 {isTenderPage
-                  ? jobDetailsTranslations.tenderDetailsLabel || "Tender Details"
+                  ? jobDetailsTranslations.tenderDetailsLabel ||
+                    "Tender Details"
                   : jobDetailsTranslations.jobDetailsLabel || "Job Details"}
               </p>
               <div className="flex gap-2 lg:hidden">
@@ -187,9 +179,7 @@ function JobTenderDetails({ jobData }) {
                 </Button>
               </div>
               <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
-              {job.role && (
-                <p className="text-lg text-gray-600">{job.role}</p>
-              )}
+              {job.role && <p className="text-lg text-gray-600">{job.role}</p>}
             </div>
 
             <div className="flex gap-2 lg:block">
@@ -202,14 +192,6 @@ function JobTenderDetails({ jobData }) {
                 <Copy />
                 {jobDetailsTranslations.copyLinkButton || "Copy Link"}
               </Button>
-              <Button
-                size="sm"
-                onClick={handleCopyLink}
-                className="h-9 flex items-center gap-2 button-gradient"
-              >
-                <Share2 size={15} />
-                {jobDetailsTranslations.shareButton || "Share"}
-              </Button>
             </div>
           </div>
         </CardHeader>
@@ -218,7 +200,6 @@ function JobTenderDetails({ jobData }) {
             className="text-gray-700 leading-relaxed"
             dangerouslySetInnerHTML={{ __html: job.description }}
           />
-
         </CardContent>
       </Card>
 
@@ -227,7 +208,8 @@ function JobTenderDetails({ jobData }) {
         <Card>
           <CardHeader>
             <CardTitle className="text-xl font-bold text-gray-900">
-              {jobDetailsTranslations.responsibilitiesTitle || "RESPONSIBILITIES"}
+              {jobDetailsTranslations.responsibilitiesTitle ||
+                "RESPONSIBILITIES"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -323,10 +305,12 @@ function JobTenderDetails({ jobData }) {
 
       <ShowLoginDialog open={openLoginDialog} onOpenChange={setOpenLoginDialog}>
         <DialogTitle className="text-2xl font-bold">
-          {jobDetailsTranslations.loginDialogTitle || "Login to Apply for this Position"}
+          {jobDetailsTranslations.loginDialogTitle ||
+            "Login to Apply for this Position"}
         </DialogTitle>
         <DialogDescription className="text-sm text-gray-600">
-          {jobDetailsTranslations.loginDialogDescription || "Please login to apply for this position"}
+          {jobDetailsTranslations.loginDialogDescription ||
+            "Please login to apply for this position"}
         </DialogDescription>
         <div className="flex justify-end">
           <Button

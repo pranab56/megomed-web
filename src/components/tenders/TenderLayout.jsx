@@ -1,7 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import { IoSearchOutline } from "react-icons/io5";
-import { useGetAllTenderByClientQuery } from '../../features/tender/tenderApi';
+import {
+  useGetAllTenderByClientQuery,
+  useGetAllTenderQuery,
+} from "../../features/tender/tenderApi";
 import SideBar from "../common/SideBar";
 import Banner from "../common/banner/Banner";
 import Heading from "../common/heading/Heading";
@@ -10,46 +13,57 @@ import { Input } from "../ui/input";
 
 // Client-side component to determine user type
 const TenderLayoutContent = () => {
-  const [userType, setUserType] = useState("freelancer");
+  // const [userType, setUserType] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedServices, setSelectedServices] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
 
+  const currentUser = localStorage.getItem("role");
+  const userType = currentUser;
+
   // Construct query parameters
-  const serviceTypeName = selectedServices.length > 0 ? selectedServices.join(',') : "";
-  const categoryName = selectedCategories.length > 0 ? selectedCategories.join(',') : "";
+  const serviceTypeName =
+    selectedServices.length > 0 ? selectedServices.join(",") : "";
+  const categoryName =
+    selectedCategories.length > 0 ? selectedCategories.join(",") : "";
 
   // Debug logs (optional — remove in production)
   console.log("serviceTypeName", serviceTypeName);
   console.log("categoryName", categoryName);
   console.log("searchTerm", searchTerm);
 
+  // ✅ RTK Query hooks — conditional based on user type
+  const clientQuery = useGetAllTenderByClientQuery(
+    {
+      categoryName: categoryName || "",
+      serviceTypeName: serviceTypeName || "",
+      searchTerm: searchTerm || "",
+    },
+    {
+      skip: userType !== "client",
+    }
+  );
 
-  // ✅ RTK Query hook — now works correctly
-  const { data, isLoading, isError } = useGetAllTenderByClientQuery({
-    categoryName,
-    serviceTypeName,
-    searchTerm,
-  });
+  const freelancerQuery = useGetAllTenderQuery(
+    {
+      categoryName: categoryName || "",
+      serviceTypeName: serviceTypeName || "",
+      searchTerm: searchTerm || "",
+    },
+    {
+      skip: userType !== "freelancer",
+    }
+  );
 
-
-
+  // Use the appropriate query result based on user type
+  const { data, isLoading, isError } =
+    userType === "client" ? clientQuery : freelancerQuery;
 
   console.log("API Response Data:", data);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
-
-
-  useEffect(() => {
-    // Safe to run only on client
-    const savedUserType = localStorage.getItem("userType");
-    if (savedUserType) {
-      setUserType(savedUserType);
-    }
-    // You can later replace this with an API call or context
-  }, []);
 
   const setTenderBannerFreelancer = {
     src: "/jobtender/tnder_banner.png",
@@ -108,7 +122,8 @@ const TenderLayoutContent = () => {
             jobs={data?.data || []}
             isLoading={isLoading}
             isError={isError}
-            type="tender" />
+            type="tender"
+          />
         </div>
       </div>
     </div>
