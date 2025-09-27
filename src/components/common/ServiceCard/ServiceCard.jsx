@@ -1,19 +1,25 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import Image from "next/image";
 import { getImageUrl } from "@/utils/getImageUrl";
-function ServiceCard({ data }) {
-  // Handle both freelancer and project data
-  const isProject = data && data._id && data.title;
-  const currentUser = localStorage.getItem("role");
+import Image from "next/image";
+import { baseURL } from '../../../utils/BaseURL';
+
+function ServiceCard({ data, freelancer }) {
+  // Use either data or freelancer prop, prefer freelancer if both exist
+  const item = freelancer || data;
+
+  const currentUser = typeof window !== "undefined" ? localStorage.getItem("role") : null;
   const userType = currentUser;
+
+  // Check if it's a project (has title and _id)
+  const isProject = item && item._id && item.title;
+
   if (isProject) {
     // Project data structure
     const {
@@ -23,7 +29,7 @@ function ServiceCard({ data }) {
       description = "Project description",
       image = "/services/card.png",
       completedDate = new Date().toISOString(),
-    } = data;
+    } = item;
 
     // Format completion date
     const formatDate = (dateString) => {
@@ -71,11 +77,8 @@ function ServiceCard({ data }) {
             <h4 className="text-sm font-medium h2-gradient-text">{title}</h4>
             <p className="text-lg text-black font-semibold">Project Showcase</p>
           </div>
-
-          {/* <p className="text-sm text-muted-foreground line-clamp-3">
-            {description}
-          </p> */}
         </CardContent>
+
         {userType === "client" && (
           <CardFooter className="flex justify-end mt-auto pt-4">
             <Button className="button-gradient">View Project →</Button>
@@ -93,53 +96,29 @@ function ServiceCard({ data }) {
     dailyRate = 0,
     yearsOfExperience = "0 years",
     freelancerId = null,
-  } = data || {};
-
-  // Safely extract nested data (handles null freelancerId)
-  const { experience = [], skills = [] } = freelancerId || {};
-
-  // Derived values with safe defaults
-  const jobCompleted = experience.length;
-  const primarySkill = skills.length > 0 ? skills[0].skill : "General";
-
-  // Generate avatar initials
-  const getInitials = (name) => {
-    return name
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  // Safely get first experience description
-  const firstDescription =
-    experience.length > 0 ? experience[0]?.description || "" : "";
-
-import { Card } from "@/components/ui/card";
-import Image from "next/image";
-import { baseURL } from '../../../utils/BaseURL';
-
-function ServiceCard({ freelancer }) {
-
-
+    location = "",
+    jobsDone = 0,
+    coverPhoto = "/services/service_1.png"
+  } = item || {};
 
   // Handle default images
-  const coverPhoto = freelancer?.coverPhoto && freelancer.coverPhoto !== "undefined"
-    ? `${baseURL}/${freelancer.coverPhoto}`
-    : "/services/service_1.png"; // fallback image
+  const coverPhotoUrl = coverPhoto && coverPhoto !== "undefined"
+    ? `${baseURL}/${coverPhoto}`
+    : "/services/service_1.png";
 
-  const profilePhoto = freelancer?.profile && freelancer.profile !== "undefined"
-    ? `${baseURL}/${freelancer.profile}`
-    : "/default-avatar.png"; // fallback avatar
+  const profilePhotoUrl = profile && profile !== "undefined"
+    ? `${baseURL}/${profile}`
+    : "/default-avatar.png";
 
+  // Safely extract nested data
+  const { experience = [], skills = [] } = freelancerId || {};
 
   return (
     <Card className="w-full border-none bg-white overflow-hidden h-[450px] flex flex-col p-0">
       {/* Header with larger proportional height */}
       <div className="h-[180px] w-full relative flex-shrink-0">
         <Image
-          src={coverPhoto}
+          src={coverPhotoUrl}
           alt="card background"
           fill
           className="object-cover"
@@ -155,52 +134,47 @@ function ServiceCard({ freelancer }) {
           <div className="flex items-center space-x-3 flex-1 min-w-0">
             <Avatar className="w-10 h-10 flex-shrink-0">
               <AvatarImage
-                src={profilePhoto}
-                alt={freelancer?.fullName}
+                src={profilePhotoUrl}
+                alt={fullName}
                 onError={(e) => {
                   e.target.src = "/default-avatar.png";
                 }}
               />
             </Avatar>
 
-            <div>
-              <p className="text-sm font-medium">{fullName}</p>
-              <p className="text-xs text-muted-foreground">
-                {yearsOfExperience} experience
-
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-gray-900 truncate">
-                {freelancer?.fullName || "Unknown Freelancer"}
+                {fullName}
               </p>
               <p className="text-xs text-gray-500">
-                {freelancer?.yearsOfExperience || "No"} experience
-
+                {yearsOfExperience} experience
               </p>
             </div>
           </div>
+
           <div className="text-right flex-shrink-0 ml-2">
             <p className="text-xs text-gray-500 whitespace-nowrap">
-              Job Completed: {freelancer?.jobsDone || 0}
+              Job Completed: {jobsDone}
             </p>
             <p className="text-sm font-bold text-blue-600">
-              Daily Rate: ${freelancer?.dailyRate || 0}
+              Daily Rate: ${dailyRate}
             </p>
           </div>
         </div>
 
         <div className="mb-3">
           <h4 className="text-sm font-medium text-blue-600 mb-1">
-            {freelancer?.designation || "Freelancer"}
+            {designation}
           </h4>
           <p className="text-lg text-gray-900 font-semibold">
-            {freelancer?.designation || "Specialist"}
+            {designation}
           </p>
         </div>
 
         {/* Skills section */}
-        {freelancer?.freelancerId?.skills && (
+        {skills.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-1">
-            {freelancer.freelancerId.skills.slice(0, 3).map((skill, index) => (
+            {skills.slice(0, 3).map((skill, index) => (
               <span
                 key={skill._id || index}
                 className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
@@ -211,18 +185,10 @@ function ServiceCard({ freelancer }) {
           </div>
         )}
 
-
-      <CardFooter className="flex justify-end mt-auto pt-4">
-        <Button className="button-gradient">Hire Freelancer →</Button>
-      </CardFooter>
-    </Card>
-
-    // pronab
-
         {/* Location */}
-        {freelancer?.location && (
+        {location && (
           <p className="text-xs text-gray-500 mb-2">
-            📍 {freelancer.location}
+            📍 {location}
           </p>
         )}
 
@@ -232,7 +198,6 @@ function ServiceCard({ freelancer }) {
         </Button>
       </div>
     </Card>
-
   );
 }
 
