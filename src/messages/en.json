@@ -1,0 +1,882 @@
+{
+  "navigation": {
+    "home": "Home",
+    "aboutUs": "About Us",
+    "contactUs": "Contact Us",
+    "services": "Services",
+    "hireTopTalent": "Hire Top Talent",
+    "seeOurServices": "See Our Services",
+    "login": "Login",
+    "signUp": "Sign Up",
+    "freelancer": "Freelancer",
+    "client": "Client"
+  },
+  "common": {
+    "search": "Search",
+    "language": {
+      "english": "English",
+      "french": "French"
+    }
+  },
+  "topTalent": {
+    "banner": {
+      "title": "Find Top Talent",
+      "description": "Select top-tier talent that aligns with your organization's goals and needs. Our platform connects you with skilled professionals who can drive innovation, improve productivity, and ensure the success of your projects, delivering exceptional results every time.",
+      "buttonText": "Hire Freelancers"
+    },
+    "heading": {
+      "title": "UX Design",
+      "subtitle": "Provide your visitors with a seamless experience through strong UX design."
+    },
+    "search": {
+      "placeholder": "Search talents..."
+    },
+    "select": {
+      "category": "Select Category",
+      "categoryLabel": "Categories",
+      "skill": "Select Skill",
+      "skillLabel": "Skills"
+    },
+    "categories": {
+      "design": "Design",
+      "development": "Development"
+    },
+    "skills": {
+      "ux": "UX Design",
+      "frontend": "Frontend Development"
+    }
+  },
+  "client": {
+    "navbar": {
+      "jobBoard": "Job Board",
+      "tenders": "Tenders",
+      "myProjects": "My Projects",
+      "invoices": "Invoices",
+      "inbox": "Inbox",
+      "mySubscription": "My Subscription",
+      "viewProfile": "View Profile",
+      "accountSettings": "Account Settings",
+      "billingPlans": "Billing & Plans",
+      "helpSupport": "Help & Support",
+      "signOut": "Sign Out",
+      "client": "Client",
+      "available": "Available",
+      "verifiedClient": "Verified Client",
+      "dayRate": "Day Rate",
+      "yearsExperience": "Years of experience",
+      "online": "Online",
+      "offline": "Offline"
+    },
+    "profilePrivate": {
+      "editProfile": "Edit Profile",
+      "ongoingTenders": "Ongoing Tenders",
+      "companyLife": "Company Life",
+      "addNewPost": "Add New Post",
+      "editPost": "Edit Post",
+      "viewTender": "View Tender",
+      "project": "Project",
+      "role": "Role",
+      "aboutCompany": "About The Company",
+      "companyDescription": "At [Freelancer Name], we connect businesses with talented professionals from around the world. Our platform offers a wide range of skilled freelancers, ready to deliver high-quality work across various industries. Whether you're looking for web development, graphic design, content writing, or marketing expertise, we make it easy to find the perfect match for your project. With a focus on efficiency, reliability, and client satisfaction, we ensure every collaboration is seamless and successful. Join us today and experience the power of skilled freelancers tailored to your needs",
+      "verifiedClient": "Verified Client",
+      "department": "Department",
+      "location": "Location",
+      "email": "Email",
+      "viewPosts": "View Posts →",
+      "uiuxDesigner": "UI/UX Designer",
+      "uxReviewPresentations": "UX review presentations",
+      "uiuxDescription": "I will do ui ux design for saas, web app, dashboard in figma",
+      "dateFormat": "20 Jan 2022"
+    }
+  },
+  "subscriptionPlan": {
+    "badge": "Pricing plans",
+    "title": "Plans for all sizes",
+    "description": "Simple, transparent pricing that grows with you. Try any plan free for 30 days.",
+    "currency": "€",
+    "duration": {
+      "month": "mo",
+      "year": "year"
+    },
+    "status": {
+      "running": "Running",
+      "upgrade": "Upgrade"
+    },
+    "freelancer": {
+      "starterPlan": {
+        "title": "Starter plan",
+        "features": {
+          "1": "Apply to 10 tenders /mo",
+          "2": "Profile visible",
+          "3": "Access to dashboard",
+          "4": "Smart suggestions",
+          "5": "Limited client messaging",
+          "6": "Booking calendar with availability",
+          "7": "Contract generator (basic prefilled draft)"
+        }
+      },
+      "proPlan": {
+        "title": "Pro plan",
+        "features": {
+          "1": "Priority profile listing",
+          "2": "All Starter features",
+          "3": "Unlimited applications",
+          "4": "Full access to client interaction",
+          "5": "Smart tender matching",
+          "6": "Custom contract generator",
+          "7": "Analytics of profile views",
+          "8": "Support priority + badge"
+        }
+      }
+    },
+    "client": {
+      "businessPlan": {
+        "title": "Business plan",
+        "features": {
+          "1": "5 tenders/month",
+          "2": "Unlimited applications",
+          "3": "Pre-filled contract draft (can export)",
+          "4": "Internal tracking of missions",
+          "5": "Export of freelancer invoices",
+          "6": "AI suggestion engine"
+        }
+      },
+      "enterprisePlan": {
+        "title": "Enterprise plan",
+        "features": {
+          "1": "Unlimited tenders",
+          "2": "All Business features",
+          "3": "Premium freelancer matching by AI",
+          "4": "Built-in contract editing and signature",
+          "5": "Bulk management of freelancers",
+          "6": "Accounting dashboard",
+          "7": "Team permissions"
+        }
+      }
+    }
+  },
+  "footer": {
+    "description": "Lunq offers intelligent, fast-response support so you can stay focused on getting work done—while we handle the rest.",
+    "forClients": {
+      "title": "For Clients",
+      "links": {
+        "findFreelancers": "Find Freelancers",
+        "postProject": "Post Project",
+        "refundPolicy": "Refund Policy",
+        "privacyPolicy": "Privacy Policy"
+      }
+    },
+    "forFreelancers": {
+      "title": "For Freelancers",
+      "links": {
+        "findWork": "Find Work",
+        "createAccount": "Create Account"
+      }
+    },
+    "subscribe": {
+      "title": "Subscribe",
+      "description": "Sign up for exclusive offers, additions and more.",
+      "emailPlaceholder": "Your email"
+    },
+    "copyright": "2025 Lunq All right reserved"
+  },
+  "contactUs": {
+    "banner": {
+      "header": "Contact Us",
+      "text": "We'd love to hear from you! Whether you have questions, need support, or want to share feedback, our team is here to assist you. We are committed to providing you with a seamless and enjoyable experience. Don't hesitate to reach out—whether it's for assistance with a project, inquiries about our services, or suggestions to improve your experience. Our dedicated support team is ready to ensure you get the help you need, when you need it. Your satisfaction is our priority, and we look forward to connecting with you soon."
+    },
+    "heading": {
+      "main": "Get In Touch",
+      "subheading": "Likewise, a range of activities enriches life, blending vigor with balance. The result is a lifestyle that's not only dynamic but also deeply rewarding."
+    },
+    "form": {
+      "firstName": {
+        "label": "First Name*",
+        "placeholder": "First Name*"
+      },
+      "lastName": {
+        "label": "Last Name*",
+        "placeholder": "Last Name*"
+      },
+      "email": {
+        "label": "Email*",
+        "placeholder": "Email*"
+      },
+      "phone": {
+        "label": "Phone*",
+        "placeholder": "Phone"
+      },
+      "message": {
+        "placeholder": "Message"
+      },
+      "submit": "Send Message",
+      "contactDetails": {
+        "title": "Contact details",
+        "description": "Likewise, a range of activities enriches life, blending vigor with balance. The result is a lifestyle that's not only dynamic but also deeply rewarding.",
+        "address": {
+          "title": "Address",
+          "text": "123 Queensberry Street, North Melbourne VIC3051, Australia."
+        },
+        "email": {
+          "title": "Email",
+          "text": "ali@boxcars.com"
+        }
+      }
+    }
+  },
+  "aboutUs": {
+    "title": "About Us - Lunq",
+    "subtitle": "Lunq",
+    "description": "At Lunq, we connect businesses with top freelance talent across various industries. Our platform ensures a seamless experience for both clients and freelancers, addressing their specific needs. Whether you're posting or an enterprise, Lunq helps you achieve success with featured performance solutions.",
+    "hireFreelancers": "Hire Freelancers →",
+    "detailedDescription": "At Lunq, we are passionate about connecting businesses with the best freelancers from around the globe. Our platform brings together top-tier talent and clients, ensuring every project meets the highest standards. We thrive on quality, innovation, and collaboration. Lunq empowers businesses to find the perfect freelancers and helps them achieve their goals efficiently. Whether you're looking for web development, design, content creation, or any other service, we ensure a seamless experience from start to finish. Our mission is to create opportunities, foster creativity, and deliver outstanding outcomes that help businesses grow and succeed.",
+    "beliefStatement": "We believe in the power of connection. We provide businesses access to a rich ecosystem of talent across every category of professional services. Whether small or big, our platform and verified network have opportunity and excellence for all scales.",
+    "stats": {
+      "verifiedClients": "Verified Clients",
+      "verifiedFreelancers": "Verified Freelancers",
+      "ordersCompleted": "Order Completed",
+      "reviews": "Reviews"
+    },
+    "ourDream": {
+      "title": "Our Dream",
+      "description": "Our dream is to build a world where businesses and freelancers seamlessly collaborate to create innovative solutions. We envision a platform that empowers organizations with the best talent, while providing freelancers with opportunities to showcase their skills and grow by fostering a community of creativity, expertise, and trust, we aim to revolutionize the way work is done, making business success accessible for everyone."
+    },
+    "ourMission": {
+      "title": "Our Mission",
+      "description": "Our mission is to bridge the gap between businesses and skilled freelancers, offering access to top-tier talent across various industries. We are dedicated to providing high-quality services that ensure success and deliver exceptional results. Our platform is designed to be seamless and reliable, ensuring a smooth experience from project start to finish. By connecting businesses with top-tier professionals, we empower organizations to achieve their goals efficiently and effectively. With a focus on talent, innovation, and client satisfaction, we aim to be the go-to platform for businesses seeking skilled freelancers to bring their ideas to life."
+    },
+    "ourVision": {
+      "title": "Our Vision",
+      "description": "Our vision is to become the leading platform that connects businesses with exceptional freelancers, driving innovation and success across industries. We aim to create a world where talent and opportunity meet seamlessly, empowering both clients and freelancers to excel. Through our commitment to quality, reliability, and collaboration, we strive to shape the future of work, empowering businesses and freelancers alike to achieve their full potential."
+    }
+  },
+  "search": "Search",
+  "home": {
+    "banner": {
+      "title": "The Future of Freelance.",
+      "subtitle1": "Direct Contracts.",
+      "subtitle2": "Zero Commissions.",
+      "description": "Clients connect with top-vetted freelancers. Freelancers keep 100% of what they earn — no commissions, no middlemen. Just pure, direct collaboration and complete transparency.",
+      "findTalent": "Find Freelance Talent",
+      "forClients": "(For Clients)",
+      "applyToJoin": "Apply to Join",
+      "forFreelancers": "(For Freelancers)"
+    },
+    "slider": {
+      "title": "Browse our best talent by category",
+      "viewAllCategory": "View All Category",
+      "categories": {
+        "graphicsDesign": "Graphics & Design",
+        "digitalMarketing": "Digital Marketing",
+        "writingTranslation": "Writing & Translation",
+        "videoAnimation": "Video & Animation",
+        "musicAudio": "Music & Audio",
+        "programmingTech": "Programming & Tech",
+        "business": "Business",
+        "aiServices": "AI Services"
+      }
+    },
+    "popularServices": {
+      "title": "Our Popular services",
+      "exploreMoreTitle": "Explore More Design Services",
+      "seeAllCategories": "See All Categories",
+      "services": {
+        "graphicDesign": "Graphic&Design",
+        "cartoonAnimation": "Cartoon Animation",
+        "illustration": "Illustration",
+        "flyersVouchers": "Flyers & Vouchers",
+        "logoDesign": "Logo Design",
+        "socialGraphics": "Social graphics",
+        "articleWriting": "Article writing",
+        "videoEditing": "Video Editing"
+      }
+    },
+    "whyChooseUs": {
+      "title": "Why Choose Us",
+      "features": {
+        "topVetted": {
+          "title": "Top-Vetted Freelancers",
+          "description": "Work with handpicked experts who meet the highest standards for skill, experience, and reliability."
+        },
+        "zeroCommission": {
+          "title": "Zero Commission Fees",
+          "description": "Transparent pricing guaranteed—pay or earn exactly what's agreed with no hidden fees."
+        },
+        "flexibleScalable": {
+          "title": "Flexible & Scalable Talent",
+          "description": "Hire for small tasks or full-scale projects—whatever you need, whenever you need it."
+        }
+      }
+    },
+    "findTalentWay": {
+      "title": "Find talent",
+      "subtitle": "your way",
+      "description": "Tap into a global network of skilled independent professionals ready to help you move faster and smarter. Whether you need a quick solution or a complete business overhaul, our freelancers bring the expertise and flexibility to get the job done right. From small tasks to large-scale transformations, you'll find the perfect match for your goals—all in one place. Collaborate directly, manage projects with ease, and experience the freedom of working with top-tier talent on your terms.",
+      "findFreelancer": "Find a freelancer"
+    },
+    "skilledFreelancers": {
+      "title": "Skilled Freelancers.",
+      "subtitle": "Zero Hassle.",
+      "description": "Get access to top-rated freelancers without the stress of endless searching or high commission fees. Our platform connects you directly with skilled professionals in design, development, writing, marketing, and more. Whether you're starting a new project or need expert support, we make it easy to find, hire, and collaborate — hassle-free. Enjoy secure payments, direct contracts, and full control over your workflow.",
+      "stats": {
+        "freelancers": "Freelancers",
+        "freelanceWorkPosted": "Freelance Work Posted"
+      }
+    },
+    "testimonial": {
+      "title": "What our Clients say",
+      "seeMore": "See more",
+      "seeLess": "See less",
+      "testimonials": {
+        "smoothProcess": {
+          "title": "Smooth Process",
+          "comment": "The car-buying process was incredibly smooth and hassle-free! I found my dream car within minutes, and the team guided me through every step. Highly recommended for anyone looking to buy or sell a car!",
+          "name": "John Doe",
+          "intention": "Happy Customer"
+        },
+        "amazingSupport": {
+          "title": "Amazing Support",
+          "comment": "Excellent customer service! The platform made it easy to compare options and find the best deals. The support team answered all my questions and ensured a seamless experience.",
+          "name": "Sarah Johnson",
+          "intention": "First-Time Buyer"
+        },
+        "trustedPlatform": {
+          "title": "Trusted Platform",
+          "comment": "This platform is a game-changer for car enthusiasts. The transparency and reliability gave me confidence while purchasing. I sold my old car here too, and the process was quick and efficient!",
+          "name": "Mike Brown",
+          "intention": "Car Enthusiast"
+        }
+      }
+    },
+    "services": {
+      "banner": {
+        "title": "Choose the best talent for your organization's success.",
+        "description": "Choose the perfect freelancer to elevate your organization with top-tier skills, experience, and expertise.",
+        "buttonText": "Hire Freelancers"
+      },
+      "heading": {
+        "title": "UX Design",
+        "subtitle": "Provide your visitors with a seamless experience through strong UX design."
+      },
+      "serviceCard": {
+        "jobCompleted": "Job Completed: {count}",
+        "dailyRate": "Daily Rate: ${amount}",
+        "hireButton": "Hire Freelancer →"
+      }
+    }
+  },
+  "jobTenderSidebar": {
+    "defaultCompanyName": "CONLINE",
+    "visitWebsite": "Visit Website",
+    "defaultTitle": "CONLINE",
+    "defaultJobType": "Full Time",
+    "defaultLocation": "Dhaka, Bangladesh",
+    "defaultDatePosted": "Jul 1, 2025",
+
+    "jobTypeLabel": "Job Type",
+    "totalApplyLabel": "Total Apply",
+    "locationLabel": "Location",
+    "datePostedLabel": "Date Posted",
+
+    "respondToTenderButtonText": "Respond to Tender",
+    "respondedButtonText": "Responded",
+    "applyButtonText": "Apply for this Position",
+    "appliedButtonText": "Applied",
+
+    "alreadyRespondedToTenderError": "You have already responded to this tender",
+    "tenderRespondedSuccess": "Tender responded successfully",
+    "tenderRespondedSuccessDescription": "You can now view your response in the tender page",
+
+    "alreadyAppliedToJobError": "You have already applied for this job",
+    "jobAppliedSuccess": "Job applied successfully",
+    "jobAppliedSuccessDescription": "You can now view your response in the job page",
+
+    "loginDialogTitle": "Login to Apply for this Position",
+    "loginDialogDescription": "Please login to apply for this position",
+    "loginButtonText": "Login"
+  },
+  "mainContent": {
+    "jobBoardTitle": "Job Board",
+    "tendersTitle": "Tenders",
+    "jobBoardSubtitle": "Find the perfect opportunities that match your skills",
+    "tendersSubtitle": "Explore available tenders and submit your proposals",
+    "filterButton": "Filter",
+    "showingResults": "Showing",
+    "resultsText": "results",
+    "sortByPlaceholder": "Sort by",
+    "sortNewest": "Newest First",
+    "sortOldest": "Oldest First",
+    "sortBudgetHigh": "Highest Budget",
+    "sortBudgetLow": "Lowest Budget",
+    "noJobsFoundTitle": "No jobs found",
+    "noJobsFoundDescription": "Try adjusting your filters or check back later for new opportunities",
+    "loadingText": "Loading...",
+    "loadMoreText": "Load More",
+    "jobsText": "Jobs",
+    "tendersText": "Tenders"
+  },
+  "freelancerNavbar": {
+    "jobBoard": "Job Board",
+    "tenders": "Tenders",
+    "inbox": "Inbox",
+    "invoices": "Invoices",
+    "myProjects": "My Projects",
+    "mySubscription": "My Subscription",
+    "viewProfile": "View Profile",
+    "accountSettings": "Account Settings",
+    "billingPlans": "Billing & Plans",
+    "helpSupport": "Help & Support",
+    "signOut": "Sign Out"
+  },
+  "jobBoard": {
+    "freelancerBanner": {
+      "header": "Explore Top Freelance Opportunities",
+      "text": "Browse through the latest freelance projects and find your next big opportunity. Whether you're looking to work remotely or collaborate on-site, discover jobs that match your skills and expertise.",
+      "buttonName": ""
+    },
+    "clientBanner": {
+      "header": "Post Your Job & Find Top Talent",
+      "text": "Looking to hire skilled freelancers for your next project? Our job board connects you with top-tier professionals across various industries to help bring your vision to life.",
+      "buttonName": "Post a Job"
+    },
+    "recentPostsHeading": "Recent Posts",
+    "recentPostsSubheading": "Choose the best talent for your organization's success.",
+    "searchPlaceholder": "Search..."
+  },
+  "jobDetails": {
+    "jobDetailsLabel": "Job Details",
+    "tenderDetailsLabel": "Tender Details",
+    "copyLinkButton": "Copy Link",
+    "shareButton": "Share",
+
+    "defaultJobTitle": "Senior Graphic Designer",
+    "defaultJobDescription": "Bakery is an independent creative and culture agency designed to ignite people's obsession in great products. From our headquarters in Austin, TX, we work with highly ambitious brands to infuse cultural value and drive desire at every interaction point, increasing their fandom and helping them make things people want. Bakery is a 2017 and 2024 Adage Small Agency of the Year.",
+
+    "fullDescriptionParagraph1": "Becoming the agency people trust for brand-building and design talent, you'll be responsible for taking ideas from concept to execution, creating work that gets attention, sparks conversation, and stands out in a crowded market. You will:",
+    "fullDescriptionParagraph2": "Illustrate brands through a meticulous design eye, a passion for brand-building, and a knack for turning insights into standout, creative work, we want to hear from you. This role is for someone who brings market-leading graphic design expertise and digital product design - and a spingdl for UI and Printcapacious content strategies.",
+    "fullDescriptionParagraph3": "You'll make for brands like Nike, Degon, and Pepsi. Must be employee in the USA and work on-site in Austin, TX About Us.",
+    "fullDescriptionParagraph4": "Bakery is an independent creative and culture agency designed to ignite people's obsession in great products. From our headquarters in Austin, TX, we work with highly ambitious brands to infuse cultural value and drive desire at every interaction point, increasing their fandom and helping them make things people want. Bakery is a 2017 and 2024 Adage Small Agency of the Year.",
+
+    "responsibilitiesTitle": "RESPONSIBILITIES",
+    "responsibility1": "As a Senior Designer, you'll play a pivotal role in shaping brand worlds, campaigns, and cultural moments for our clients. You'll be responsible for taking ideas from concept to execution, creating work that gets attention, sparks conversation, and stands out in a crowded market. You will:",
+    "responsibility2": "Invent and oversee campaign visuals, packaging, and marketing materials that drive cultural relevance.",
+    "responsibility3": "Lead the project from concept to production, balancing big thinking with meticulous execution.",
+    "responsibility4": "Bring fresh, unexpected design solutions that push brands forward while ensuring strategic clarity and business impact.",
+    "responsibility5": "Work closely with Creative Directors, Art Directors, Writers, and Strategists to craft breakthrough work.",
+    "responsibility6": "Stay on top of design trends, typography, color theory, and cultural movements to ensure Bakery's work remains fresh and category-defining.",
+    "responsibility7": "Present all work successfully to the highest standards—clean, effective, and impossible to ignore.",
+    "responsibility8": "Manage multiple projects efficiently, keeping deadlines, budgets, and client expectations in check.",
+    "responsibility9": "Present work clearly and persuasively, making a strong case for design decisions.",
+
+    "requirementsTitle": "Requirements",
+    "requirement1": "An impressive portfolio of work created for leading lifestyle brands.",
+    "requirement2": "5+ years of experience in a top-tier agency, or in-house creative team.",
+    "requirement3": "A well-curated portfolio that showcases branding, visual storytelling, campaign work, and exceptional craft.",
+    "requirement4": "Expertise in Adobe Creative Suite (Illustrator, Photoshop, InDesign).",
+    "requirement5": "Strong illustration, typography, and layout skills with a meticulous eye for detail.",
+    "requirement6": "Experience working across print, digital, packaging, and environmental design.",
+    "requirement7": "The ability to juggle multiple projects and move in a fast-moving, high-output environment.",
+    "requirement8": "A systematic design mindset—you don't just make things look good, you make them work in an efficient and effective system.",
+
+    "benefitsTitle": "Benefits",
+    "benefit1": "Medical, Dental and Vision Insurance",
+    "benefit2": "Unlimited Vacation Time",
+    "benefit3": "2 weeks Work from Anywhere (WFA)",
+    "benefit4": "Annual Bonuses",
+    "benefit5": "Pet-Friendly Office",
+    "benefit6": "On-site Massage Therapist",
+    "benefit7": "Yearly Creative Stipend",
+    "benefit8": "Snacks, Meals and Drinks",
+    "benefit9": "No Time Tracking!",
+
+    "defaultTenderTitle": "Project 1: CRMS Alignment",
+    "defaultTenderRole": "Business Analyst",
+    "tenderDescription": "This project involves aligning customer relationship management systems across departments to improve data accessibility and performance.XYZ Corp",
+    "tenderLocation": "Paris",
+    "tenderDatePosted": "3/2025",
+    "tenderDeadline": "05/2023",
+
+    "tenderRequirement1": "5+ years of experience in Business Analysis",
+    "tenderRequirement2": "Experience with CRM systems (Salesforce, Zoho, etc.)",
+    "tenderRequirement3": "Strong problem-solving and analytical skills",
+    "tenderRequirement4": "Ability to work in a fast-paced environment",
+
+    "tenderStartDate": "07/2023",
+    "tenderEndDate": "12/2023",
+    "tenderPostedOn": "3/2025",
+
+    "importantDatesTitle": "Important Dates",
+    "startDateLabel": "Start Date",
+    "endDateLabel": "End Date",
+    "postedOnLabel": "Posted On",
+    "deadlineLabel": "Deadline",
+
+    "loginDialogTitle": "Login to Apply for this Position",
+    "loginDialogDescription": "Please login to apply for this position",
+    "loginButtonText": "Login"
+  },
+  "tenderLayout": {
+    "freelancerBannerHeader": "Start Exploring Tenders Today!",
+    "freelancerBannerText": "Whether you're submitting a proposal or posting a project, our platform simplifies the process for both clients and freelancers, ensuring quality results and successful collaborations.",
+
+    "clientBannerHeader": "Browse & Submit Tenders",
+    "clientBannerText": "Welcome to our Tender Portal, where businesses and freelancers can find and submit project opportunities. Whether you're looking to post a project or bid on a tender, we ensure a seamless process to connect you with the right professionals and organizations.",
+    "clientBannerButtonName": "Post Your Tender",
+
+    "ongoingTendersHeading": "Ongoing Tenders",
+    "ongoingTendersSubheading": "Find project opportunities that match your expertise."
+  },
+  "ongoingProjects": {
+    "title": "Ongoing Projects",
+    "subtitle": "Stay on top of your work and ensure smooth collaboration until project completion!",
+    "search": "Search",
+    "filter": {
+      "all": "All Projects",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "pending": "Pending"
+    },
+    "projectDetails": {
+      "client": "Client",
+      "deadline": "Deadline",
+      "amount": "Amount",
+      "status": "Status",
+      "viewDetails": "View Details"
+    },
+    "statuses": {
+      "inProgress": "In Progress",
+      "completed": "Completed"
+    }
+  },
+  "profile": {
+    "layout": {
+      "coverPhotoAlt": "Cover Photo"
+    },
+    "header": {
+      "editProfile": "Edit Profile",
+      "viewProfile": "View Profile",
+      "changeProfilePicture": "Change Profile Picture",
+      "changeCover": "Change Cover",
+      "name": "Name",
+      "nameRequired": "Name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "nameMaxLength": "Name must be less than 50 characters",
+      "namePlaceholder": "Enter your full name",
+      "dailyRate": "Daily Rate",
+      "dailyRatePlaceholder": "Enter daily rate",
+      "serviceType": "Service Type",
+      "serviceTypePlaceholder": "Select service type",
+      "categoryType": "Category Type",
+      "categoryTypePlaceholder": "Select category",
+      "location": "Location",
+      "locationPlaceholder": "Select location",
+      "language": "Language",
+      "languagePlaceholder": "Select language",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "invalidImageType": "Please select a valid image file (JPEG, PNG, WebP)",
+      "imageSizeLimit": "Image size should be less than 5MB",
+      "available": "Available",
+      "verifiedFreelancer": "Verified Freelancer",
+      "dayRate": "Day Rate"
+    },
+    "sections": {
+      "title": "Profile Sections",
+      "description": "Manage and update your professional profile",
+      "educationCertifications": {
+        "title": "Education & Certifications",
+        "addButton": "Add",
+        "editButton": "Edit"
+      },
+      "projects": {
+        "title": "Projects",
+        "subtitle": "Discover my achievements and detailed case studies.",
+        "viewAllButton": "View All Project",
+        "addNewButton": "Add new project"
+      },
+      "contact": {
+        "title": "Contact",
+        "followButton": "Follow",
+        "scheduleMeetingButton": "Schedule Meeting",
+        "messageButton": "Message"
+      }
+    },
+    "skills": {
+      "title": "Skills",
+      "addSkill": "Add Skill",
+      "editSkill": "Edit Skill",
+      "noSkillsMessage": "No skills added yet",
+      "skillLevels": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced",
+        "expert": "Expert"
+      }
+    },
+    "experience": {
+      "title": "Experience",
+      "addButton": "Add Experience",
+      "editButton": "Edit",
+      "noExperienceMessage": "No professional experience added yet",
+      "currentlyWorkingHere": "Currently Working Here"
+    },
+    "experienceDialog": {
+      "addTitle": "Add Experience",
+      "editTitle": "Edit Experience",
+      "companyNameLabel": "Company Name",
+      "companyNamePlaceholder": "Enter Company Name",
+      "projectLabel": "Project",
+      "projectPlaceholder": "Enter Project",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Enter Experience Description",
+      "startDateLabel": "Start Date",
+      "endDateLabel": "End Date",
+      "startDatePlaceholder": "Pick a start date",
+      "endDatePlaceholder": "Pick an end date",
+      "cancelButton": "Cancel",
+      "saveButton": "Save Changes",
+      "validationMessages": {
+        "companyRequired": "Company name is required",
+        "projectRequired": "Project is required",
+        "descriptionRequired": "Description is required",
+        "startDateRequired": "Please select a start date",
+        "endDateRequired": "Please select an end date"
+      }
+    },
+    "education": {
+      "title": "Add Education & Certifications",
+      "degree": "Degree",
+      "degreePlaceholder": "Select Degree",
+      "school": "School/University",
+      "schoolPlaceholder": "Select School / University",
+      "schoolRequired": "School/University is required",
+      "startYear": "Select Start Year",
+      "endYear": "Select End Year",
+      "yearPlaceholder": "Year",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "successMessage": "Education saved successfully!",
+      "associateDegree": "Associate Degree",
+      "bachelorsDegree": "Bachelor's Degree",
+      "mastersDegree": "Master's Degree",
+      "doctorate": "Doctorate (PhD)",
+      "professionalDegree": "Professional Degree",
+      "certificate": "Certificate",
+      "diploma": "Diploma",
+      "highSchoolDiploma": "High School Diploma",
+      "other": "Other"
+    },
+    "addNewProjectDialog": {
+      "title": "Add New Project",
+      "name": "Name",
+      "namePlaceholder": "Sabbir Ahmed",
+      "nameRequired": "Name is required",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Write a title",
+      "titleRequired": "Title is required",
+      "completeDate": "Complete Date",
+      "completeDateRequired": "Complete date is required",
+      "description": "Description",
+      "descriptionPlaceholder": "Design",
+      "projectThumbnail": "Project Thumbnail",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "successMessage": "Project saved successfully!",
+      "updateThumbnail": "Update Thumbnail",
+      "updateThumbnailDescription": "Choose an option to update your project thumbnail.",
+      "uploadNewImage": "Upload New Image",
+      "removeCurrentImage": "Remove Current Image"
+    },
+    "profileEditDialog": {
+      "title": "Edit Profile",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter your full name",
+      "dailyRateLabel": "Daily Rate",
+      "dailyRatePlaceholder": "Enter daily rate",
+      "serviceTypeLabel": "Service Type",
+      "serviceTypePlaceholder": "Select service type",
+      "categoryTypeLabel": "Category Type",
+      "categoryTypePlaceholder": "Select category",
+      "locationLabel": "Location",
+      "locationPlaceholder": "Select location",
+      "languageLabel": "Language",
+      "languagePlaceholder": "Select language",
+      "changeProfilePicture": "Change Profile Picture",
+      "changeCover": "Change Cover",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "serviceTypes": {
+        "design": "Design",
+        "development": "Development",
+        "marketing": "Marketing",
+        "writing": "Writing",
+        "consulting": "Consulting"
+      },
+      "categoryTypes": {
+        "uiUxDesigner": "UI/UX Designer",
+        "graphicDesigner": "Graphic Designer",
+        "webDesigner": "Web Designer",
+        "productDesigner": "Product Designer",
+        "frontendDeveloper": "Frontend Developer",
+        "backendDeveloper": "Backend Developer",
+        "fullStackDeveloper": "Full Stack Developer"
+      },
+      "locations": {
+        "bangladesh": "Bangladesh",
+        "india": "India",
+        "pakistan": "Pakistan",
+        "usa": "USA",
+        "uk": "UK",
+        "canada": "Canada",
+        "australia": "Australia"
+      },
+      "languages": {
+        "bengali": "Bengali",
+        "english": "English",
+        "hindi": "Hindi",
+        "urdu": "Urdu",
+        "arabic": "Arabic",
+        "spanish": "Spanish",
+        "french": "French"
+      }
+    },
+    "skillsDialog": {
+      "addTitle": "Add Skills",
+      "editTitle": "Edit Skills",
+      "skillTypeLabel": "Skill Type",
+      "skillTypes": {
+        "soft": "Soft Skills",
+        "technical": "Technical Skills",
+        "functional": "Functional Skills"
+      },
+      "skillsLabel": "Skills",
+      "skillsPlaceholder": "Select Skills",
+      "experienceLabel": "Experience",
+      "experiencePlaceholder": "Enter Experience",
+      "cancelButton": "Cancel",
+      "saveButton": "Save Changes",
+      "experienceLevels": {
+        "beginner": "Beginner (0-1 years)",
+        "intermediate": "Intermediate (1-3 years)",
+        "advanced": "Advanced (3-5 years)",
+        "expert": "Expert (5+ years)"
+      },
+      "technicalSkills": [
+        "JavaScript",
+        "TypeScript",
+        "React",
+        "Node.js",
+        "Python",
+        "Java",
+        "C++",
+        "HTML/CSS",
+        "SQL",
+        "MongoDB",
+        "PostgreSQL",
+        "AWS",
+        "Docker",
+        "Kubernetes",
+        "Git",
+        "REST APIs",
+        "GraphQL",
+        "Machine Learning",
+        "Data Analysis",
+        "Other"
+      ],
+      "functionalSkills": [
+        "Project Management",
+        "Team Leadership",
+        "Communication",
+        "Problem Solving",
+        "Strategic Planning",
+        "Business Analysis",
+        "Quality Assurance",
+        "Risk Management",
+        "Customer Relations",
+        "Sales",
+        "Marketing",
+        "Financial Analysis",
+        "Operations Management",
+        "Human Resources",
+        "Training & Development",
+        "Negotiation",
+        "Time Management",
+        "Critical Thinking",
+        "Decision Making",
+        "Other"
+      ]
+    }
+  },
+  "invoices": {
+    "title": "Invoices",
+    "subtitle": "With our simple invoicing system, managing payments is quick and easy for both freelancers and clients. Never miss a payment or detail again!",
+    "createNewInvoice": "Create New Invoice",
+    "search": "Search",
+    "invoiceFilter": {
+      "all": "All Invoice",
+      "paid": "Paid",
+      "pending": "Pending",
+      "overdue": "Overdue"
+    },
+    "viewDetails": "View Details",
+    "extendDeliveryDate": "Extend Delivery Date",
+    "deliveryNow": "Delivery Now",
+    "payNow": "Pay Now"
+  },
+  "invoiceDialogs": {
+    "createInvoice": {
+      "title": "Create New Invoice",
+      "logoUpload": "LOGO",
+      "clientLabel": "Client",
+      "clientPlaceholder": "Select Client",
+      "serviceTypeLabel": "Service Type",
+      "serviceTypePlaceholder": "Select Service Type",
+      "projectNameLabel": "Project Name",
+      "projectNamePlaceholder": "Select Project Name",
+      "dayLabel": "Day",
+      "dayPlaceholder": "Enter your working day",
+      "cancelButton": "Cancel",
+      "createButton": "Create Invoices"
+    },
+    "extendDelivery": {
+      "title": "Select Date & Add Reason",
+      "dateLabel": "Date",
+      "datePlaceholder": "Pick a date",
+      "reasonLabel": "Add Reason",
+      "reasonPlaceholder": "Enter your reason...",
+      "submitButton": "Submit"
+    },
+    "projectComplete": {
+      "title": "Complete Project",
+      "completeMessageLabel": "Complete Message",
+      "completeMessagePlaceholder": "Write Message",
+      "fileMessageLabel": "File/Message",
+      "fileMessagePlaceholder": "Write Message/ Send Message",
+      "uploadedImagesLabel": "Uploaded Images",
+      "cancelButton": "Cancel",
+      "completeButton": "Mark as Completed"
+    },
+    "viewInvoiceDetails": {
+      "title": "Invoice Details",
+      "clientName": "Client Name",
+      "serviceType": "Service Type",
+      "projectName": "Project Name",
+      "workingDay": "Working Day",
+      "totalAmount": "Total Amount",
+      "status": "Status",
+      "doneButton": "Done"
+    }
+  },
+  "showcaseProject": {
+    "banner": {
+      "header": "Showcase Your Projects",
+      "text": "Highlight your work and attract potential clients by showcasing your completed projects. This section lets you display your best work, providing clients with a glimpse of your skills, expertise, and creativity.",
+      "buttonName": "View All Projects"
+    },
+    "heading": "Discover Projects",
+    "buttons": {
+      "addNewProject": "Add new Project",
+      "edit": "Edit"
+    }
+  }
+}

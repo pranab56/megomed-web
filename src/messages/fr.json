@@ -1,0 +1,883 @@
+{
+  "navigation": {
+    "home": "Accueil",
+    "aboutUs": "À propos de nous",
+    "contactUs": "Contactez-nous",
+    "services": "Services",
+    "hireTopTalent": "Embaucher des talents",
+    "seeOurServices": "Voir nos services",
+    "login": "Connexion",
+    "signUp": "S'inscrire",
+    "freelancer": "Freelance",
+    "client": "Client"
+  },
+  "common": {
+    "search": "Rechercher",
+    "language": {
+      "english": "Anglais",
+      "french": "Français"
+    }
+  },
+  "topTalent": {
+    "banner": {
+      "title": "Trouvez les meilleurs talents",
+      "description": "Sélectionnez des talents de premier ordre qui correspondent aux objectifs et aux besoins de votre organisation. Notre plateforme vous connecte à des professionnels qualifiés qui peuvent stimuler l'innovation, améliorer la productivité et garantir le succès de vos projets, en offrant des résultats exceptionnels à chaque fois.",
+      "buttonText": "Embaucher des Freelances"
+    },
+    "heading": {
+      "title": "Design UX",
+      "subtitle": "Offrez à vos visiteurs une expérience fluide grâce à un design UX solide."
+    },
+    "search": {
+      "placeholder": "Rechercher des talents..."
+    },
+    "select": {
+      "category": "Sélectionner une catégorie",
+      "categoryLabel": "Catégories",
+      "skill": "Sélectionner une compétence",
+      "skillLabel": "Compétences"
+    },
+    "categories": {
+      "design": "Design",
+      "development": "Développement"
+    },
+    "skills": {
+      "ux": "Design UX",
+      "frontend": "Développement Frontend"
+    }
+  },
+  "client": {
+    "navbar": {
+      "jobBoard": "Tableau de bord des emplois",
+      "tenders": "Appels d'offres",
+      "myProjects": "Mes projets",
+      "invoices": "Factures",
+      "inbox": "Boîte de réception",
+      "mySubscription": "Mon abonnement",
+      "viewProfile": "Voir le profil",
+      "accountSettings": "Paramètres du compte",
+      "billingPlans": "Facturation et forfaits",
+      "helpSupport": "Aide et support",
+      "signOut": "Se déconnecter",
+      "client": "Client",
+      "available": "Disponible",
+      "verifiedClient": "Client vérifié",
+      "dayRate": "Taux journalier",
+      "yearsExperience": "Années d'expérience",
+      "online": "En ligne",
+      "offline": "Hors ligne"
+    },
+    "profilePrivate": {
+      "editProfile": "Modifier le profil",
+      "ongoingTenders": "Appels d'offres en cours",
+      "companyLife": "Vie de l'entreprise",
+      "addNewPost": "Ajouter un nouveau post",
+      "editPost": "Modifier le post",
+      "viewTender": "Voir l'appel d'offres",
+      "project": "Projet",
+      "role": "Rôle",
+      "aboutCompany": "À propos de l'entreprise",
+      "companyDescription": "Chez [Nom du Freelance], nous connectons les entreprises avec des professionnels talentueux du monde entier. Notre plateforme propose une large gamme de freelances qualifiés, prêts à fournir un travail de haute qualité dans diverses industries. Que vous cherchiez du développement web, de la conception graphique, de la rédaction de contenu ou de l'expertise marketing, nous facilitons la recherche de la correspondance parfaite pour votre projet. Avec un accent sur l'efficacité, la fiabilité et la satisfaction client, nous assurons que chaque collaboration est fluide et réussie. Rejoignez-nous aujourd'hui et découvrez la puissance des freelances qualifiés adaptés à vos besoins",
+      "verifiedClient": "Client vérifié",
+      "department": "Département",
+      "location": "Localisation",
+      "email": "E-mail",
+      "viewPosts": "Voir les posts →",
+      "uiuxDesigner": "Designer UI/UX",
+      "uxReviewPresentations": "Présentations de revue UX",
+      "uiuxDescription": "Je ferai la conception ui ux pour saas, application web, tableau de bord dans figma",
+      "dateFormat": "20 Jan 2022"
+    }
+  },
+  "subscriptionPlan": {
+    "badge": "Plans tarifaires",
+    "title": "Des plans pour tous les besoins",
+    "description": "Une tarification simple et transparente qui évolue avec vous. Essayez n'importe quel plan gratuitement pendant 30 jours.",
+    "currency": "€",
+    "duration": {
+      "month": "mois",
+      "year": "an"
+    },
+    "status": {
+      "running": "En cours",
+      "upgrade": "Mettre à niveau"
+    },
+    "freelancer": {
+      "starterPlan": {
+        "title": "Plan de démarrage",
+        "features": {
+          "1": "Candidater à 10 appels d'offres /mois",
+          "2": "Profil visible",
+          "3": "Accès au tableau de bord",
+          "4": "Suggestions intelligentes",
+          "5": "Messagerie client limitée",
+          "6": "Calendrier de disponibilité",
+          "7": "Générateur de contrat (brouillon pré-rempli de base)"
+        }
+      },
+      "proPlan": {
+        "title": "Plan Pro",
+        "features": {
+          "1": "Liste de profil prioritaire",
+          "2": "Toutes les fonctionnalités de démarrage",
+          "3": "Candidatures illimitées",
+          "4": "Accès complet à l'interaction client",
+          "5": "Correspondance intelligente des appels d'offres",
+          "6": "Générateur de contrat personnalisé",
+          "7": "Analytique des vues de profil",
+          "8": "Support prioritaire + badge"
+        }
+      }
+    },
+    "client": {
+      "businessPlan": {
+        "title": "Plan Business",
+        "features": {
+          "1": "5 appels d'offres/mois",
+          "2": "Candidatures illimitées",
+          "3": "Brouillon de contrat pré-rempli (exportable)",
+          "4": "Suivi interne des missions",
+          "5": "Export des factures de freelances",
+          "6": "Moteur de suggestion par IA"
+        }
+      },
+      "enterprisePlan": {
+        "title": "Plan Entreprise",
+        "features": {
+          "1": "Appels d'offres illimités",
+          "2": "Toutes les fonctionnalités Business",
+          "3": "Correspondance de freelances premium par IA",
+          "4": "Édition et signature de contrat intégrées",
+          "5": "Gestion en masse des freelances",
+          "6": "Tableau de bord comptable",
+          "7": "Autorisations d'équipe"
+        }
+      }
+    }
+  },
+  "footer": {
+    "description": "Lunq offre un support intelligent et rapide pour vous permettre de rester concentré sur votre travail, pendant que nous gérons le reste.",
+    "forClients": {
+      "title": "Pour les Clients",
+      "links": {
+        "findFreelancers": "Trouver des Freelances",
+        "postProject": "Publier un Projet",
+        "refundPolicy": "Politique de Remboursement",
+        "privacyPolicy": "Politique de Confidentialité"
+      }
+    },
+    "forFreelancers": {
+      "title": "Pour les Freelances",
+      "links": {
+        "findWork": "Trouver du Travail",
+        "createAccount": "Créer un Compte"
+      }
+    },
+    "subscribe": {
+      "title": "S'abonner",
+      "description": "Inscrivez-vous pour des offres exclusives et plus encore.",
+      "emailPlaceholder": "Votre e-mail"
+    },
+    "copyright": "2025 Lunq Tous droits réservés"
+  },
+  "contactUs": {
+    "banner": {
+      "header": "Contactez-nous",
+      "text": "Nous serions ravis d'avoir de vos nouvelles ! Que vous ayez des questions, ayez besoin de support ou souhaitiez partager des commentaires, notre équipe est là pour vous aider. Nous nous engageons à vous offrir une expérience fluide et agréable. N'hésitez pas à nous contacter, que ce soit pour obtenir de l'aide sur un projet, des renseignements sur nos services ou des suggestions pour améliorer votre expérience. Notre équipe de support dédié est prête à vous assurer l'aide dont vous avez besoin, quand vous en avez besoin. Votre satisfaction est notre priorité, et nous avons hâte de vous rencontrer."
+    },
+    "heading": {
+      "main": "Entrer en contact",
+      "subheading": "De même, une variété d'activités enrichit la vie, mêlant vigueur et équilibre. Le résultat est un style de vie non seulement dynamique, mais aussi profondément gratifiant."
+    },
+    "form": {
+      "firstName": {
+        "label": "Prénom*",
+        "placeholder": "Prénom*"
+      },
+      "lastName": {
+        "label": "Nom de famille*",
+        "placeholder": "Nom de famille*"
+      },
+      "email": {
+        "label": "E-mail*",
+        "placeholder": "E-mail*"
+      },
+      "phone": {
+        "label": "Téléphone*",
+        "placeholder": "Téléphone"
+      },
+      "message": {
+        "placeholder": "Message"
+      },
+      "submit": "Envoyer un message",
+      "contactDetails": {
+        "title": "Coordonnées",
+        "description": "De même, une variété d'activités enrichit la vie, mêlant vigueur et équilibre. Le résultat est un style de vie non seulement dynamique, mais aussi profondément gratifiant.",
+        "address": {
+          "title": "Adresse",
+          "text": "123 Rue Queensberry, North Melbourne VIC3051, Australie."
+        },
+        "email": {
+          "title": "E-mail",
+          "text": "ali@boxcars.com"
+        }
+      }
+    }
+  },
+  "aboutUs": {
+    "title": "À propos de nous - Lunq",
+    "subtitle": "Lunq",
+    "description": "Chez Lunq, nous connectons les entreprises avec les meilleurs talents freelances dans divers secteurs. Notre plateforme assure une expérience fluide pour les clients et les freelances, répondant à leurs besoins spécifiques. Que vous soyez une entreprise ou une organisation, Lunq vous aide à réussir avec des solutions de performance recommandées.",
+    "hireFreelancers": "Embaucher des freelances →",
+    "detailedDescription": "Chez Lunq, nous sommes passionnés par la connexion des entreprises avec les meilleurs freelances du monde entier. Notre plateforme réunit les meilleurs talents et clients, garantissant que chaque projet respecte les plus hauts standards. Nous prospérons grâce à la qualité, l'innovation et la collaboration. Lunq permet aux entreprises de trouver les freelances parfaits et les aide à atteindre leurs objectifs efficacement. Que vous cherchiez du développement web, du design, de la création de contenu ou tout autre service, nous assurons une expérience fluide du début à la fin. Notre mission est de créer des opportunités, favoriser la créativité et livrer des résultats exceptionnels qui aident les entreprises à grandir et réussir.",
+    "beliefStatement": "Nous croyons au pouvoir de la connexion. Nous fournissons aux entreprises un accès à un riche écosystème de talents dans toutes les catégories de services professionnels. Que ce soit petit ou grand, notre plateforme et notre réseau vérifié offrent opportunité et excellence pour toutes les échelles.",
+    "stats": {
+      "verifiedClients": "Clients Vérifiés",
+      "verifiedFreelancers": "Freelances Vérifiés",
+      "ordersCompleted": "Commandes Terminées",
+      "reviews": "Avis"
+    },
+    "ourDream": {
+      "title": "Notre Rêve",
+      "description": "Notre rêve est de construire un monde où les entreprises et les freelances collaborent de manière transparente pour créer des solutions innovantes. Nous imaginons une plateforme qui donne aux organisations les meilleurs talents, tout en offrant aux freelances des opportunités de montrer leurs compétences et de grandir en favorisant une communauté de créativité, d'expertise et de confiance, nous visons à révolutionner la façon dont le travail est fait, rendant le succès commercial accessible à tous."
+    },
+    "ourMission": {
+      "title": "Notre Mission",
+      "description": "Notre mission est de combler le fossé entre les entreprises et les freelances qualifiés, offrant un accès aux meilleurs talents dans divers secteurs. Nous nous engageons à fournir des services de haute qualité qui assurent le succès et livrent des résultats exceptionnels. Notre plateforme est conçue pour être fluide et fiable, assurant une expérience douce du début à la fin du projet. En connectant les entreprises avec des professionnels de premier plan, nous permettons aux organisations d'atteindre leurs objectifs efficacement et efficacement. Avec un accent sur le talent, l'innovation et la satisfaction client, nous visons à être la plateforme de référence pour les entreprises cherchant des freelances qualifiés pour donner vie à leurs idées."
+    },
+    "ourVision": {
+      "title": "Notre Vision",
+      "description": "Notre vision est de devenir la plateforme leader qui connecte les entreprises avec des freelances exceptionnels, stimulant l'innovation et le succès dans tous les secteurs. Nous visons à créer un monde où le talent et l'opportunité se rencontrent de manière transparente, permettant aux clients et aux freelances d'exceller. Grâce à notre engagement envers la qualité, la fiabilité et la collaboration, nous nous efforçons de façonner l'avenir du travail, permettant aux entreprises et aux freelances d'atteindre leur plein potentiel."
+    }
+  },
+  "search": "Rechercher",
+  "home": {
+    "banner": {
+      "title": "L'Avenir du Freelance.",
+      "subtitle1": "Contrats Directs.",
+      "subtitle2": "Zéro Commission.",
+      "description": "Les clients se connectent avec des freelances hautement qualifiés. Les freelances gardent 100% de ce qu'ils gagnent — pas de commissions, pas d'intermédiaires. Juste une collaboration pure et directe avec une transparence totale.",
+      "findTalent": "Trouver des Talents Freelances",
+      "forClients": "(Pour les Clients)",
+      "applyToJoin": "Postuler pour Rejoindre",
+      "forFreelancers": "(Pour les Freelances)"
+    },
+    "slider": {
+      "title": "Parcourez nos meilleurs talents par catégorie",
+      "viewAllCategory": "Voir Toutes les Catégories",
+      "categories": {
+        "graphicsDesign": "Graphisme & Design",
+        "digitalMarketing": "Marketing Digital",
+        "writingTranslation": "Rédaction & Traduction",
+        "videoAnimation": "Vidéo & Animation",
+        "musicAudio": "Musique & Audio",
+        "programmingTech": "Programmation & Tech",
+        "business": "Business",
+        "aiServices": "Services IA"
+      }
+    },
+
+    "popularServices": {
+      "title": "Nos Services Populaires",
+      "exploreMoreTitle": "Explorer Plus de Services de Design",
+      "seeAllCategories": "Voir Toutes les Catégories",
+      "services": {
+        "graphicDesign": "Graphisme&Design",
+        "cartoonAnimation": "Animation Cartoon",
+        "illustration": "Illustration",
+        "flyersVouchers": "Flyers & Bons",
+        "logoDesign": "Design de Logo",
+        "socialGraphics": "Graphiques sociaux",
+        "articleWriting": "Rédaction d'articles",
+        "videoEditing": "Montage Vidéo"
+      }
+    },
+    "whyChooseUs": {
+      "title": "Pourquoi Nous Choisir",
+      "features": {
+        "topVetted": {
+          "title": "Freelances Hautement Qualifiés",
+          "description": "Travaillez avec des experts sélectionnés qui répondent aux plus hauts standards de compétence, d'expérience et de fiabilité."
+        },
+        "zeroCommission": {
+          "title": "Zéro Frais de Commission",
+          "description": "Tarification transparente garantie — payez ou gagnez exactement ce qui est convenu sans frais cachés."
+        },
+        "flexibleScalable": {
+          "title": "Talents Flexibles & Évolutifs",
+          "description": "Embauchez pour de petites tâches ou des projets à grande échelle — tout ce dont vous avez besoin, quand vous en avez besoin."
+        }
+      }
+    },
+    "findTalentWay": {
+      "title": "Trouvez des talents",
+      "subtitle": "à votre façon",
+      "description": "Accédez à un réseau mondial de professionnels indépendants qualifiés prêts à vous aider à avancer plus vite et plus intelligemment. Que vous ayez besoin d'une solution rapide ou d'une refonte complète de votre entreprise, nos freelances apportent l'expertise et la flexibilité pour faire le travail correctement. Des petites tâches aux transformations à grande échelle, vous trouverez la correspondance parfaite pour vos objectifs — le tout en un seul endroit. Collaborez directement, gérez les projets facilement et expérimentez la liberté de travailler avec des talents de premier ordre selon vos conditions.",
+      "findFreelancer": "Trouver un freelance"
+    },
+    "skilledFreelancers": {
+      "title": "Freelances Qualifiés.",
+      "subtitle": "Zéro Tracas.",
+      "description": "Accédez à des freelances hautement notés sans le stress d'une recherche interminable ou de frais de commission élevés. Notre plateforme vous connecte directement avec des professionnels qualifiés en design, développement, rédaction, marketing et plus encore. Que vous commenciez un nouveau projet ou ayez besoin d'un soutien expert, nous facilitons la recherche, l'embauche et la collaboration — sans tracas. Profitez de paiements sécurisés, de contrats directs et d'un contrôle total sur votre flux de travail.",
+      "stats": {
+        "freelancers": "Freelances",
+        "freelanceWorkPosted": "Travail Freelance Publié"
+      }
+    },
+    "testimonial": {
+      "title": "Ce que disent nos Clients",
+      "seeMore": "Voir plus",
+      "seeLess": "Voir moins",
+      "testimonials": {
+        "smoothProcess": {
+          "title": "Processus Fluide",
+          "comment": "Le processus d'achat de voiture était incroyablement fluide et sans tracas ! J'ai trouvé ma voiture de rêve en quelques minutes, et l'équipe m'a guidé à chaque étape. Très recommandé pour quiconque cherche à acheter ou vendre une voiture !",
+          "name": "John Doe",
+          "intention": "Client Heureux"
+        },
+        "amazingSupport": {
+          "title": "Support Incroyable",
+          "comment": "Excellent service client ! La plateforme a facilité la comparaison des options et la recherche des meilleures offres. L'équipe de support a répondu à toutes mes questions et assuré une expérience sans faille.",
+          "name": "Sarah Johnson",
+          "intention": "Premier Acheteur"
+        },
+        "trustedPlatform": {
+          "title": "Plateforme de Confiance",
+          "comment": "Cette plateforme révolutionne l'expérience des passionnés de voitures. La transparence et la fiabilité m'ont donné confiance lors de l'achat. J'ai aussi vendu mon ancienne voiture ici, et le processus était rapide et efficace !",
+          "name": "Mike Brown",
+          "intention": "Passionné de Voitures"
+        }
+      }
+    },
+    "services": {
+      "banner": {
+        "title": "Choisissez les meilleurs talents pour la réussite de votre organisation.",
+        "description": "Choisissez le freelance parfait pour élever votre organisation avec des compétences, de l'expérience et une expertise de premier ordre.",
+        "buttonText": "Embaucher des Freelances"
+      },
+      "heading": {
+        "title": "Design UX",
+        "subtitle": "Offrez à vos visiteurs une expérience fluide grâce à un design UX solide."
+      },
+      "serviceCard": {
+        "jobCompleted": "Travail Terminé : {count}",
+        "dailyRate": "Taux Quotidien : ${amount}",
+        "hireButton": "Embaucher le Freelance →"
+      }
+    }
+  },
+  "jobTenderSidebar": {
+    "defaultCompanyName": "CONLINE",
+    "visitWebsite": "Visiter le site web",
+    "defaultTitle": "CONLINE",
+    "defaultJobType": "Temps plein",
+    "defaultLocation": "Dhaka, Bangladesh",
+    "defaultDatePosted": "1 juil. 2025",
+
+    "jobTypeLabel": "Type de poste",
+    "totalApplyLabel": "Total des candidatures",
+    "locationLabel": "Lieu",
+    "datePostedLabel": "Date de publication",
+
+    "respondToTenderButtonText": "Répondre à l'appel d'offres",
+    "respondedButtonText": "Répondu",
+    "applyButtonText": "Postuler à ce poste",
+    "appliedButtonText": "Candidature envoyée",
+
+    "alreadyRespondedToTenderError": "Vous avez déjà répondu à cet appel d'offres",
+    "tenderRespondedSuccess": "Réponse à l'appel d'offres envoyée avec succès",
+    "tenderRespondedSuccessDescription": "Vous pouvez maintenant consulter votre réponse dans la page de l'appel d'offres",
+
+    "alreadyAppliedToJobError": "Vous avez déjà postulé à ce poste",
+    "jobAppliedSuccess": "Candidature envoyée avec succès",
+    "jobAppliedSuccessDescription": "Vous pouvez maintenant consulter votre candidature dans la page du poste",
+
+    "loginDialogTitle": "Connectez-vous pour postuler à ce poste",
+    "loginDialogDescription": "Veuillez vous connecter pour postuler à ce poste",
+    "loginButtonText": "Connexion"
+  },
+  "mainContent": {
+    "jobBoardTitle": "Tableau des emplois",
+    "tendersTitle": "Appels d'offres",
+    "jobBoardSubtitle": "Trouvez les opportunités parfaites qui correspondent à vos compétences",
+    "tendersSubtitle": "Explorez les appels d'offres disponibles et soumettez vos propositions",
+    "filterButton": "Filtrer",
+    "showingResults": "Affichage",
+    "resultsText": "résultats",
+    "sortByPlaceholder": "Trier par",
+    "sortNewest": "Les plus récents",
+    "sortOldest": "Les plus anciens",
+    "sortBudgetHigh": "Budget le plus élevé",
+    "sortBudgetLow": "Budget le plus bas",
+    "noJobsFoundTitle": "Aucun emploi trouvé",
+    "noJobsFoundDescription": "Essayez d'ajuster vos filtres ou revenez plus tard pour de nouvelles opportunités",
+    "loadingText": "Chargement...",
+    "loadMoreText": "Charger plus",
+    "jobsText": "Emplois",
+    "tendersText": "Appels d'offres"
+  },
+  "freelancerNavbar": {
+    "jobBoard": "Tableau des emplois",
+    "tenders": "Appels d'offres",
+    "inbox": "Boîte de réception",
+    "invoices": "Factures",
+    "myProjects": "Mes projets",
+    "mySubscription": "Mon abonnement",
+    "viewProfile": "Voir le profil",
+    "accountSettings": "Paramètres du compte",
+    "billingPlans": "Facturation et plans",
+    "helpSupport": "Aide et support",
+    "signOut": "Déconnexion"
+  },
+  "jobBoard": {
+    "freelancerBanner": {
+      "header": "Explorez les meilleures opportunités freelance",
+      "text": "Parcourez les derniers projets freelance et trouvez votre prochaine grande opportunité. Que vous cherchiez à travailler à distance ou sur site, découvrez des emplois qui correspondent à vos compétences et à votre expertise.",
+      "buttonName": ""
+    },
+    "clientBanner": {
+      "header": "Publiez votre job et trouvez les meilleurs talents",
+      "text": "Vous cherchez à embaucher des freelances qualifiés pour votre prochain projet ? Notre plateforme vous connecte avec des professionnels de premier plan dans divers secteurs pour donner vie à votre vision.",
+      "buttonName": "Publier un job"
+    },
+    "recentPostsHeading": "Publications récentes",
+    "recentPostsSubheading": "Choisissez le meilleur talent pour le succès de votre organisation.",
+    "searchPlaceholder": "Rechercher..."
+  },
+  "jobDetails": {
+    "jobDetailsLabel": "Détails de l'emploi",
+    "tenderDetailsLabel": "Détails de l'appel d'offres",
+    "copyLinkButton": "Copier le lien",
+    "shareButton": "Partager",
+
+    "defaultJobTitle": "Designer Graphique Senior",
+    "defaultJobDescription": "Bakery est une agence créative et culturelle indépendante conçue pour susciter l'obsession des gens pour de grands produits. Depuis notre siège à Austin, TX, nous travaillons avec des marques très ambitieuses pour insuffler une valeur culturelle et susciter le désir à chaque point d'interaction, augmentant leur fandom et les aidant à créer des choses que les gens veulent. Bakery est une agence de petite taille Adage des années 2017 et 2024.",
+
+    "fullDescriptionParagraph1": "Devenir l'agence en qui les gens ont confiance pour la création de marques et le talent en design, vous serez responsable de transformer des idées en exécution, créant un travail qui attire l'attention, suscite la conversation et se démarque sur un marché encombré. Vous allez :",
+    "fullDescriptionParagraph2": "Illustrer des marques avec un œil de design méticuleux, une passion pour la création de marques et un talent pour transformer les perspectives en un travail créatif remarquable, nous voulons vous entendre. Ce rôle est destiné à quelqu'un qui apporte une expertise en design graphique de premier plan et en design de produits numériques - et un sens de l'UI et des stratégies de contenu Printcapacious.",
+    "fullDescriptionParagraph3": "Vous travaillerez pour des marques comme Nike, Degon et Pepsi. Doit être employé aux États-Unis et travailler sur site à Austin, TX À propos de nous.",
+    "fullDescriptionParagraph4": "Bakery est une agence créative et culturelle indépendante conçue pour susciter l'obsession des gens pour de grands produits. Depuis notre siège à Austin, TX, nous travaillons avec des marques très ambitieuses pour insuffler une valeur culturelle et susciter le désir à chaque point d'interaction, augmentant leur fandom et les aidant à créer des choses que les gens veulent. Bakery est une agence de petite taille Adage des années 2017 et 2024.",
+
+    "responsibilitiesTitle": "RESPONSABILITÉS",
+    "responsibility1": "En tant que Designer Senior, vous jouerez un rôle pivot dans la création de mondes de marques, de campagnes et de moments culturels pour nos clients. Vous serez responsable de transformer des idées en exécution, créant un travail qui attire l'attention, suscite la conversation et se démarque sur un marché encombré. Vous allez :",
+    "responsibility2": "Inventer et superviser des visuels de campagne, des emballages et des supports marketing qui génèrent une pertinence culturelle.",
+    "responsibility3": "Diriger le projet de la conception à la production, en équilibrant la pensée globale avec une exécution méticuleuse.",
+    "responsibility4": "Apporter des solutions de design inattendues et fraîches qui font avancer les marques tout en assurant une clarté stratégique et un impact commercial.",
+    "responsibility5": "Travailler en étroite collaboration avec les Directeurs Créatifs, les Directeurs Artistiques, les Rédacteurs et les Stratèges pour créer un travail révolutionnaire.",
+    "responsibility6": "Rester à jour sur les tendances du design, la typographie, la théorie des couleurs et les mouvements culturels pour garantir que le travail de Bakery reste frais et définissant sa catégorie.",
+    "responsibility7": "Présenter tout le travail avec succès aux plus hauts standards - propre, efficace et impossible à ignorer.",
+    "responsibility8": "Gérer efficacement plusieurs projets, en respectant les délais, les budgets et les attentes des clients.",
+    "responsibility9": "Présenter le travail de manière claire et convaincante, en faisant valoir les décisions de design.",
+
+    "requirementsTitle": "Exigences",
+    "requirement1": "Un portfolio impressionnant de travaux réalisés pour des marques de style de vie de premier plan.",
+    "requirement2": "5+ années d'expérience dans une agence de premier plan ou une équipe créative interne.",
+    "requirement3": "Un portfolio bien conçu qui met en valeur le branding, le storytelling visuel, les travaux de campagne et un artisanat exceptionnel.",
+    "requirement4": "Expertise dans la suite Adobe Creative (Illustrator, Photoshop, InDesign).",
+    "requirement5": "Compétences solides en illustration, typographie et mise en page avec un œil méticuleux pour les détails.",
+    "requirement6": "Expérience dans les domaines de l'impression, du numérique, de l'emballage et du design environnemental.",
+    "requirement7": "La capacité de jongler avec plusieurs projets et d'évoluer dans un environnement dynamique et à haut rendement.",
+    "requirement8": "Un état d'esprit de design systématique - vous ne vous contentez pas de faire quelque chose de beau, vous le faites fonctionner de manière efficace et efficiente.",
+
+    "benefitsTitle": "Avantages",
+    "benefit1": "Assurance médicale, dentaire et optique",
+    "benefit2": "Congés illimités",
+    "benefit3": "2 semaines de travail à distance (WFA)",
+    "benefit4": "Primes annuelles",
+    "benefit5": "Bureau adapté aux animaux de compagnie",
+    "benefit6": "Massothérapeute sur place",
+    "benefit7": "Allocation créative annuelle",
+    "benefit8": "Collations, repas et boissons",
+    "benefit9": "Pas de suivi du temps !",
+
+    "defaultTenderTitle": "Projet 1 : Alignement CRMS",
+    "defaultTenderRole": "Analyste d'affaires",
+    "tenderDescription": "Ce projet implique l'alignement des systèmes de gestion de la relation client entre les départements pour améliorer l'accessibilité et les performances des données. XYZ Corp",
+    "tenderLocation": "Paris",
+    "tenderDatePosted": "3/2025",
+    "tenderDeadline": "05/2023",
+
+    "tenderRequirement1": "5+ années d'expérience en analyse commerciale",
+    "tenderRequirement2": "Expérience avec les systèmes CRM (Salesforce, Zoho, etc.)",
+    "tenderRequirement3": "Solides compétences en résolution de problèmes et en analyse",
+    "tenderRequirement4": "Capacité à travailler dans un environnement dynamique",
+
+    "tenderStartDate": "07/2023",
+    "tenderEndDate": "12/2023",
+    "tenderPostedOn": "3/2025",
+
+    "importantDatesTitle": "Dates importantes",
+    "startDateLabel": "Date de début",
+    "endDateLabel": "Date de fin",
+    "postedOnLabel": "Publié le",
+    "deadlineLabel": "Date limite",
+
+    "loginDialogTitle": "Connectez-vous pour postuler à ce poste",
+    "loginDialogDescription": "Veuillez vous connecter pour postuler à ce poste",
+    "loginButtonText": "Connexion"
+  },
+  "tenderLayout": {
+    "freelancerBannerHeader": "Commencez à explorer les appels d'offres dès aujourd'hui !",
+    "freelancerBannerText": "Que vous soumettiez une proposition ou que vous publiiez un projet, notre plateforme simplifie le processus pour les clients et les freelances, garantissant des résultats de qualité et des collaborations réussies.",
+
+    "clientBannerHeader": "Parcourez et soumettez des appels d'offres",
+    "clientBannerText": "Bienvenue sur notre Portail des Appels d'Offres, où les entreprises et les freelances peuvent trouver et soumettre des opportunités de projet. Que vous cherchiez à publier un projet ou à soumissionner à un appel d'offres, nous assurons un processus transparent pour vous connecter aux professionnels et organisations appropriés.",
+    "clientBannerButtonName": "Publiez votre appel d'offres",
+
+    "ongoingTendersHeading": "Appels d'offres en cours",
+    "ongoingTendersSubheading": "Trouvez des opportunités de projet qui correspondent à votre expertise."
+  },
+  "ongoingProjects": {
+    "title": "Projets en cours",
+    "subtitle": "Restez sur la bonne voie et assurez une collaboration fluide jusqu'à la fin du projet !",
+    "search": "Rechercher",
+    "filter": {
+      "all": "Tous les projets",
+      "inProgress": "En cours",
+      "completed": "Terminés",
+      "pending": "En attente"
+    },
+    "projectDetails": {
+      "client": "Client",
+      "deadline": "Date limite",
+      "amount": "Montant",
+      "status": "Statut",
+      "viewDetails": "Voir les détails"
+    },
+    "statuses": {
+      "inProgress": "En cours",
+      "completed": "Terminé"
+    }
+  },
+  "profile": {
+    "layout": {
+      "coverPhotoAlt": "Photo de couverture"
+    },
+    "header": {
+      "editProfile": "Modifier le profil",
+      "viewProfile": "Voir le profil",
+      "changeProfilePicture": "Changer la photo de profil",
+      "changeCover": "Changer la couverture",
+      "name": "Nom",
+      "nameRequired": "Le nom est requis",
+      "nameMinLength": "Le nom doit contenir au moins 2 caractères",
+      "nameMaxLength": "Le nom doit contenir moins de 50 caractères",
+      "namePlaceholder": "Entrez votre nom complet",
+      "dailyRate": "Taux journalier",
+      "dailyRatePlaceholder": "Entrez le taux journalier",
+      "serviceType": "Type de service",
+      "serviceTypePlaceholder": "Sélectionnez le type de service",
+      "categoryType": "Type de catégorie",
+      "categoryTypePlaceholder": "Sélectionnez la catégorie",
+      "location": "Emplacement",
+      "locationPlaceholder": "Sélectionnez l'emplacement",
+      "language": "Langue",
+      "languagePlaceholder": "Sélectionnez la langue",
+      "cancel": "Annuler",
+      "saveChanges": "Enregistrer les modifications",
+      "invalidImageType": "Veuillez sélectionner un fichier image valide (JPEG, PNG, WebP)",
+      "imageSizeLimit": "La taille de l'image doit être inférieure à 5 Mo",
+      "available": "Disponible",
+      "verifiedFreelancer": "Freelance vérifié",
+      "dayRate": "Taux journalier"
+    },
+    "sections": {
+      "title": "Sections du profil",
+      "description": "Gérez et mettez à jour votre profil professionnel",
+      "educationCertifications": {
+        "title": "Éducation & Certifications",
+        "addButton": "Ajouter",
+        "editButton": "Modifier"
+      },
+      "projects": {
+        "title": "Projets",
+        "subtitle": "Découvrez mes réalisations et études de cas détaillées.",
+        "viewAllButton": "Voir tous les projets",
+        "addNewButton": "Ajouter un nouveau projet"
+      },
+      "contact": {
+        "title": "Contact",
+        "followButton": "Suivre",
+        "scheduleMeetingButton": "Planifier une réunion",
+        "messageButton": "Message"
+      }
+    },
+    "skills": {
+      "title": "Compétences",
+      "addSkill": "Ajouter une compétence",
+      "editSkill": "Modifier une compétence",
+      "noSkillsMessage": "Aucune compétence ajoutée pour le moment",
+      "skillLevels": {
+        "beginner": "Débutant",
+        "intermediate": "Intermédiaire",
+        "advanced": "Avancé",
+        "expert": "Expert"
+      }
+    },
+    "experience": {
+      "title": "Expérience professionnelle",
+      "addExperience": "Ajouter une expérience",
+      "editExperience": "Modifier l'expérience",
+      "noExperienceMessage": "Aucune expérience professionnelle ajoutée pour le moment",
+      "currentlyWorkingHere": "Actuellement en poste"
+    },
+    "experienceDialog": {
+      "addTitle": "Ajouter une expérience",
+      "editTitle": "Modifier l'expérience",
+      "companyNameLabel": "Nom de l'entreprise",
+      "companyNamePlaceholder": "Entrez le nom de l'entreprise",
+      "projectLabel": "Projet",
+      "projectPlaceholder": "Entrez le projet",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Entrez la description de l'expérience",
+      "startDateLabel": "Date de début",
+      "endDateLabel": "Date de fin",
+      "startDatePlaceholder": "Choisissez une date de début",
+      "endDatePlaceholder": "Choisissez une date de fin",
+      "cancelButton": "Annuler",
+      "saveButton": "Enregistrer les modifications",
+      "validationMessages": {
+        "companyRequired": "Le nom de l'entreprise est requis",
+        "projectRequired": "Le projet est requis",
+        "descriptionRequired": "La description est requise",
+        "startDateRequired": "Veuillez sélectionner une date de début",
+        "endDateRequired": "Veuillez sélectionner une date de fin"
+      }
+    },
+    "education": {
+      "title": "Ajouter une éducation et des certifications",
+      "degree": "Diplôme",
+      "degreePlaceholder": "Sélectionner le diplôme",
+      "school": "École/Université",
+      "schoolPlaceholder": "Sélectionner l'école / l'université",
+      "schoolRequired": "L'école/l'université est requise",
+      "startYear": "Sélectionner l'année de début",
+      "endYear": "Sélectionner l'année de fin",
+      "yearPlaceholder": "Année",
+      "cancel": "Annuler",
+      "saveChanges": "Enregistrer les modifications",
+      "successMessage": "Éducation enregistrée avec succès !",
+      "associateDegree": "Diplôme d'associé",
+      "bachelorsDegree": "Licence",
+      "mastersDegree": "Master",
+      "doctorate": "Doctorat (PhD)",
+      "professionalDegree": "Diplôme professionnel",
+      "certificate": "Certificat",
+      "diploma": "Diplôme",
+      "highSchoolDiploma": "Diplôme d'études secondaires",
+      "other": "Autre"
+    },
+    "addNewProjectDialog": {
+      "title": "Ajouter un nouveau projet",
+      "name": "Nom",
+      "namePlaceholder": "Sabbir Ahmed",
+      "nameRequired": "Le nom est requis",
+      "titleLabel": "Titre",
+      "titlePlaceholder": "Écrire un titre",
+      "titleRequired": "Le titre est requis",
+      "completeDate": "Date de fin",
+      "completeDateRequired": "La date de fin est requise",
+      "description": "Description",
+      "descriptionPlaceholder": "Design",
+      "projectThumbnail": "Miniature du projet",
+      "cancel": "Annuler",
+      "saveChanges": "Enregistrer les modifications",
+      "successMessage": "Projet enregistré avec succès !",
+      "updateThumbnail": "Mettre à jour la miniature",
+      "updateThumbnailDescription": "Choisissez une option pour mettre à jour la miniature de votre projet.",
+      "uploadNewImage": "Télécharger une nouvelle image",
+      "removeCurrentImage": "Supprimer l'image actuelle"
+    },
+    "profileEditDialog": {
+      "title": "Modifier le profil",
+      "nameLabel": "Nom",
+      "namePlaceholder": "Entrez votre nom complet",
+      "dailyRateLabel": "Taux journalier",
+      "dailyRatePlaceholder": "Entrez le taux journalier",
+      "serviceTypeLabel": "Type de service",
+      "serviceTypePlaceholder": "Sélectionnez le type de service",
+      "categoryTypeLabel": "Type de catégorie",
+      "categoryTypePlaceholder": "Sélectionnez la catégorie",
+      "locationLabel": "Emplacement",
+      "locationPlaceholder": "Sélectionnez l'emplacement",
+      "languageLabel": "Langue",
+      "languagePlaceholder": "Sélectionnez la langue",
+      "changeProfilePicture": "Changer la photo de profil",
+      "changeCover": "Changer la couverture",
+      "cancel": "Annuler",
+      "saveChanges": "Enregistrer les modifications",
+      "serviceTypes": {
+        "design": "Design",
+        "development": "Développement",
+        "marketing": "Marketing",
+        "writing": "Rédaction",
+        "consulting": "Conseil"
+      },
+      "categoryTypes": {
+        "uiUxDesigner": "Designer UI/UX",
+        "graphicDesigner": "Designer Graphique",
+        "webDesigner": "Designer Web",
+        "productDesigner": "Designer Produit",
+        "frontendDeveloper": "Développeur Frontend",
+        "backendDeveloper": "Développeur Backend",
+        "fullStackDeveloper": "Développeur Full Stack"
+      },
+      "locations": {
+        "bangladesh": "Bangladesh",
+        "india": "Inde",
+        "pakistan": "Pakistan",
+        "usa": "États-Unis",
+        "uk": "Royaume-Uni",
+        "canada": "Canada",
+        "australia": "Australie"
+      },
+      "languages": {
+        "bengali": "Bengali",
+        "english": "Anglais",
+        "hindi": "Hindi",
+        "urdu": "Ourdou",
+        "arabic": "Arabe",
+        "spanish": "Espagnol",
+        "french": "Français"
+      }
+    },
+    "skillsDialog": {
+      "addTitle": "Ajouter des compétences",
+      "editTitle": "Modifier les compétences",
+      "skillTypeLabel": "Type de compétence",
+      "skillTypes": {
+        "soft": "Compétences interpersonnelles",
+        "technical": "Compétences techniques",
+        "functional": "Compétences fonctionnelles"
+      },
+      "skillsLabel": "Compétences",
+      "skillsPlaceholder": "Sélectionner des compétences",
+      "experienceLabel": "Expérience",
+      "experiencePlaceholder": "Entrez votre expérience",
+      "cancelButton": "Annuler",
+      "saveButton": "Enregistrer les modifications",
+      "experienceLevels": {
+        "beginner": "Débutant (0-1 ans)",
+        "intermediate": "Intermédiaire (1-3 ans)",
+        "advanced": "Avancé (3-5 ans)",
+        "expert": "Expert (5+ ans)"
+      },
+      "technicalSkills": [
+        "JavaScript",
+        "TypeScript",
+        "React",
+        "Node.js",
+        "Python",
+        "Java",
+        "C++",
+        "HTML/CSS",
+        "SQL",
+        "MongoDB",
+        "PostgreSQL",
+        "AWS",
+        "Docker",
+        "Kubernetes",
+        "Git",
+        "REST APIs",
+        "GraphQL",
+        "Apprentissage automatique",
+        "Analyse de données",
+        "Autre"
+      ],
+      "functionalSkills": [
+        "Gestion de projet",
+        "Leadership d'équipe",
+        "Communication",
+        "Résolution de problèmes",
+        "Planification stratégique",
+        "Analyse commerciale",
+        "Assurance qualité",
+        "Gestion des risques",
+        "Relations clients",
+        "Ventes",
+        "Marketing",
+        "Analyse financière",
+        "Gestion des opérations",
+        "Ressources humaines",
+        "Formation et développement",
+        "Négociation",
+        "Gestion du temps",
+        "Pensée critique",
+        "Prise de décision",
+        "Autre"
+      ]
+    }
+  },
+  "invoices": {
+    "title": "Factures",
+    "subtitle": "Avec notre système de facturation simple, la gestion des paiements est rapide et facile pour les freelances et les clients. Ne manquez plus jamais un paiement ou un détail !",
+    "createNewInvoice": "Créer une nouvelle facture",
+    "search": "Rechercher",
+    "invoiceFilter": {
+      "all": "Toutes les factures",
+      "paid": "Payées",
+      "pending": "En attente",
+      "overdue": "En retard"
+    },
+    "viewDetails": "Voir les détails",
+    "extendDeliveryDate": "Prolonger la date de livraison",
+    "deliveryNow": "Livrer maintenant",
+    "payNow": "Payer maintenant"
+  },
+  "invoiceDialogs": {
+    "createInvoice": {
+      "title": "Créer une nouvelle facture",
+      "logoUpload": "LOGO",
+      "clientLabel": "Client",
+      "clientPlaceholder": "Sélectionner un client",
+      "serviceTypeLabel": "Type de service",
+      "serviceTypePlaceholder": "Sélectionner un type de service",
+      "projectNameLabel": "Nom du projet",
+      "projectNamePlaceholder": "Sélectionner un nom de projet",
+      "dayLabel": "Jour",
+      "dayPlaceholder": "Entrez votre jour de travail",
+      "cancelButton": "Annuler",
+      "createButton": "Créer des factures"
+    },
+    "extendDelivery": {
+      "title": "Sélectionner une date et ajouter une raison",
+      "dateLabel": "Date",
+      "datePlaceholder": "Choisir une date",
+      "reasonLabel": "Ajouter une raison",
+      "reasonPlaceholder": "Entrez votre raison...",
+      "submitButton": "Soumettre"
+    },
+    "projectComplete": {
+      "title": "Projet terminé",
+      "completeMessageLabel": "Message de fin",
+      "completeMessagePlaceholder": "Écrire un message",
+      "fileMessageLabel": "Fichier/Message",
+      "fileMessagePlaceholder": "Écrire un message/ Envoyer un message",
+      "uploadedImagesLabel": "Images téléchargées",
+      "cancelButton": "Annuler",
+      "completeButton": "Marquer comme terminé"
+    },
+    "viewInvoiceDetails": {
+      "title": "Détails de la facture",
+      "clientName": "Nom du client",
+      "serviceType": "Type de service",
+      "projectName": "Nom du projet",
+      "workingDay": "Jour de travail",
+      "totalAmount": "Montant total",
+      "status": "Statut",
+      "doneButton": "Terminé"
+    }
+  },
+  "showcaseProject": {
+    "banner": {
+      "header": "Présentez vos projets",
+      "text": "Mettez en valeur votre travail et attirez des clients potentiels en présentant vos projets terminés. Cette section vous permet de présenter vos meilleurs travaux, offrant aux clients un aperçu de vos compétences, de votre expertise et de votre créativité.",
+      "buttonName": "Voir tous les projets"
+    },
+    "heading": "Découvrir des projets",
+    "buttons": {
+      "addNewProject": "Ajouter un nouveau projet",
+      "edit": "Modifier"
+    }
+  }
+}
