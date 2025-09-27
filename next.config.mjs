@@ -26,7 +26,7 @@ const nextConfig = {
         port: "5002",            // ← must match the port in the URL
         pathname: "/**",
       },
-    ],
+    ],  
   },
   output: "standalone",
 
