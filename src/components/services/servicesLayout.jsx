@@ -14,6 +14,10 @@ function ServicesLayout() {
 
   const { data, isLoading, isError } = useGetAllFreeLancerQuery();
 
+  console.log(data?.data)
+
+
+
   // Only render on client side to prevent hydration issues
   useEffect(() => {
     setIsClient(true);
@@ -106,8 +110,8 @@ function ServicesLayout() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 py-4 px-4 sm:px-6 2xl:px-0 mx-auto">
-        {freelancers.length > 0 ? (
-          freelancers.map((freelancer) => (
+        {data?.data?.length > 0 ? (
+          data?.data?.map((freelancer) => (
             <ServiceCard key={freelancer._id} freelancer={freelancer} />
           ))
         ) : (
