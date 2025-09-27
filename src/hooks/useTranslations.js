@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
 import { loadMessages } from "@/redux/features/languageSlice";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 export function useTranslations(namespace = "client") {
   const dispatch = useDispatch();
@@ -44,7 +44,6 @@ export function useTranslations(namespace = "client") {
     },
   };
 
-  // Return translations with fallback
   return translations || fallbackTranslations[namespace] || {};
 }
 
