@@ -5,13 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from 'react-hot-toast';
 import { useSignupMutation } from '../../../features/auth/authApi';
 import AccountTypeDialog from "../clientOrFreelancer/ClientOrFreelancer";
 
 const SignUpPage = () => {
+  const searchParams = useSearchParams();
+  const type = searchParams.get("type");
+  console.log(type)
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -108,7 +111,7 @@ const SignUpPage = () => {
         fullName: formData.name,
         email: formData.email,
         password: formData.password,
-        role: accountType
+        role: type
       };
 
       const response = await createAccount(payload).unwrap();

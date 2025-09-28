@@ -2,20 +2,20 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import toast from 'react-hot-toast';
 import { useResendOtpMutation, useVerifyOtpMutation } from '../../../features/auth/authApi';
 
 const OTPForm = () => {
-  const searchParams = useParams();
-  const token = searchParams?.token;
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [countdown, setCountdown] = useState(0);
   const inputRefs = useRef([]);
+  const countdownRef = useRef(null);
   const router = useRouter();
-
-
-//hello
 
 
   // Use Redux Query mutations with their built-in states
@@ -25,6 +25,30 @@ const OTPForm = () => {
   // Initialize refs
   useEffect(() => {
     inputRefs.current = inputRefs.current.slice(0, 6);
+  }, []);
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (countdown > 0) {
+      countdownRef.current = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+    }
+
+    return () => {
+      if (countdownRef.current) {
+        clearTimeout(countdownRef.current);
+      }
+    };
+  }, [countdown]);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (countdownRef.current) {
+        clearTimeout(countdownRef.current);
+      }
+    };
   }, []);
 
   const handleInputChange = (index, value) => {
@@ -86,7 +110,7 @@ const OTPForm = () => {
       // router.push("/auth/login")
       if (response?.success) {
         router.push("/auth/login")
-        toast.success("Email verified successfully. Please log in.");
+        toast.success(response.message || "Email verified successfully. Please log in.");
       }
       // Handle successful verification (e.g., redirect user)
     } catch (error) {
@@ -98,11 +122,22 @@ const OTPForm = () => {
 
   const handleResend = async () => {
     try {
-      const response = await resend(token).unwrap();
-      console.log(response);
+      if (token) {
+        const response = await resend(token).unwrap();
+        toast.success(response.message);
+        // Start 1 minute countdown (60 seconds)
+        setCountdown(60);
+      }
     } catch (error) {
       console.log(error);
     }
+  };
+
+  // Format countdown time as MM:SS
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
   // Get error message from either mutation
@@ -155,14 +190,20 @@ const OTPForm = () => {
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-2">
               If you didn't receive a code,{" "}
-              <Button
-                type="button"
-                variant="link"
-                onClick={handleResend}
-                disabled={resendLoading}
-                className="p-0 h-auto text-blue-600 hover:text-blue-800 font-semibold underline">
-                {resendLoading ? "Sending..." : "Resend"}
-              </Button>
+              {countdown > 0 ? (
+                <span className="text-gray-500">
+                  Resend in {formatTime(countdown)}
+                </span>
+              ) : (
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={handleResend}
+                  disabled={resendLoading}
+                  className="p-0 h-auto text-blue-600 hover:text-blue-800 font-semibold underline">
+                  {resendLoading ? "Sending..." : "Resend"}
+                </Button>
+              )}
             </p>
           </div>
 

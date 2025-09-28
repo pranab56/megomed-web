@@ -40,6 +40,8 @@ export const baseApi = createApi({
     "myProject",
     "invoice",
     "chat",
-    "message",
-  ], // useful for cache invalidation fdf
+
+    "message"
+  ], // useful for cache invalidationdfsdf
+
 });

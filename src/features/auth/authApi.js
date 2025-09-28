@@ -44,7 +44,7 @@ export const authApi = baseApi.injectEndpoints({
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          ...(token && { token }), // only add token if it exists
+          token: token, // only add token if it exists
         },
         body: value,
       }),
