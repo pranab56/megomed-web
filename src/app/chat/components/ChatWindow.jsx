@@ -10,8 +10,11 @@ import { CalendarDays, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { IoMdSend } from 'react-icons/io';
 import { MdAttachFile, MdClose, MdImage } from 'react-icons/md';
+import { useCreateInvoiceMutation } from '../../../features/invoice/invoiceApi';
+import { useGetAllServicesQuery } from '../../../features/services/servicesApi';
+import { useRunningTenderByClientIdQuery } from '../../../features/tender/tenderApi';
 
-const ChatWindow = ({ id }) => {
+const ChatWindow = ({ clientId, chatId }) => {
   const [formValues, setFormValues] = useState({ message: '', file: null });
   const [imagePreview, setImagePreview] = useState(null);
   const [showFileUpload, setShowFileUpload] = useState(false);
@@ -20,15 +23,26 @@ const ChatWindow = ({ id }) => {
   const [reportReason, setReportReason] = useState('');
   const [reportMessage, setReportMessage] = useState('');
   const [invoiceForm, setInvoiceForm] = useState({
-    type: '',
-    client: '',
+    invoiceType: 'tender', // tender/service
+    clientUserId: clientId,
+    tenderId: '',
     serviceType: '',
-    projectName: '',
-    workingDay: ''
+    amount: '',
+    date: new Date().toISOString().split('T')[0]
   });
+
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
+
+  const [createInvoice, { isLoading: creatingInvoiceLoading }] = useCreateInvoiceMutation();
+
+  const { data: tenderResponse, isLoading: runningTenderLoading } = useRunningTenderByClientIdQuery(clientId, { skip: !clientId });
+  const { data: serviceTypeResponse, isLoading: serviceLoading } = useGetAllServicesQuery();
+
+  // Extract tender and service data from API responses
+  const tenderData = tenderResponse?.data || [];
+  const serviceData = serviceTypeResponse?.data || [];
 
   // Mock data for UI only
   const loginUserId = "user123";
@@ -108,27 +122,61 @@ const ChatWindow = ({ id }) => {
     setShowReportModal(false);
   };
 
-  const handleInvoiceSubmit = () => {
-    console.log("Invoice created:", invoiceForm);
-    setInvoiceForm({
-      type: '',
-      client: '',
-      serviceType: '',
-      projectName: '',
-      workingDay: ''
-    });
-    setShowInvoiceModal(false);
+  const handleInvoiceSubmit = async () => {
+    try {
+      // Prepare the invoice data according to API requirements
+      const invoiceData = {
+        invoiceType: invoiceForm.invoiceType,
+        clientUserId: invoiceForm.clientUserId,
+        tenderId: invoiceForm.invoiceType === 'tender' ? invoiceForm.tenderId : undefined,
+        serviceType: invoiceForm.serviceType,
+        amount: parseFloat(invoiceForm.amount),
+        date: new Date(invoiceForm.date).toISOString()
+      };
+
+      console.log("Invoice data to be sent:", invoiceData);
+
+      // Call the create invoice mutation
+      const result = await createInvoice(invoiceData).unwrap();
+
+      console.log("Invoice created successfully:", result);
+
+      // Reset form and close modal
+      setInvoiceForm({
+        invoiceType: 'tender',
+        clientUserId: clientId,
+        tenderId: '',
+        serviceType: '',
+        amount: '',
+        date: new Date().toISOString().split('T')[0]
+      });
+      setShowInvoiceModal(false);
+
+    } catch (error) {
+      console.error("Failed to create invoice:", error);
+      // You might want to show an error message to the user here
+    }
   };
 
   const handleCloseInvoiceModal = () => {
     setInvoiceForm({
-      type: '',
-      client: '',
+      invoiceType: 'tender',
+      clientUserId: clientId,
+      tenderId: '',
       serviceType: '',
-      projectName: '',
-      workingDay: ''
+      amount: '',
+      date: new Date().toISOString().split('T')[0]
     });
     setShowInvoiceModal(false);
+  };
+
+  const handleInvoiceTypeChange = (type) => {
+    setInvoiceForm({
+      ...invoiceForm,
+      invoiceType: type,
+      tenderId: type === 'tender' ? invoiceForm.tenderId : '',
+      serviceType: type === 'service' ? invoiceForm.serviceType : ''
+    });
   };
 
   const getFileIcon = (fileName) => {
@@ -169,7 +217,7 @@ const ChatWindow = ({ id }) => {
     setShowFileUpload(!showFileUpload);
   };
 
-  if (!id) {
+  if (!clientId || !chatId) {
     return (
       <div className="flex justify-center items-center h-[80vh]">
         <p className="text-gray-500">Select a chat to start messaging</p>
@@ -521,50 +569,85 @@ const ChatWindow = ({ id }) => {
               <Label htmlFor="invoice-type" className="text-sm font-medium text-gray-700">
                 Invoice Type
               </Label>
-              <Select value={invoiceForm.type} onValueChange={(value) => setInvoiceForm({ ...invoiceForm, type: value })}>
+              <Select
+                value={invoiceForm.invoiceType}
+                onValueChange={handleInvoiceTypeChange}
+              >
                 <SelectTrigger className="w-full mt-1">
                   <SelectValue placeholder="Select Invoice Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="hourly">Hourly</SelectItem>
-                  <SelectItem value="fixed">Fixed Price</SelectItem>
-                  <SelectItem value="milestone">Milestone</SelectItem>
+                  <SelectItem value="tender">Tender</SelectItem>
+                  <SelectItem value="service">Service</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div>
-              <Label htmlFor="tender" className="text-sm font-medium text-gray-700">
-                Tender
-              </Label>
-              <Select value={invoiceForm.client} onValueChange={(value) => setInvoiceForm({ ...invoiceForm, client: value })}>
-                <SelectTrigger className="w-full mt-1">
-                  <SelectValue placeholder="Select Client" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="alex-morgan">Alex Morgan</SelectItem>
-                  <SelectItem value="john-doe">John Doe</SelectItem>
-                  <SelectItem value="jane-smith">Jane Smith</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {invoiceForm.invoiceType === 'tender' && (
+              <div>
+                <Label htmlFor="tender" className="text-sm font-medium text-gray-700">
+                  Tender
+                </Label>
+                <Select
+                  value={invoiceForm.tenderId}
+                  onValueChange={(value) => setInvoiceForm({ ...invoiceForm, tenderId: value })}
+                  disabled={runningTenderLoading}
+                >
+                  <SelectTrigger className="w-full mt-1">
+                    <SelectValue
+                      placeholder={
+                        runningTenderLoading ? "Loading tenders..." : "Select Tender"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tenderData.map((tender) => (
+                      <SelectItem key={tender._id} value={tender._id}>
+                        {tender.title}
+                      </SelectItem>
+                    ))}
+                    {tenderData.length === 0 && !runningTenderLoading && (
+                      <SelectItem value="no-tender" disabled>
+                        No tenders available
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
 
             <div>
               <Label htmlFor="service-type" className="text-sm font-medium text-gray-700">
                 Service Type
               </Label>
-              <Select value={invoiceForm.serviceType} onValueChange={(value) => setInvoiceForm({ ...invoiceForm, serviceType: value })}>
+              <Select
+                value={invoiceForm.serviceType}
+                onValueChange={(value) => setInvoiceForm({ ...invoiceForm, serviceType: value })}
+                disabled={serviceLoading}
+              >
                 <SelectTrigger className="w-full mt-1">
-                  <SelectValue placeholder="Select Service Type" />
+                  <SelectValue
+                    placeholder={
+                      serviceLoading ? "Loading services..." : "Select Service Type"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="web-development">Web Development</SelectItem>
-                  <SelectItem value="mobile-development">Mobile Development</SelectItem>
-                  <SelectItem value="ui-ux-design">UI/UX Design</SelectItem>
-                  <SelectItem value="graphic-design">Graphic Design</SelectItem>
+                  {serviceData.map((service) => (
+                    <SelectItem key={service._id} value={service.name}>
+                      {service.name}
+                    </SelectItem>
+                  ))}
+                  {serviceData.length === 0 && !serviceLoading && (
+                    <SelectItem value="no-service" disabled>
+                      No services available
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
+
 
             <div>
               <Label htmlFor="amount" className="text-sm font-medium text-gray-700">
@@ -572,25 +655,24 @@ const ChatWindow = ({ id }) => {
               </Label>
               <Input
                 id="amount"
-                type="text"
-                placeholder="Project Name"
-                value={invoiceForm.projectName}
-                onChange={(e) => setInvoiceForm({ ...invoiceForm, projectName: e.target.value })}
+                type="number"
+                placeholder="Enter amount"
+                value={invoiceForm.amount}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, amount: e.target.value })}
                 className="w-full mt-1"
               />
             </div>
 
             <div>
-              <Label htmlFor="day" className="text-sm font-medium text-gray-700">
-                Day
+              <Label htmlFor="date" className="text-sm font-medium text-gray-700">
+                Date
               </Label>
               <div className="relative mt-1">
                 <Input
-                  id="day"
-                  type="text"
-                  placeholder="Enter your working day"
-                  value={invoiceForm.workingDay}
-                  onChange={(e) => setInvoiceForm({ ...invoiceForm, workingDay: e.target.value })}
+                  id="date"
+                  type="date"
+                  value={invoiceForm.date}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, date: e.target.value })}
                   className="w-full pr-10"
                 />
                 <CalendarDays className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -608,9 +690,15 @@ const ChatWindow = ({ id }) => {
             </Button>
             <Button
               onClick={handleInvoiceSubmit}
+              disabled={
+                creatingInvoiceLoading ||
+                !invoiceForm.amount ||
+                (invoiceForm.invoiceType === 'tender' && !invoiceForm.tenderId) ||
+                (invoiceForm.invoiceType === 'service' && !invoiceForm.serviceType)
+              }
               className="px-8 bg-blue-600 hover:bg-blue-700"
             >
-              Create Invoices
+              {creatingInvoiceLoading ? "Creating..." : "Create Invoice"}
             </Button>
           </div>
         </DialogContent>

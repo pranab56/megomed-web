@@ -10,13 +10,7 @@ export const tenderApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["tender"],
     }),
-    applyTender: builder.mutation({
-      query: (id) => ({
-        url: `/tender/respond/${id}`,
-        method: "PATCH",
-      }),
-      invalidatesTags: ["tender"],
-    }),
+
 
     getAllTenderByClient: builder.query({
       query: ({ categoryName, serviceTypeName, searchTerm }) => {
@@ -79,6 +73,33 @@ export const tenderApi = baseApi.injectEndpoints({
       }),
       providesTags: ["tender"],
     }),
+
+    respond: builder.mutation({
+      query: (id) => ({
+        url: `/tender/respond/${id}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["tender"],
+    }),
+
+
+    respond: builder.mutation({
+      query: (id) => ({
+        url: `/tender/respond/${id}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["tender"],
+    }),
+
+    runningTenderByClientId: builder.query({
+      query: (id) => ({
+        url: `/tender/running-tenders/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["tender"],
+    }),
+
+
   }),
 });
 
@@ -87,6 +108,7 @@ export const {
   useCreateTenderMutation,
   useGetAllTenderByClientQuery,
   useGetAllTenderQuery,
-  useApplyTenderMutation,
   useSingleTenderQuery,
+  useRespondMutation,
+  useRunningTenderByClientIdQuery
 } = tenderApi;
