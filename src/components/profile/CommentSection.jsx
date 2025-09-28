@@ -84,8 +84,8 @@ function CommentSection() {
           <CardContent className="">
             <div
               className={`h-20 flex  text-gray-500 ${comment
-                  ? "items-start justify-start"
-                  : "items-center justify-center"
+                ? "items-start justify-start"
+                : "items-center justify-center"
                 }`}
             >
               {comment ? (
