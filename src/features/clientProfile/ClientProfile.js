@@ -1,31 +1,13 @@
 import { baseApi } from '../../utils/apiBaseQuery';
 
-export const clientProfileApi = baseApi.injectEndpoints({
+export const chatApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getMyprofile: builder.query({
+    getAllChats: builder.query({
       query: () => ({
-        url: "/users/my-profile",
+        url: "/chat/my-chat-list",
         method: "GET",
       }),
-      providesTags: ["clientProfile"],
-    }),
-
-    updateMyprofile: builder.mutation({
-      query: (data) => ({
-        url: "/users/update-my-profile",
-        method: "PATCH",
-        body: data,
-      }),
-      invalidatesTags: ["clientProfile"],
-    }),
-
-    updateProfileInfo: builder.mutation({
-      query: (data) => ({
-        url: "/freelancer-info/update",
-        method: "PATCH",
-        body: data,
-      }),
-      invalidatesTags: ["clientProfile"],
+      providesTags: ["chat"],
     }),
 
   })
@@ -33,7 +15,5 @@ export const clientProfileApi = baseApi.injectEndpoints({
 
 // Export hooks
 export const {
-  useGetMyprofileQuery,
-  useUpdateMyprofileMutation,
-  useUpdateProfileInfoMutation
-} = clientProfileApi;
+   useGetAllChatsQuery
+} = chatApi;

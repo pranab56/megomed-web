@@ -9,109 +9,73 @@ import {
   BsCheckAll,
   BsSearch
 } from 'react-icons/bs';
+import { useGetAllChatsQuery } from '../../../features/clientProfile/ClientProfile';
 
 const ChatList = ({ setIsChatActive, status }) => {
   const router = useRouter();
   const { id } = useParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [actionStates, setActionStates] = useState({});
-  const [localChats, setLocalChats] = useState([]);
   const chatListRef = useRef(null);
 
-  // Demo data
-  const demoChats = [
-    {
-      _id: '1',
-      participants: [
-        { _id: 'user1', name: 'John Doe', userName: 'johndoe', profile: null },
-        { _id: 'currentUser', name: 'You', userName: 'you' }
-      ],
-      lastMessage: {
-        text: 'Hello there! How are you doing?',
-        sender: 'user1',
-        createdAt: new Date(Date.now() - 300000), // 5 minutes ago
-        read: false,
-        type: 'text'
-      },
-      unreadCount: 2,
-      updatedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString()
-    },
-    {
-      _id: '2',
-      participants: [
-        { _id: 'user2', name: 'Alice Smith', userName: 'alicesmith', profile: null },
-        { _id: 'currentUser', name: 'You', userName: 'you' }
-      ],
-      lastMessage: {
-        text: 'Meeting at 3 PM tomorrow',
-        sender: 'currentUser',
-        createdAt: new Date(Date.now() - 3600000), // 1 hour ago
-        read: true,
-        type: 'text'
-      },
-      unreadCount: 0,
-      updatedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString()
-    },
-    {
-      _id: '3',
-      participants: [
-        { _id: 'user3', name: 'Bob Johnson', userName: 'bobjohnson', profile: null },
-        { _id: 'currentUser', name: 'You', userName: 'you' }
-      ],
-      lastMessage: {
-        text: 'Check out this image!',
-        sender: 'user3',
-        createdAt: new Date(Date.now() - 86400000), // 1 day ago
-        read: false,
-        type: 'image'
-      },
-      unreadCount: 1,
-      updatedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString()
-    },
-    {
-      _id: '4',
-      participants: [
-        { _id: 'user4', name: 'Emma Wilson', userName: 'emmawilson', profile: null },
-        { _id: 'currentUser', name: 'You', userName: 'you' }
-      ],
-      lastMessage: {
-        text: 'Thanks for your help!',
-        sender: 'user4',
-        createdAt: new Date(Date.now() - 172800000), // 2 days ago
-        read: true,
-        type: 'text'
-      },
-      unreadCount: 0,
-      updatedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString()
-    }
-  ];
+  const { data, isLoading, error } = useGetAllChatsQuery();
 
-  useEffect(() => {
-    setLocalChats(demoChats);
-  }, []);
+  // Extract chats from API response
+  const apiChats = useMemo(() => {
+    if (!data?.data) return [];
+
+    // Combine pinned and unpinned chats
+    const allChats = [
+      ...(data.data.pinned || []),
+      ...(data.data.unpinned || [])
+    ];
+
+    return allChats.map(chatItem => ({
+      _id: chatItem.chat._id,
+      participants: chatItem.chat.participants || [],
+      lastMessage: chatItem.message._id ? {
+        _id: chatItem.message._id,
+        text: chatItem.message.message || chatItem.message.text,
+        image: chatItem.message.image,
+        sender: chatItem.message.sender,
+        createdAt: chatItem.message.createdAt,
+        seen: chatItem.message.seen,
+        replyTo: chatItem.message.replyTo,
+        isPinned: chatItem.message.isPinned,
+        reactionUsers: chatItem.message.reactionUsers || []
+      } : null,
+      unreadCount: chatItem.unreadMessageCount || 0,
+      status: chatItem.chat.status,
+      isPinned: chatItem.chat.isPinned,
+      createdAt: chatItem.chat.createdAt,
+      updatedAt: chatItem.chat.updatedAt
+    }));
+  }, [data]);
 
   const chatsToShow = useMemo(() => {
-    const chats = localChats || [];
+    if (!apiChats.length) return [];
 
+    let filteredChats = apiChats;
+
+    // Apply search filter
     if (searchTerm) {
-      return chats.filter(chat => {
+      filteredChats = apiChats.filter(chat => {
         const participant = chat.participants?.find(p => p._id !== 'currentUser');
-        return participant?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-      });
-    } else {
-      return [...chats].sort((a, b) => {
-        const timeA = a.lastMessage?.createdAt || a.updatedAt || a.createdAt;
-        const timeB = b.lastMessage?.createdAt || b.updatedAt || b.createdAt;
-        return new Date(timeB) - new Date(timeA);
+        const fullName = participant?.fullName?.toLowerCase() || '';
+        const email = participant?.email?.toLowerCase() || '';
+        const searchLower = searchTerm.toLowerCase();
+
+        return fullName.includes(searchLower) || email.includes(searchLower);
       });
     }
-  }, [searchTerm, localChats]);
 
-  const memoizedChats = useMemo(() => chatsToShow, [chatsToShow]);
+    // Sort by last message time or chat update time
+    return [...filteredChats].sort((a, b) => {
+      const timeA = a.lastMessage?.createdAt || a.updatedAt || a.createdAt;
+      const timeB = b.lastMessage?.createdAt || b.updatedAt || b.createdAt;
+      return new Date(timeB) - new Date(timeA);
+    });
+  }, [searchTerm, apiChats]);
 
   useEffect(() => {
     if (chatListRef.current) {
@@ -120,7 +84,7 @@ const ChatList = ({ setIsChatActive, status }) => {
         chatListRef.current.scrollTop = parseInt(savedPosition, 10);
       }
     }
-  }, [memoizedChats]);
+  }, [chatsToShow]);
 
   const handleScroll = useCallback(() => {
     if (chatListRef.current) {
@@ -133,24 +97,12 @@ const ChatList = ({ setIsChatActive, status }) => {
     setActionStates(prev => ({ ...prev, [chat._id]: { loading: true, action: 'select' } }));
 
     try {
-      router.push(`/chat/${chat._id}`);
+      router.push(`/chat/${chat.participants[0]._id}/${chat._id}`);
       if (setIsChatActive) setIsChatActive(true);
 
-      // Mark as read locally
-      if (chat.unreadCount > 0) {
-        setLocalChats(prevChats =>
-          prevChats.map(c => {
-            if (c._id === chat._id) {
-              return {
-                ...c,
-                unreadCount: 0,
-                lastMessage: c.lastMessage ? { ...c.lastMessage, read: true } : null
-              };
-            }
-            return c;
-          })
-        );
-      }
+      // You might want to call an API to mark messages as read here
+      // Example: await markMessagesAsRead(chat._id);
+
     } catch (error) {
       console.error('Error selecting chat:', error);
     } finally {
@@ -173,26 +125,47 @@ const ChatList = ({ setIsChatActive, status }) => {
   };
 
   const getParticipantInfo = (chat) => {
-    const participant = chat.participants?.find(p => p._id !== 'currentUser');
-    return participant || { userName: 'User', profile: null };
+    // Get the first participant (assuming it's the other user)
+    const participant = chat.participants?.[0];
+    return participant || { fullName: 'Unknown User', email: '', profile: null };
   };
 
   const getAvatarFallback = (name) => {
-    return name ? name.charAt(0).toUpperCase() : 'U';
+    if (!name) return 'U';
+    const words = name.split(' ');
+    if (words.length >= 2) {
+      return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+    }
+    return name.charAt(0).toUpperCase();
   };
 
   const renderLoadingState = () => (
     <div className="space-y-4 p-4">
       {[...Array(5)].map((_, i) => (
         <div key={i} className="flex items-center gap-4">
-          <div className="rounded-full bg-muted h-12 w-12" />
+          <div className="rounded-full bg-muted h-12 w-12 animate-pulse" />
           <div className="space-y-2 flex-1">
-            <div className="h-4 bg-muted rounded w-3/4" />
-            <div className="h-3 bg-muted rounded w-1/2" />
+            <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
+            <div className="h-3 bg-muted rounded w-1/2 animate-pulse" />
           </div>
         </div>
       ))}
     </div>
+  );
+
+  const renderEmptyState = () => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="flex flex-col items-center justify-center h-32 text-muted-foreground p-4"
+    >
+      <p className="text-sm text-center">
+        {searchTerm ? 'No matching chats found' : 'No chats yet'}
+      </p>
+      <p className="text-xs mt-1 text-center">
+        {searchTerm ? 'Try a different search term' : 'Start a conversation to see chats here'}
+      </p>
+    </motion.div>
   );
 
   return (
@@ -214,13 +187,20 @@ const ChatList = ({ setIsChatActive, status }) => {
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto"
       >
-        {memoizedChats?.length > 0 ? (
+        {isLoading ? (
+          renderLoadingState()
+        ) : error ? (
+          <div className="flex items-center justify-center h-32 text-destructive p-4">
+            <p className="text-sm text-center">Error loading chats. Please try again.</p>
+          </div>
+        ) : chatsToShow?.length > 0 ? (
           <AnimatePresence>
-            {memoizedChats.map((chat) => {
+            {chatsToShow.map((chat) => {
               const isActionLoading = actionStates[chat._id]?.loading;
               const participant = getParticipantInfo(chat);
-              const isRead = chat.lastMessage?.read || chat.unreadCount === 0;
+              const isRead = chat.lastMessage?.seen || chat.unreadCount === 0;
               const isActiveChat = chat._id === id;
+              const hasMessage = chat.lastMessage && chat.lastMessage._id;
 
               return (
                 <motion.div
@@ -241,19 +221,28 @@ const ChatList = ({ setIsChatActive, status }) => {
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={participant?.profile} />
                         <AvatarFallback>
-                          {getAvatarFallback(participant?.name || participant?.userName)}
+                          {getAvatarFallback(participant?.fullName)}
                         </AvatarFallback>
                       </Avatar>
+                      {participant?.role && (
+                        <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full px-1 text-xs">
+                          {participant.role.charAt(0).toUpperCase()}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center mb-1">
-                        <h3 className={`font-medium truncate text-sm ${isRead ? '' : 'font-semibold'}`}>
-                          {participant?.name || participant?.userName}
+                        <h3 className={`font-medium truncate text-sm ${isRead ? '' : 'font-semibold'
+                          }`}>
+                          {participant?.fullName || 'Unknown User'}
                         </h3>
                         <div className="flex items-center gap-1">
                           <span className="text-xs text-muted-foreground truncate">
-                            {formatTime(chat?.lastMessage?.createdAt)}
+                            {hasMessage
+                              ? formatTime(chat.lastMessage.createdAt)
+                              : formatTime(chat.createdAt)
+                            }
                           </span>
                         </div>
                       </div>
@@ -261,25 +250,38 @@ const ChatList = ({ setIsChatActive, status }) => {
                       <div className="flex items-center justify-between gap-2">
                         <p className={`text-sm truncate text-muted-foreground ${isRead ? '' : 'font-medium text-foreground'
                           }`}>
-                          {chat?.lastMessage?.type === "image" ? '📷 Image' :
-                            chat?.lastMessage?.type === "both" ? '📷 Image' :
-                              chat?.lastMessage?.text?.slice(0, 30) || 'No messages yet'}
+                          {hasMessage ? (
+                            chat.lastMessage.image
+                              ? '📷 Image'
+                              : chat.lastMessage.text?.slice(0, 30) + (chat.lastMessage.text?.length > 30 ? '...' : '')
+                          ) : 'No messages yet'}
                         </p>
-                        {isRead && chat.lastMessage?.sender === 'currentUser' && (
+                        {isRead && hasMessage && chat.lastMessage.sender && (
                           <BsCheckAll className="text-muted-foreground h-3 w-3" />
                         )}
                       </div>
+
+                      {participant?.email && (
+                        <p className="text-xs text-muted-foreground truncate mt-1">
+                          {participant.email}
+                        </p>
+                      )}
                     </div>
 
                     <div className="flex flex-col items-end gap-1">
-                      {chat?.unreadCount > 0 && (
+                      {chat.unreadCount > 0 && (
                         <motion.span
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
                           className="bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs min-w-[20px] text-center"
                         >
-                          {chat?.unreadCount}
+                          {chat.unreadCount}
                         </motion.span>
+                      )}
+                      {chat.isPinned && (
+                        <div className="text-muted-foreground">
+                          📌
+                        </div>
                       )}
                     </div>
                   </div>
@@ -288,16 +290,7 @@ const ChatList = ({ setIsChatActive, status }) => {
             })}
           </AnimatePresence>
         ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center h-32 text-muted-foreground"
-          >
-            <p className="text-sm">
-              {searchTerm ? 'No matching chats found' : 'No chats yet'}
-            </p>
-            <p className="text-xs mt-1">Start a conversation to see chats here</p>
-          </motion.div>
+          renderEmptyState()
         )}
       </div>
     </div>
