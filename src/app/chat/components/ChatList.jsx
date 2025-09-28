@@ -9,7 +9,8 @@ import {
   BsCheckAll,
   BsSearch
 } from 'react-icons/bs';
-import { useGetAllChatsQuery } from '../../../features/clientProfile/ClientProfile';
+import { useMyChatListQuery } from '../../../features/chat/chatApi';
+
 
 const ChatList = ({ setIsChatActive, status }) => {
   const router = useRouter();
@@ -18,7 +19,7 @@ const ChatList = ({ setIsChatActive, status }) => {
   const [actionStates, setActionStates] = useState({});
   const chatListRef = useRef(null);
 
-  const { data, isLoading, error } = useGetAllChatsQuery();
+  const { data, isLoading, error } = useMyChatListQuery();
 
   // Extract chats from API response
   const apiChats = useMemo(() => {
