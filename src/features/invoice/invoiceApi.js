@@ -27,6 +27,13 @@ export const invoiceApi = baseApi.injectEndpoints({
       }),
       providesTags: ["invoice"],
     }),
+    acceptRespondInvoice: builder.mutation({
+      query: (data) => ({
+        url: `/invoice/invoice-approve/${data.invoiceID}`,
+        method: "POST",
+      }),
+      providesTags: ["invoice"],
+    }),
     getInvoiceFreelancer: builder.query({
       query: () => ({
         url: "/invoice/freelancer",
@@ -41,6 +48,14 @@ export const invoiceApi = baseApi.injectEndpoints({
       }),
       providesTags: ["invoice"],
     }),
+
+    //Stripe Payment
+    createStripePayment: builder.mutation({
+      query: () => ({
+        url: "/payment/create-stripe-account",
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -51,4 +66,6 @@ export const {
   useGetInvoiceClientQuery,
   useExtendRequestMutation,
   useApproveExtendRequestMutation,
+  useCreateStripePaymentMutation,
+  useAcceptRespondInvoiceMutation,
 } = invoiceApi;

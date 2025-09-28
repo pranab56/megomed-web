@@ -30,11 +30,14 @@ import CreateInvoicesDialog from "./CreateInvoicesDialog";
 import ExtendDeliveryDialog from "./EntendDeliveryDialog";
 import ProjectCompleteDialog from "./ProjectCompleteDialog";
 import ViewInvoiceDetailsDialog from "./ViewInvoiceDetailsDialog";
+import useToast from "@/hooks/showToast/ShowToast";
 import {
   useGetInvoiceFreelancerQuery,
   useGetInvoiceClientQuery,
   useExtendRequestMutation,
   useApproveExtendRequestMutation,
+  useCreateStripePaymentMutation,
+  useAcceptRespondInvoiceMutation,
 } from "@/features/invoice/invoiceApi";
 
 // Define translations locally
@@ -73,13 +76,15 @@ const InvoicesContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [popoverOpen, setPopoverOpen] = useState({});
+  const showToast = useToast();
 
   // Extend request mutation
   const [extendRequest, { isLoading: isExtendLoading }] =
     useExtendRequestMutation();
   const [approveExtendRequest, { isLoading: isApproveLoading }] =
     useApproveExtendRequestMutation();
-
+  const [acceptRespondInvoice, { isLoading: isAcceptLoading }] =
+    useAcceptRespondInvoiceMutation();
   // Handle extend request submission
   const handleExtendRequestSubmit = async (action, invoice) => {
     if (!invoice) return;
@@ -130,6 +135,33 @@ const InvoicesContent = () => {
     }
   };
 
+  const handlePayNow = async (invoice) => {
+    if (!invoice) return;
+
+    try {
+      const result = await acceptRespondInvoice({
+        invoiceID: invoice.id,
+      }).unwrap();
+
+      if (result?.success && result?.data?.url) {
+        showToast.success("Redirecting to payment...", {
+          description: "Please complete your payment in the new tab",
+        });
+
+        // Open Stripe checkout in new tab
+        window.open(result.data.url, "_blank");
+      } else {
+        showToast.error("Failed to process payment", {
+          description: "Please try again later",
+        });
+      }
+    } catch (error) {
+      showToast.error("Payment failed", {
+        description: error?.data?.message || "Please try again later",
+      });
+    }
+  };
+
   // Fetch data based on user role
   const {
     data: freelancerData,
@@ -162,19 +194,29 @@ const InvoicesContent = () => {
       client: userType === "freelancer" ? "Client" : "Freelancer",
       amount: `$${invoice.amount}`,
       status:
-        invoice.status === "delivered"
-          ? "Delivered"
-          : invoice.status === "pending"
+        invoice.status === "pending"
           ? "Pending"
-          : invoice.status === "in_progress"
-          ? "In Progress"
+          : invoice.status === "accepted"
+          ? "Accepted"
+          : invoice.status === "delivered"
+          ? "Delivered"
+          : invoice.status === "declined"
+          ? "Declined"
+          : invoice.status === "completed"
+          ? "Completed"
           : "Pending",
       statusColor:
-        invoice.status === "delivered"
-          ? "bg-green-600"
-          : invoice.status === "pending"
+        invoice.status === "pending"
           ? "bg-yellow-600"
-          : "bg-blue-600",
+          : invoice.status === "accepted"
+          ? "bg-blue-600"
+          : invoice.status === "delivered"
+          ? "bg-green-600"
+          : invoice.status === "declined"
+          ? "bg-red-600"
+          : invoice.status === "completed"
+          ? "bg-purple-600"
+          : "bg-yellow-600",
       paymentStatus: invoice.paymentStatus,
       serviceType: invoice.serviceType,
       invoiceType: invoice.invoiceType,
@@ -489,7 +531,7 @@ const InvoicesContent = () => {
                           <Button
                             className="button-gradient"
                             onClick={() => {
-                              router.push("/payment");
+                              handlePayNow(invoice);
                             }}
                           >
                             <CreditCard className="w-4 h-4 mr-2" />
