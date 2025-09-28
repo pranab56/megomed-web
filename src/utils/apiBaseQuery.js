@@ -39,6 +39,7 @@ export const baseApi = createApi({
     "showcaseProject",
     "myProject",
     "invoice",
-    "chat"
-  ], // useful for cache invalidation fdfd
+    "chat",
+    "message"
+  ], // useful for cache invalidation fdf
 });
