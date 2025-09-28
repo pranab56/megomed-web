@@ -10,6 +10,15 @@ export const invoiceApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["invoice"],
     }),
+    createDelivery: builder.mutation({
+      query: ({ data, invoiceID }) => ({
+        url: `/invoice/invoice-delivery/${invoiceID}`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["invoice"],
+    }),
+
     extendRequest: builder.mutation({
       query: (data) => ({
         url: `/invoice/invoice-extend/${data.invoiceID}`,
@@ -68,6 +77,7 @@ export const invoiceApi = baseApi.injectEndpoints({
 // Export hooks
 export const {
   useCreateInvoiceMutation,
+  useCreateDeliveryMutation,
   useGetInvoiceFreelancerQuery,
   useGetInvoiceClientQuery,
   useExtendRequestMutation,

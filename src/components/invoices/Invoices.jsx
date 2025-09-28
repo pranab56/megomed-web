@@ -457,7 +457,11 @@ const InvoicesContent = () => {
                       {userType === "freelancer" && (
                         <Button
                           className="button-gradient w-full"
-                          onClick={() => setIsProjectCompleteDialogOpen(true)}
+                          onClick={() => {
+                            console.log("Setting selectedInvoice:", invoice);
+                            setSelectedInvoice(invoice);
+                            setIsProjectCompleteDialogOpen(true);
+                          }}
                         >
                           <Truck className="w-4 h-4 mr-2" />
                           {invoiceTranslations.deliveryNow}
@@ -560,7 +564,14 @@ const InvoicesContent = () => {
 
                           <Button
                             className="button-gradient"
-                            onClick={() => setIsProjectCompleteDialogOpen(true)}
+                            onClick={() => {
+                              console.log(
+                                "Setting selectedInvoice (desktop):",
+                                invoice
+                              );
+                              setSelectedInvoice(invoice);
+                              setIsProjectCompleteDialogOpen(true);
+                            }}
                           >
                             <Truck className="w-4 h-4 mr-2" />
                             {invoiceTranslations.deliveryNow}
@@ -609,7 +620,27 @@ const InvoicesContent = () => {
           <ProjectCompleteDialog
             isOpen={isProjectCompleteDialogOpen}
             onClose={() => setIsProjectCompleteDialogOpen(false)}
+            invoiceId={selectedInvoice?.id}
           />
+        )}
+
+        {/* Debug info */}
+        {isProjectCompleteDialogOpen && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              background: "red",
+              color: "white",
+              padding: "10px",
+              zIndex: 9999,
+            }}
+          >
+            Debug: selectedInvoice = {JSON.stringify(selectedInvoice)}
+            <br />
+            Debug: invoiceId = {selectedInvoice?.id}
+          </div>
         )}
 
         {/* Extend Delivery Dialog */}

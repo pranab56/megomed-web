@@ -19,10 +19,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Paperclip, Trash2 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useCreateDeliveryMutation } from "@/features/invoice/invoiceApi";
+import useToast from "@/hooks/showToast/ShowToast";
 
-export default function ProjectCompleteDialog({ isOpen, onClose }) {
+export default function ProjectCompleteDialog({ isOpen, onClose, invoiceId }) {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const fileInputRef = useRef(null);
+  const [createDelivery, { isLoading }] = useCreateDeliveryMutation();
+  const showToast = useToast();
 
   // Static translations object (you can pass this as props or use context instead)
   const dialogTranslations = useMemo(
@@ -65,14 +69,61 @@ export default function ProjectCompleteDialog({ isOpen, onClose }) {
     "Custom message...",
   ];
 
-  const onSubmit = (data) => {
-    const projectData = {
-      ...data,
-      uploadedFiles: uploadedFiles,
-    };
-    console.log("Project completion data:", projectData);
-    alert("Project marked as completed successfully!");
-    onClose?.();
+  const onSubmit = async (data) => {
+    console.log("ProjectCompleteDialog - invoiceId:", invoiceId);
+    console.log("ProjectCompleteDialog - data:", data);
+
+    if (!invoiceId) {
+      showToast.error("Invoice ID is required");
+      return;
+    }
+
+    try {
+      // Prepare form data for API
+      const formData = new FormData();
+      formData.append(
+        "deliveryMessage",
+        data.completeMessage ||
+          data.fileMessage ||
+          "Project completed successfully"
+      );
+
+      // Append files if any
+      uploadedFiles.forEach((file, index) => {
+        formData.append("deliveryFiles", file.file);
+      });
+
+      console.log("Calling createDelivery with:", {
+        data: formData,
+        invoiceID: invoiceId,
+      });
+      const result = await createDelivery({
+        data: formData,
+        invoiceID: invoiceId,
+      }).unwrap();
+      console.log("createDelivery result:", result);
+
+      showToast.success("Project marked as completed successfully!");
+      reset();
+      setUploadedFiles([]);
+      onClose?.();
+    } catch (error) {
+      // Handle specific error messages from API
+      let errorMessage = "Failed to complete project";
+      let errorDescription = "Please try again later.";
+
+      if (error?.data?.message) {
+        errorDescription = error.data.message;
+      } else if (error?.data?.errorSources?.[0]?.message) {
+        errorDescription = error.data.errorSources[0].message;
+      } else if (error?.message) {
+        errorDescription = error.message;
+      }
+
+      showToast.error(errorMessage, {
+        description: errorDescription,
+      });
+    }
   };
 
   const onCancel = () => {
@@ -250,9 +301,10 @@ export default function ProjectCompleteDialog({ isOpen, onClose }) {
             <Button
               type="submit"
               onClick={handleSubmit(onSubmit)}
+              disabled={isLoading}
               className="px-6 button-gradient py-2 bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {dialogTranslations.completeButton}
+              {isLoading ? "Completing..." : dialogTranslations.completeButton}
             </Button>
           </DialogFooter>
         </DialogContent>
