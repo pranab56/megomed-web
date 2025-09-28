@@ -12,6 +12,7 @@ import { IoMdSend } from 'react-icons/io';
 import { MdAttachFile, MdClose, MdImage } from 'react-icons/md';
 import { useCreateInvoiceMutation } from '../../../features/invoice/invoiceApi';
 
+import { useMyChatListQuery } from '../../../features/chat/chatApi';
 import { useCreateMessageMutation, useGetMessageByIdQuery } from '../../../features/message/messageApi';
 import { useGetAllServicesQuery } from '../../../features/services/servicesApi';
 import { useRunningTenderByClientIdQuery } from '../../../features/tender/tenderApi';
@@ -22,6 +23,7 @@ const ChatWindow = ({ clientId, chatId }) => {
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [loginUserId, setLoginUserId] = useState(null);
   const [reportReason, setReportReason] = useState('');
   const [reportMessage, setReportMessage] = useState('');
   const [invoiceForm, setInvoiceForm] = useState({
@@ -43,6 +45,16 @@ const ChatWindow = ({ clientId, chatId }) => {
   const { data: serviceTypeResponse, isLoading: serviceLoading } = useGetAllServicesQuery();
   const [createMessage, { isLoading: createMessageLoading }] = useCreateMessageMutation();
   const { data: messagesResponse, isLoading: getMessageLoading, refetch: refetchMessages } = useGetMessageByIdQuery(chatId, { skip: !chatId });
+  const { data: AllChat, isLoading } = useMyChatListQuery();
+
+  const findChatById = (chatId) => {
+    const allChats = [...(AllChat?.data?.pinned || []), ...(AllChat?.data?.unpinned || [])];
+    return allChats.find(chatItem => chatItem.chat._id === chatId);
+  };
+  const result = findChatById(chatId);
+
+
+
 
   // Extract data from API responses
   const tenderData = tenderResponse?.data || [];
@@ -50,15 +62,12 @@ const ChatWindow = ({ clientId, chatId }) => {
   const messagesData = messagesResponse?.data?.newResult?.result || [];
 
   // Get current user ID from auth or context - you'll need to replace this with actual auth
-  const loginUserId = "68b80540dcf6e82fd9335831"; // Replace with actual current user ID
 
-  // Mock chat user data - replace with actual data from your chat/user API
-  const chatUser = {
-    participants: [
-      { _id: "68b80540dcf6e82fd9335831", name: "Tanvir Ahmed Swapnil", userName: "tanvir", profile: "uploads\\profile\\bg-1758953796086-168458687.jpg" }
-    ],
-    isBlocked: false
-  };
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    setLoginUserId(user);
+  }, []);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -248,21 +257,26 @@ const ChatWindow = ({ clientId, chatId }) => {
     <>
       <div className="relative w-full h-[80vh] rounded-lg flex flex-col shadow-lg border bg-white border-gray-200">
         {/* Header */}
-        {chatUser?.participants?.map(item => (
+        {result?.chat?.participants.map(item => (
           <div key={item._id} className="flex items-center justify-between p-4 border-b border-gray-200">
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={getImageUrl(item.profile)} />
-                  <AvatarFallback>{item.name?.charAt(0) || item.userName?.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+
+            {
+              isLoading ? "Loading..." : <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={getImageUrl(item.profile)} />
+                    <AvatarFallback>{item.fullName?.charAt(0) || item.fullName?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">{item?.fullName}</h2>
+                  <p className="text-sm text-green-500">Online</p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">{item.name || item.userName}</h2>
-                <p className="text-sm text-green-500">Online</p>
-              </div>
-            </div>
+            }
+
+
             <div className="flex items-center space-x-4">
               <div className="flex space-x-2">
                 <Button variant="outline" size="sm">
@@ -404,87 +418,82 @@ const ChatWindow = ({ clientId, chatId }) => {
         </AnimatePresence>
 
         {/* Input Area */}
-        {chatUser?.isBlocked ? (
-          <div className="p-4 text-center bg-white text-gray-600">
-            You can no longer access this conversation.
-          </div>
-        ) : (
-          <div className="p-3 border-t border-gray-200 bg-white">
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-gray-500 hover:text-gray-600"
-                  onClick={toggleFileUpload}
-                >
-                  <MdAttachFile size={20} />
-                </Button>
 
-                <AnimatePresence>
-                  {showFileUpload && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute bottom-full mb-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-10"
-                    >
-                      <div className="flex flex-col space-y-2 min-w-[150px]">
-                        <label className="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 cursor-pointer">
-                          <input
-                            ref={imageInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleFileChange(e, 'image')}
-                            className="hidden"
-                          />
-                          <MdImage className="text-green-500" size={20} />
-                          <span className="text-sm text-gray-700">Image</span>
-                        </label>
-
-                        <label className="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 cursor-pointer">
-                          <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept=".pdf,.doc,.docx,.txt"
-                            onChange={(e) => handleFileChange(e, 'file')}
-                            className="hidden"
-                          />
-                          <MdAttachFile className="text-blue-500" size={20} />
-                          <span className="text-sm text-gray-700">Document</span>
-                        </label>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <Input
-                ref={inputRef}
-                value={formValues.message}
-                onChange={(e) => setFormValues({ ...formValues, message: e.target.value })}
-                placeholder="Type a message..."
-                className="flex-1 rounded-full bg-gray-100 border-gray-200 focus:bg-white"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleCreateNewMessage();
-                  }
-                }}
-                disabled={createMessageLoading}
-              />
-
+        <div className="p-3 border-t border-gray-200 bg-white">
+          <div className="flex items-center gap-2">
+            <div className="relative">
               <Button
-                onClick={handleCreateNewMessage}
+                variant="ghost"
                 size="icon"
-                className="bg-blue-500 hover:bg-blue-600 rounded-full"
-                disabled={(!formValues.message.trim() && !formValues.file) || createMessageLoading}
+                className="text-gray-500 hover:text-gray-600"
+                onClick={toggleFileUpload}
               >
-                <IoMdSend className="text-white" />
+                <MdAttachFile size={20} />
               </Button>
+
+              <AnimatePresence>
+                {showFileUpload && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute bottom-full mb-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-10"
+                  >
+                    <div className="flex flex-col space-y-2 min-w-[150px]">
+                      <label className="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 cursor-pointer">
+                        <input
+                          ref={imageInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, 'image')}
+                          className="hidden"
+                        />
+                        <MdImage className="text-green-500" size={20} />
+                        <span className="text-sm text-gray-700">Image</span>
+                      </label>
+
+                      <label className="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 cursor-pointer">
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept=".pdf,.doc,.docx,.txt"
+                          onChange={(e) => handleFileChange(e, 'file')}
+                          className="hidden"
+                        />
+                        <MdAttachFile className="text-blue-500" size={20} />
+                        <span className="text-sm text-gray-700">Document</span>
+                      </label>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
+
+            <Input
+              ref={inputRef}
+              value={formValues.message}
+              onChange={(e) => setFormValues({ ...formValues, message: e.target.value })}
+              placeholder="Type a message..."
+              className="flex-1 rounded-full bg-gray-100 border-gray-200 focus:bg-white"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleCreateNewMessage();
+                }
+              }}
+              disabled={createMessageLoading}
+            />
+
+            <Button
+              onClick={handleCreateNewMessage}
+              size="icon"
+              className="bg-blue-500 hover:bg-blue-600 rounded-full"
+              disabled={(!formValues.message.trim() && !formValues.file) || createMessageLoading}
+            >
+              <IoMdSend className="text-white" />
+            </Button>
           </div>
-        )}
+        </div>
 
         {/* Report Modal */}
         <AnimatePresence>

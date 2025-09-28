@@ -5,13 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import provideIcon from "@/utils/IconProvider/provideIcon";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useResetPasswordMutation } from '../../../features/auth/authApi';
 
 const ResetPasswordForm = () => {
-  const searchParams = useParams();
-  const token = searchParams?.token;
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
