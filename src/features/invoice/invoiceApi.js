@@ -1,6 +1,4 @@
-import { baseApi } from '../../utils/apiBaseQuery';
-
-
+import { baseApi } from "../../utils/apiBaseQuery";
 
 export const invoiceApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -8,15 +6,49 @@ export const invoiceApi = baseApi.injectEndpoints({
       query: (data) => ({
         url: "/invoice/create-invoice",
         method: "POST",
-        body: data
+        body: data,
       }),
       providesTags: ["invoice"],
     }),
-
-  })
+    extendRequest: builder.mutation({
+      query: (data) => ({
+        url: `/invoice/invoice-extend/${data.invoiceID}`,
+        method: "POST",
+        body: { extendDate: data.extendDate, extendReason: data.reason },
+      }),
+      providesTags: ["invoice"],
+    }),
+    approveExtendRequest: builder.mutation({
+      query: (data) => ({
+        url: `/invoice/invoice-extend-approve/${data.invoiceID}${
+          data.action === "reject" ? "?extendRequest=cancel" : ""
+        }`,
+        method: "POST",
+      }),
+      providesTags: ["invoice"],
+    }),
+    getInvoiceFreelancer: builder.query({
+      query: () => ({
+        url: "/invoice/freelancer",
+        method: "GET",
+      }),
+      providesTags: ["invoice"],
+    }),
+    getInvoiceClient: builder.query({
+      query: () => ({
+        url: "/invoice/client",
+        method: "GET",
+      }),
+      providesTags: ["invoice"],
+    }),
+  }),
 });
 
 // Export hooks
 export const {
-  useCreateInvoiceMutation
+  useCreateInvoiceMutation,
+  useGetInvoiceFreelancerQuery,
+  useGetInvoiceClientQuery,
+  useExtendRequestMutation,
+  useApproveExtendRequestMutation,
 } = invoiceApi;

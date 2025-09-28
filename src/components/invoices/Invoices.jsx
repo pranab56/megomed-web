@@ -11,6 +11,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Calendar,
   CreditCard,
   FileText,
@@ -20,11 +25,17 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import CreateInvoicesDialog from "./CreateInvoicesDialog";
 import ExtendDeliveryDialog from "./EntendDeliveryDialog";
 import ProjectCompleteDialog from "./ProjectCompleteDialog";
 import ViewInvoiceDetailsDialog from "./ViewInvoiceDetailsDialog";
+import {
+  useGetInvoiceFreelancerQuery,
+  useGetInvoiceClientQuery,
+  useExtendRequestMutation,
+  useApproveExtendRequestMutation,
+} from "@/features/invoice/invoiceApi";
 
 // Define translations locally
 const invoiceTranslations = {
@@ -45,28 +56,11 @@ const invoiceTranslations = {
   payNow: "Pay Now",
 };
 
-const invoices = [
-  {
-    id: "12345",
-    client: "XYZ Corp",
-    amount: "$500",
-    status: "Pending",
-  },
-  {
-    id: "12345",
-    client: "XYZ Corp",
-    amount: "$500",
-    status: "Pending",
-  },
-];
-
-// Define user type - you can set this based on your authentication logic
-// Options: "freelancer" or "client"
-const userType = "freelancer"; // Change this based on your auth system
-
 // Main component content
 const InvoicesContent = () => {
   const router = useRouter();
+  const currentUser = localStorage.getItem("role");
+  const userType = currentUser;
 
   const [isCreateInvoicesDialogOpen, setIsCreateInvoicesDialogOpen] =
     useState(false);
@@ -76,6 +70,145 @@ const InvoicesContent = () => {
     useState(false);
   const [isExtendDeliveryDialogOpen, setIsExtendDeliveryDialogOpen] =
     useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const [popoverOpen, setPopoverOpen] = useState({});
+
+  // Extend request mutation
+  const [extendRequest, { isLoading: isExtendLoading }] =
+    useExtendRequestMutation();
+  const [approveExtendRequest, { isLoading: isApproveLoading }] =
+    useApproveExtendRequestMutation();
+
+  // Handle extend request submission
+  const handleExtendRequestSubmit = async (action, invoice) => {
+    if (!invoice) return;
+
+    setIsSubmitting(true);
+    setMessage({ type: "", text: "" });
+
+    try {
+      // Use approveExtendRequest API for both accept and reject
+      const result = await approveExtendRequest({
+        invoiceID: invoice.id,
+        action: action, // "accept" or "reject"
+      }).unwrap();
+
+      if (action === "accept") {
+        setMessage({
+          type: "success",
+          text: "Extend request approved successfully!",
+        });
+
+        // Close popover and clear message after success
+        setTimeout(() => {
+          setMessage({ type: "", text: "" });
+          setPopoverOpen((prev) => ({ ...prev, [invoice.id]: false }));
+        }, 2000);
+      } else {
+        setMessage({
+          type: "info",
+          text: "Extend request rejected.",
+        });
+
+        // Close popover and clear message after reject
+        setTimeout(() => {
+          setMessage({ type: "", text: "" });
+          setPopoverOpen((prev) => ({ ...prev, [invoice.id]: false }));
+        }, 1000);
+      }
+    } catch (error) {
+      // console.error("Extend request error:", error);
+      setMessage({
+        type: "error",
+        text:
+          error?.data?.message ||
+          "Failed to submit extend request. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Fetch data based on user role
+  const {
+    data: freelancerData,
+    isLoading: freelancerLoading,
+    error: freelancerError,
+  } = useGetInvoiceFreelancerQuery(undefined, {
+    skip: userType !== "freelancer",
+  });
+
+  const {
+    data: clientData,
+    isLoading: clientLoading,
+    error: clientError,
+  } = useGetInvoiceClientQuery(undefined, {
+    skip: userType !== "client",
+  });
+
+  // Determine which data to use
+  const apiData = userType === "freelancer" ? freelancerData : clientData;
+  const isLoading =
+    userType === "freelancer" ? freelancerLoading : clientLoading;
+  const error = userType === "freelancer" ? freelancerError : clientError;
+
+  // Transform API data to component format
+  const transformedInvoices = useMemo(() => {
+    if (!apiData?.data) return [];
+
+    return apiData.data.map((invoice, index) => ({
+      id: invoice._id || index,
+      client: userType === "freelancer" ? "Client" : "Freelancer",
+      amount: `$${invoice.amount}`,
+      status:
+        invoice.status === "delivered"
+          ? "Delivered"
+          : invoice.status === "pending"
+          ? "Pending"
+          : invoice.status === "in_progress"
+          ? "In Progress"
+          : "Pending",
+      statusColor:
+        invoice.status === "delivered"
+          ? "bg-green-600"
+          : invoice.status === "pending"
+          ? "bg-yellow-600"
+          : "bg-blue-600",
+      paymentStatus: invoice.paymentStatus,
+      serviceType: invoice.serviceType,
+      invoiceType: invoice.invoiceType,
+      date: new Date(invoice.date).toLocaleDateString(),
+      deliveryFiles: invoice.deliveryFiles,
+      deliveryMessage: invoice.deliveryMessage,
+      extendDate: invoice.extendDate,
+      tenderId: invoice.tenderId,
+      freelancerUserId: invoice.freelancerUserId,
+      clientUserId: invoice.clientUserId,
+    }));
+  }, [apiData, userType]);
+
+  if (isLoading) {
+    return (
+      <div className="w-full bg-white py-6 max-w-7xl mx-auto px-4 md:px-6 lg:px-6 2xl:px-0">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full bg-white py-6 max-w-7xl mx-auto px-4 md:px-6 lg:px-6 2xl:px-0">
+        <div className="text-center">
+          <p className="text-red-600">
+            Error loading invoices: {error.message}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-white py-4 md:py-6 max-w-7xl mx-auto px-4 md:px-6 2xl:px-0">
@@ -139,110 +272,33 @@ const InvoicesContent = () => {
 
         {/* Invoices List */}
         <div className="space-y-4 md:space-y-6">
-          {invoices.map((invoice, index) => (
-            <Card
-              key={index}
-              className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <CardContent className="p-4 md:p-6">
-                {/* Mobile: Stacked Layout */}
-                <div className="md:hidden space-y-4">
-                  {/* Header */}
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold h2-gradient-text">
-                      Invoice #{invoice.id}
-                    </h3>
-                    <Badge
-                      variant="outline"
-                      className="text-gray-700 gradient px-3 py-1"
-                    >
-                      {invoice.status}
-                    </Badge>
-                  </div>
-
-                  {/* Client Info */}
-                  <div className="space-y-1 text-sm text-gray-700">
-                    <p>
-                      <span className="font-medium">Client:</span>{" "}
-                      {invoice.client}
-                    </p>
-                    <p>
-                      <span className="font-medium">Amount:</span>{" "}
-                      {invoice.amount}
-                    </p>
-                  </div>
-
-                  {/* Action Buttons - Stacked */}
-                  <div className="space-y-2">
-                    <Button
-                      className="button-gradient w-full"
-                      onClick={() => setIsViewInvoiceDetailsDialogOpen(true)}
-                    >
-                      <FileText className="w-4 h-4 mr-2" />
-                      {invoiceTranslations.viewDetails}
-                    </Button>
-
-                    <Button
-                      className="button-gradient w-full"
-                      onClick={() => setIsExtendDeliveryDialogOpen(true)}
-                    >
-                      <Calendar className="w-4 h-4 mr-2" />
-                      {invoiceTranslations.extendDeliveryDate}
-                    </Button>
-
-                    <Button
-                      className="button-gradient w-full"
-                      onClick={() => setIsProjectCompleteDialogOpen(true)}
-                    >
-                      <Truck className="w-4 h-4 mr-2" />
-                      {invoiceTranslations.deliveryNow}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Desktop: Original Layout */}
-                <div className="hidden md:block">
-                  <div className="flex items-center justify-between mb-4">
-                    {/* Invoice Info */}
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold h2-gradient-text mb-3">
+          {transformedInvoices.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">No invoices found</p>
+            </div>
+          ) : (
+            transformedInvoices.map((invoice, index) => (
+              <Card
+                key={index}
+                className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <CardContent className="p-4 md:p-6">
+                  {/* Mobile: Stacked Layout */}
+                  <div className="md:hidden space-y-4">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold h2-gradient-text">
                         Invoice #{invoice.id}
                       </h3>
-                    </div>
-                    <div className="flex-1 h-9 ">
                       <Badge
                         variant="outline"
-                        className=" text-gray-700 gradient px-4 py-1 h-9"
+                        className="text-gray-700 gradient px-3 py-1"
                       >
                         {invoice.status}
                       </Badge>
                     </div>
 
-                    {/* Status and Main Actions */}
-                    <div className="flex items-center gap-4">
-                      <Button
-                        className="button-gradient"
-                        onClick={() => setIsViewInvoiceDetailsDialogOpen(true)}
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        {invoiceTranslations.viewDetails}
-                      </Button>
-                      {userType === "client" && (
-                        <Button
-                          className="button-gradient"
-                          onClick={() => {
-                            router.push("/payment");
-                          }}
-                        >
-                          <CreditCard className="w-4 h-4 mr-2" />
-                          {invoiceTranslations.payNow}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Client Info and Action Buttons */}
-                  <div className="flex items-center justify-between">
+                    {/* Client Info */}
                     <div className="space-y-1 text-sm text-gray-700">
                       <p>
                         <span className="font-medium">Client:</span>{" "}
@@ -252,32 +308,356 @@ const InvoicesContent = () => {
                         <span className="font-medium">Amount:</span>{" "}
                         {invoice.amount}
                       </p>
+                      <p>
+                        <span className="font-medium">Service:</span>{" "}
+                        {invoice.serviceType}
+                      </p>
+                      <p>
+                        <span className="font-medium">Date:</span>{" "}
+                        {invoice.date}
+                      </p>
+                      {userType === "freelancer" && (
+                        <p>
+                          <span className="font-medium">Payment Status:</span>{" "}
+                          <span
+                            className={`capitalize ${
+                              invoice.paymentStatus === "pending"
+                                ? "text-orange-600"
+                                : "text-green-600"
+                            }`}
+                          >
+                            {invoice.paymentStatus}
+                          </span>
+                        </p>
+                      )}
                     </div>
 
-                    {userType === "freelancer" && (
-                      <div className="flex items-center gap-3">
+                    {/* Action Buttons - Stacked */}
+                    <div className="space-y-2">
+                      <Button
+                        className="button-gradient w-full"
+                        onClick={() => setIsViewInvoiceDetailsDialogOpen(true)}
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        {invoiceTranslations.viewDetails}
+                      </Button>
+
+                      {/* Freelancer: Extend Delivery Date */}
+                      {userType === "freelancer" && (
                         <Button
-                          className="button-gradient"
-                          onClick={() => setIsExtendDeliveryDialogOpen(true)}
+                          className="button-gradient w-full"
+                          onClick={() => {
+                            setSelectedInvoice(invoice);
+                            setIsExtendDeliveryDialogOpen(true);
+                          }}
                         >
                           <Calendar className="w-4 h-4 mr-2" />
                           {invoiceTranslations.extendDeliveryDate}
                         </Button>
+                      )}
 
+                      {/* Client: Accept Extend Request (only when extendDate exists) */}
+                      {userType === "client" && invoice.extendDate && (
+                        <Popover
+                          open={popoverOpen[invoice.id] || false}
+                          onOpenChange={(open) =>
+                            setPopoverOpen((prev) => ({
+                              ...prev,
+                              [invoice.id]: open,
+                            }))
+                          }
+                        >
+                          <PopoverTrigger asChild>
+                            <Button className="button-gradient w-full">
+                              <Calendar className="w-4 h-4 mr-2" />
+                              Accept Extend Request
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-80">
+                            <div className="space-y-4">
+                              <h3 className="text-lg font-semibold">
+                                Extend Delivery Request
+                              </h3>
+
+                              {/* Success/Error Message */}
+                              {message.text && (
+                                <div
+                                  className={`p-3 rounded-md ${
+                                    message.type === "success"
+                                      ? "bg-green-50 text-green-800 border border-green-200"
+                                      : message.type === "error"
+                                      ? "bg-red-50 text-red-800 border border-red-200"
+                                      : "bg-blue-50 text-blue-800 border border-blue-200"
+                                  }`}
+                                >
+                                  {message.text}
+                                </div>
+                              )}
+
+                              {/* Show Time and Reason as regular text */}
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Requested Time
+                                </label>
+                                <p className="text-gray-900 bg-gray-50 p-3 rounded-md">
+                                  {invoice.extendDate
+                                    ? new Date(
+                                        invoice.extendDate
+                                      ).toLocaleString()
+                                    : "No date specified"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Reason
+                                </label>
+                                <p className="text-gray-900 bg-gray-50 p-3 rounded-md">
+                                  The freelancer has requested an extension to
+                                  complete the project.
+                                </p>
+                              </div>
+
+                              <div className="flex gap-3 pt-4">
+                                <Button
+                                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                                  onClick={() =>
+                                    handleExtendRequestSubmit("reject", invoice)
+                                  }
+                                  disabled={isSubmitting}
+                                >
+                                  Reject
+                                </Button>
+                                <Button
+                                  className="flex-1 button-gradient"
+                                  onClick={() =>
+                                    handleExtendRequestSubmit("accept", invoice)
+                                  }
+                                  disabled={isSubmitting}
+                                >
+                                  {isSubmitting ? "Submitting..." : "Accept"}
+                                </Button>
+                              </div>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+
+                      {/* Freelancer: Delivery Now */}
+                      {userType === "freelancer" && (
                         <Button
-                          className="button-gradient"
+                          className="button-gradient w-full"
                           onClick={() => setIsProjectCompleteDialogOpen(true)}
                         >
                           <Truck className="w-4 h-4 mr-2" />
                           {invoiceTranslations.deliveryNow}
                         </Button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+
+                  {/* Desktop: Original Layout */}
+                  <div className="hidden md:block">
+                    <div className="flex items-center justify-between mb-4">
+                      {/* Invoice Info */}
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold h2-gradient-text mb-3">
+                          Invoice #{invoice.id}
+                        </h3>
+                      </div>
+                      <div className="flex-1 h-9 ">
+                        <Badge
+                          variant="outline"
+                          className=" text-gray-700 gradient px-4 py-1 h-9"
+                        >
+                          {invoice.status}
+                        </Badge>
+                      </div>
+
+                      {/* Status and Main Actions */}
+                      <div className="flex items-center gap-4">
+                        <Button
+                          className="button-gradient"
+                          onClick={() =>
+                            setIsViewInvoiceDetailsDialogOpen(true)
+                          }
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          {invoiceTranslations.viewDetails}
+                        </Button>
+                        {userType === "client" && (
+                          <Button
+                            className="button-gradient"
+                            onClick={() => {
+                              router.push("/payment");
+                            }}
+                          >
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            {invoiceTranslations.payNow}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Client Info and Action Buttons */}
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1 text-sm text-gray-700">
+                        <p>
+                          <span className="font-medium">Client:</span>{" "}
+                          {invoice.client}
+                        </p>
+                        <p>
+                          <span className="font-medium">Amount:</span>{" "}
+                          {invoice.amount}
+                        </p>
+                        <p>
+                          <span className="font-medium">Service:</span>{" "}
+                          {invoice.serviceType}
+                        </p>
+                        <p>
+                          <span className="font-medium">Date:</span>{" "}
+                          {invoice.date}
+                        </p>
+                        {userType === "freelancer" && (
+                          <p>
+                            <span className="font-medium">Payment Status:</span>{" "}
+                            <span
+                              className={`capitalize ${
+                                invoice.paymentStatus === "pending"
+                                  ? "text-orange-600"
+                                  : "text-green-600"
+                              }`}
+                            >
+                              {invoice.paymentStatus}
+                            </span>
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Freelancer: Extend Delivery Date and Delivery Now */}
+                      {userType === "freelancer" && (
+                        <div className="flex items-center gap-3">
+                          <Button
+                            className="button-gradient"
+                            onClick={() => {
+                              setSelectedInvoice(invoice);
+                              setIsExtendDeliveryDialogOpen(true);
+                            }}
+                          >
+                            <Calendar className="w-4 h-4 mr-2" />
+                            {invoiceTranslations.extendDeliveryDate}
+                          </Button>
+
+                          <Button
+                            className="button-gradient"
+                            onClick={() => setIsProjectCompleteDialogOpen(true)}
+                          >
+                            <Truck className="w-4 h-4 mr-2" />
+                            {invoiceTranslations.deliveryNow}
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Client: Accept Extend Request (only when extendDate exists) */}
+                      {userType === "client" && invoice.extendDate && (
+                        <div className="flex items-center gap-3">
+                          <Popover
+                            open={popoverOpen[invoice.id] || false}
+                            onOpenChange={(open) =>
+                              setPopoverOpen((prev) => ({
+                                ...prev,
+                                [invoice.id]: open,
+                              }))
+                            }
+                          >
+                            <PopoverTrigger asChild>
+                              <Button className="button-gradient">
+                                <Calendar className="w-4 h-4 mr-2" />
+                                Accept Extend Request
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80">
+                              <div className="space-y-4">
+                                <h3 className="text-lg font-semibold">
+                                  Extend Delivery Request
+                                </h3>
+
+                                {/* Success/Error Message */}
+                                {message.text && (
+                                  <div
+                                    className={`p-3 rounded-md ${
+                                      message.type === "success"
+                                        ? "bg-green-50 text-green-800 border border-green-200"
+                                        : message.type === "error"
+                                        ? "bg-red-50 text-red-800 border border-red-200"
+                                        : "bg-blue-50 text-blue-800 border border-blue-200"
+                                    }`}
+                                  >
+                                    {message.text}
+                                  </div>
+                                )}
+
+                                {/* Show Time and Reason as regular text */}
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Requested Time
+                                  </label>
+                                  <p className="text-gray-900 bg-gray-50 p-3 rounded-md">
+                                    {invoice.extendDate
+                                      ? new Date(
+                                          invoice.extendDate
+                                        ).toLocaleString()
+                                      : "No date specified"}
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Reason
+                                  </label>
+                                  <p className="text-gray-900 bg-gray-50 p-3 rounded-md">
+                                    The freelancer has requested an extension to
+                                    complete the project.
+                                  </p>
+                                </div>
+
+                                <div className="flex gap-3 pt-4">
+                                  <Button
+                                    className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                                    onClick={() =>
+                                      handleExtendRequestSubmit(
+                                        "reject",
+                                        invoice
+                                      )
+                                    }
+                                    disabled={isSubmitting}
+                                  >
+                                    Reject
+                                  </Button>
+                                  <Button
+                                    className="flex-1 button-gradient"
+                                    onClick={() =>
+                                      handleExtendRequestSubmit(
+                                        "accept",
+                                        invoice
+                                      )
+                                    }
+                                    disabled={isSubmitting}
+                                  >
+                                    {isSubmitting ? "Submitting..." : "Accept"}
+                                  </Button>
+                                </div>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
 
         {/* Create Invoices Dialog */}
@@ -309,6 +689,7 @@ const InvoicesContent = () => {
           <ExtendDeliveryDialog
             isOpen={isExtendDeliveryDialogOpen}
             onClose={() => setIsExtendDeliveryDialogOpen(false)}
+            invoiceId={selectedInvoice?.id}
           />
         )}
       </div>

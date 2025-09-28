@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useExtendRequestMutation } from "@/features/invoice/invoiceApi";
 
 // Define translations locally
 const dialogTranslations = {
@@ -31,8 +32,9 @@ const dialogTranslations = {
   submitButton: "Submit",
 };
 
-export default function ExtendDeliveryDialog({ isOpen, onClose }) {
+export default function ExtendDeliveryDialog({ isOpen, onClose, invoiceId }) {
   const showToast = useToast();
+  const [extendRequest, { isLoading }] = useExtendRequestMutation();
 
   React.useEffect(() => {
     setOpen(isOpen);
@@ -60,13 +62,51 @@ export default function ExtendDeliveryDialog({ isOpen, onClose }) {
     },
   });
 
-  const onSubmit = (data) => {
-    console.log("Form submitted:", data);
-    showToast.success("Delivery date extended successfully", {
-      description: `New delivery date: ${format(data.date, "PPP")}`,
-    });
-    reset();
-    onClose();
+  const onSubmit = async (data) => {
+    if (!invoiceId) {
+      showToast.error("Invoice ID is required");
+      return;
+    }
+
+    if (!data.date) {
+      showToast.error("Please select a date");
+      return;
+    }
+
+    try {
+      const formattedDate = format(data.date, "yyyy-MM-dd");
+
+      const result = await extendRequest({
+        invoiceID: invoiceId,
+        extendDate: formattedDate,
+        reason: data.reason,
+      }).unwrap();
+
+      showToast.success("Delivery date extended successfully", {
+        description: `New delivery date: ${format(data.date, "PPP")}`,
+      });
+      reset();
+      onClose();
+    } catch (error) {
+      // Handle specific error messages from API
+      let errorMessage = "Failed to extend delivery date";
+      let errorDescription = "Please try again later.";
+
+      // Try different possible error structures
+      if (error?.data?.message) {
+        errorDescription = error.data.message;
+      } else if (error?.data?.errorSources?.[0]?.message) {
+        errorDescription = error.data.errorSources[0].message;
+      } else if (error?.message) {
+        errorDescription = error.message;
+      } else if (error?.data?.err?.message) {
+        errorDescription = error.data.err.message;
+      }
+
+      showToast.error(errorMessage, {
+        description: errorDescription,
+      });
+    }
   };
 
   return (
@@ -137,8 +177,9 @@ export default function ExtendDeliveryDialog({ isOpen, onClose }) {
                 type="submit"
                 className="button-gradient"
                 onClick={handleSubmit(onSubmit)}
+                disabled={isLoading}
               >
-                {dialogTranslations.submitButton}
+                {isLoading ? "Submitting..." : dialogTranslations.submitButton}
               </Button>
             </DialogFooter>
           </form>
