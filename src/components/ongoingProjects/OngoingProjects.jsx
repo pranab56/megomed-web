@@ -435,42 +435,47 @@ const OngoingProjectsContent = () => {
                   </div>
 
                   {/* Payment Information */}
-                  <div className="space-y-4">
-                    <h4 className="font-semibold text-lg flex items-center gap-2">
-                      <CreditCard className="w-5 h-5" />
-                      Payment Information
-                    </h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <CreditCard className="w-4 h-4 text-gray-500" />
-                        <div>
-                          <span className="font-medium">Payment Status:</span>
-                          <span
-                            className={`ml-2 capitalize ${
-                              selectedProject.paymentStatus === "pending"
-                                ? "text-orange-600"
-                                : "text-green-600"
-                            }`}
-                          >
-                            {selectedProject.paymentStatus}
-                          </span>
-                        </div>
-                      </div>
-                      {selectedProject.extendDate && (
+                  {userType === "freelancer" && (
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-lg flex items-center gap-2">
+                        <CreditCard className="w-5 h-5" />
+                        Payment Information
+                      </h4>
+                      <div className="space-y-3">
                         <div className="flex items-center gap-3">
-                          <Calendar className="w-4 h-4 text-gray-500" />
+                          <CreditCard className="w-4 h-4 text-gray-500" />
                           <div>
-                            <span className="font-medium">Extended Date:</span>
-                            <span className="ml-2">
-                              {new Date(
-                                selectedProject.extendDate
-                              ).toLocaleDateString()}
+                            <span className="font-medium">Payment Status:</span>
+                            <span
+                              className={`ml-2 capitalize ${
+                                selectedProject.paymentStatus === "pending"
+                                  ? "text-orange-600"
+                                  : "text-green-600"
+                              }`}
+                            >
+                              {selectedProject.paymentStatus}
                             </span>
                           </div>
                         </div>
-                      )}
+
+                        {selectedProject.extendDate && (
+                          <div className="flex items-center gap-3">
+                            <Calendar className="w-4 h-4 text-gray-500" />
+                            <div>
+                              <span className="font-medium">
+                                Extended Date:
+                              </span>
+                              <span className="ml-2">
+                                {new Date(
+                                  selectedProject.extendDate
+                                ).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Delivery Information */}
