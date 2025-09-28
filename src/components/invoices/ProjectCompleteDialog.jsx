@@ -70,9 +70,6 @@ export default function ProjectCompleteDialog({ isOpen, onClose, invoiceId }) {
   ];
 
   const onSubmit = async (data) => {
-    console.log("ProjectCompleteDialog - invoiceId:", invoiceId);
-    console.log("ProjectCompleteDialog - data:", data);
-
     if (!invoiceId) {
       showToast.error("Invoice ID is required");
       return;
@@ -81,27 +78,17 @@ export default function ProjectCompleteDialog({ isOpen, onClose, invoiceId }) {
     try {
       // Prepare form data for API
       const formData = new FormData();
-      formData.append(
-        "deliveryMessage",
-        data.completeMessage ||
-          data.fileMessage ||
-          "Project completed successfully"
-      );
+      formData.append("deliveryMessage", data.fileMessage);
 
       // Append files if any
       uploadedFiles.forEach((file, index) => {
         formData.append("deliveryFiles", file.file);
       });
 
-      console.log("Calling createDelivery with:", {
-        data: formData,
-        invoiceID: invoiceId,
-      });
       const result = await createDelivery({
         data: formData,
         invoiceID: invoiceId,
       }).unwrap();
-      console.log("createDelivery result:", result);
 
       showToast.success("Project marked as completed successfully!");
       reset();
@@ -189,7 +176,7 @@ export default function ProjectCompleteDialog({ isOpen, onClose, invoiceId }) {
           {/* Content */}
           <div className="px-6 pb-6 space-y-6">
             {/* Complete Message Field */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-900">
                 {dialogTranslations.completeMessageLabel}
               </Label>
@@ -214,7 +201,7 @@ export default function ProjectCompleteDialog({ isOpen, onClose, invoiceId }) {
                   {errors.completeMessage.message}
                 </p>
               )}
-            </div>
+            </div> */}
 
             {/* File/Message Field */}
             <div className="space-y-2">

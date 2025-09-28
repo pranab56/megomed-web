@@ -452,21 +452,20 @@ const InvoicesContent = () => {
                           Accept Extend Request
                         </Button>
                       )}
-
                       {/* Freelancer: Delivery Now */}
-                      {userType === "freelancer" && (
-                        <Button
-                          className="button-gradient w-full"
-                          onClick={() => {
-                            console.log("Setting selectedInvoice:", invoice);
-                            setSelectedInvoice(invoice);
-                            setIsProjectCompleteDialogOpen(true);
-                          }}
-                        >
-                          <Truck className="w-4 h-4 mr-2" />
-                          {invoiceTranslations.deliveryNow}
-                        </Button>
-                      )}
+                      {userType === "freelancer" &&
+                        invoice.status !== "delivered" && (
+                          <Button
+                            className="button-gradient w-full"
+                            onClick={() => {
+                              setSelectedInvoice(invoice);
+                              setIsProjectCompleteDialogOpen(true);
+                            }}
+                          >
+                            <Truck className="w-4 h-4 mr-2" />
+                            {invoiceTranslations.deliveryNow}
+                          </Button>
+                        )}
                     </div>
                   </div>
 
@@ -561,21 +560,53 @@ const InvoicesContent = () => {
                             <Calendar className="w-4 h-4 mr-2" />
                             {invoiceTranslations.extendDeliveryDate}
                           </Button>
+                          {console.log("invoice.status", invoice.status)}
 
-                          <Button
-                            className="button-gradient"
-                            onClick={() => {
-                              console.log(
-                                "Setting selectedInvoice (desktop):",
-                                invoice
-                              );
-                              setSelectedInvoice(invoice);
-                              setIsProjectCompleteDialogOpen(true);
-                            }}
-                          >
-                            <Truck className="w-4 h-4 mr-2" />
-                            {invoiceTranslations.deliveryNow}
-                          </Button>
+                          {/* {invoice.status === "delivered" ? (
+                            <Button
+                              className="button-gradient disabled cursor-not-allowed"
+                              disabled
+                            >
+                              <Truck className="w-4 h-4 mr-2 " />
+                              Delivered
+                            </Button>
+                          ) : (
+                            <Button
+                              className="button-gradient"
+                              onClick={() => {
+                                setSelectedInvoice(invoice);
+                                setIsProjectCompleteDialogOpen(true);
+                              }}
+                            >
+                              <Truck className="w-4 h-4 mr-2" />
+                              {invoiceTranslations.deliveryNow}
+                            </Button>
+                          )} */}
+
+                          {invoice.status === "Delivered" ? (
+                            <>
+                              <Button
+                                className="button-gradient disabled cursor-not-allowed"
+                                disabled
+                              >
+                                <Truck className="w-4 h-4 mr-2 " />
+                                Delivered
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                className="button-gradient"
+                                onClick={() => {
+                                  setSelectedInvoice(invoice);
+                                  setIsProjectCompleteDialogOpen(true);
+                                }}
+                              >
+                                <Truck className="w-4 h-4 mr-2" />
+                                {invoiceTranslations.deliveryNow}
+                              </Button>
+                            </>
+                          )}
                         </div>
                       )}
 
@@ -622,25 +653,6 @@ const InvoicesContent = () => {
             onClose={() => setIsProjectCompleteDialogOpen(false)}
             invoiceId={selectedInvoice?.id}
           />
-        )}
-
-        {/* Debug info */}
-        {isProjectCompleteDialogOpen && (
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              background: "red",
-              color: "white",
-              padding: "10px",
-              zIndex: 9999,
-            }}
-          >
-            Debug: selectedInvoice = {JSON.stringify(selectedInvoice)}
-            <br />
-            Debug: invoiceId = {selectedInvoice?.id}
-          </div>
         )}
 
         {/* Extend Delivery Dialog */}
