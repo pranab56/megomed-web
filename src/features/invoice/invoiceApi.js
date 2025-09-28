@@ -8,7 +8,7 @@ export const invoiceApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      providesTags: ["invoice"],
+      invalidatesTags: ["invoice"],
     }),
     extendRequest: builder.mutation({
       query: (data) => ({
@@ -16,23 +16,28 @@ export const invoiceApi = baseApi.injectEndpoints({
         method: "POST",
         body: { extendDate: data.extendDate, extendReason: data.reason },
       }),
-      providesTags: ["invoice"],
+      invalidatesTags: ["invoice"],
     }),
     approveExtendRequest: builder.mutation({
-      query: (data) => ({
-        url: `/invoice/invoice-extend-approve/${data.invoiceID}${
+      query: (data) => {
+        console.log("approveExtendRequest API called with:", data);
+        const url = `/invoice/invoice-extend-approve/${data.invoiceID}${
           data.action === "reject" ? "?extendRequest=cancel" : ""
-        }`,
-        method: "POST",
-      }),
-      providesTags: ["invoice"],
+        }`;
+        console.log("API URL:", url);
+        return {
+          url,
+          method: "POST",
+        };
+      },
+      invalidatesTags: ["invoice"],
     }),
     acceptRespondInvoice: builder.mutation({
       query: (data) => ({
         url: `/invoice/invoice-approve/${data.invoiceID}`,
         method: "POST",
       }),
-      providesTags: ["invoice"],
+      invalidatesTags: ["invoice"],
     }),
     getInvoiceFreelancer: builder.query({
       query: () => ({
@@ -55,6 +60,7 @@ export const invoiceApi = baseApi.injectEndpoints({
         url: "/payment/create-stripe-account",
         method: "POST",
       }),
+      invalidatesTags: ["invoice"],
     }),
   }),
 });

@@ -11,10 +11,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Calendar,
   CreditCard,
@@ -30,6 +32,7 @@ import CreateInvoicesDialog from "./CreateInvoicesDialog";
 import ExtendDeliveryDialog from "./EntendDeliveryDialog";
 import ProjectCompleteDialog from "./ProjectCompleteDialog";
 import ViewInvoiceDetailsDialog from "./ViewInvoiceDetailsDialog";
+import toast from "react-hot-toast";
 import useToast from "@/hooks/showToast/ShowToast";
 import {
   useGetInvoiceFreelancerQuery,
@@ -76,6 +79,9 @@ const InvoicesContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [popoverOpen, setPopoverOpen] = useState({});
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [isAcceptExtendModalOpen, setIsAcceptExtendModalOpen] = useState(false);
+  const [selectedExtendInvoice, setSelectedExtendInvoice] = useState(null);
   const showToast = useToast();
 
   // Extend request mutation
@@ -85,19 +91,37 @@ const InvoicesContent = () => {
     useApproveExtendRequestMutation();
   const [acceptRespondInvoice, { isLoading: isAcceptLoading }] =
     useAcceptRespondInvoiceMutation();
+
+  // Handle opening accept extend request modal
+  const handleOpenAcceptExtendModal = (invoice) => {
+    console.log("Opening accept extend modal for invoice:", invoice.id);
+    setSelectedExtendInvoice(invoice);
+    setIsAcceptExtendModalOpen(true);
+    setMessage({ type: "", text: "" });
+  };
+
   // Handle extend request submission
   const handleExtendRequestSubmit = async (action, invoice) => {
     if (!invoice) return;
+
+    console.log("Starting extend request:", { action, invoiceId: invoice.id });
 
     setIsSubmitting(true);
     setMessage({ type: "", text: "" });
 
     try {
+      console.log("Calling approveExtendRequest API with:", {
+        invoiceID: invoice.id,
+        action: action,
+      });
+
       // Use approveExtendRequest API for both accept and reject
       const result = await approveExtendRequest({
         invoiceID: invoice.id,
         action: action, // "accept" or "reject"
       }).unwrap();
+
+      console.log("Extend request API response:", result);
 
       if (action === "accept") {
         setMessage({
@@ -105,10 +129,11 @@ const InvoicesContent = () => {
           text: "Extend request approved successfully!",
         });
 
-        // Close popover and clear message after success
+        // Close modal and clear message after success
         setTimeout(() => {
           setMessage({ type: "", text: "" });
-          setPopoverOpen((prev) => ({ ...prev, [invoice.id]: false }));
+          setIsAcceptExtendModalOpen(false);
+          setSelectedExtendInvoice(null);
         }, 2000);
       } else {
         setMessage({
@@ -116,14 +141,15 @@ const InvoicesContent = () => {
           text: "Extend request rejected.",
         });
 
-        // Close popover and clear message after reject
+        // Close modal and clear message after reject
         setTimeout(() => {
           setMessage({ type: "", text: "" });
-          setPopoverOpen((prev) => ({ ...prev, [invoice.id]: false }));
+          setIsAcceptExtendModalOpen(false);
+          setSelectedExtendInvoice(null);
         }, 1000);
       }
     } catch (error) {
-      // console.error("Extend request error:", error);
+      console.log("Extend request error:", error);
       setMessage({
         type: "error",
         text:
@@ -138,12 +164,17 @@ const InvoicesContent = () => {
   const handlePayNow = async (invoice) => {
     if (!invoice) return;
 
+    console.log("Starting payment process for invoice:", invoice.id);
+
     try {
       const result = await acceptRespondInvoice({
         invoiceID: invoice.id,
       }).unwrap();
 
+      console.log("Payment API response:", result);
+
       if (result?.success && result?.data?.url) {
+        console.log("Payment successful, showing toast");
         showToast.success("Redirecting to payment...", {
           description: "Please complete your payment in the new tab",
         });
@@ -151,13 +182,26 @@ const InvoicesContent = () => {
         // Open Stripe checkout in new tab
         window.open(result.data.url, "_blank");
       } else {
+        console.log("Payment failed - no success or URL");
         showToast.error("Failed to process payment", {
           description: "Please try again later",
         });
       }
     } catch (error) {
-      showToast.error("Payment failed", {
-        description: error?.data?.message || "Please try again later",
+      console.log("Payment error:", error);
+
+      // Handle specific error messages from API
+      let errorMessage = "Payment failed";
+      let errorDescription = "Please try again later";
+
+      if (error?.data?.message) {
+        errorDescription = error.data.message;
+      } else if (error?.data?.errorSources?.[0]?.message) {
+        errorDescription = error.data.errorSources[0].message;
+      }
+
+      showToast.error(errorMessage, {
+        description: errorDescription,
       });
     }
   };
@@ -400,89 +444,13 @@ const InvoicesContent = () => {
 
                       {/* Client: Accept Extend Request (only when extendDate exists) */}
                       {userType === "client" && invoice.extendDate && (
-                        <Popover
-                          open={popoverOpen[invoice.id] || false}
-                          onOpenChange={(open) =>
-                            setPopoverOpen((prev) => ({
-                              ...prev,
-                              [invoice.id]: open,
-                            }))
-                          }
+                        <Button
+                          className="button-gradient w-full"
+                          onClick={() => handleOpenAcceptExtendModal(invoice)}
                         >
-                          <PopoverTrigger asChild>
-                            <Button className="button-gradient w-full">
-                              <Calendar className="w-4 h-4 mr-2" />
-                              Accept Extend Request
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-80">
-                            <div className="space-y-4">
-                              <h3 className="text-lg font-semibold">
-                                Extend Delivery Request
-                              </h3>
-
-                              {/* Success/Error Message */}
-                              {message.text && (
-                                <div
-                                  className={`p-3 rounded-md ${
-                                    message.type === "success"
-                                      ? "bg-green-50 text-green-800 border border-green-200"
-                                      : message.type === "error"
-                                      ? "bg-red-50 text-red-800 border border-red-200"
-                                      : "bg-blue-50 text-blue-800 border border-blue-200"
-                                  }`}
-                                >
-                                  {message.text}
-                                </div>
-                              )}
-
-                              {/* Show Time and Reason as regular text */}
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                  Requested Time
-                                </label>
-                                <p className="text-gray-900 bg-gray-50 p-3 rounded-md">
-                                  {invoice.extendDate
-                                    ? new Date(
-                                        invoice.extendDate
-                                      ).toLocaleString()
-                                    : "No date specified"}
-                                </p>
-                              </div>
-
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                  Reason
-                                </label>
-                                <p className="text-gray-900 bg-gray-50 p-3 rounded-md">
-                                  The freelancer has requested an extension to
-                                  complete the project.
-                                </p>
-                              </div>
-
-                              <div className="flex gap-3 pt-4">
-                                <Button
-                                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                                  onClick={() =>
-                                    handleExtendRequestSubmit("reject", invoice)
-                                  }
-                                  disabled={isSubmitting}
-                                >
-                                  Reject
-                                </Button>
-                                <Button
-                                  className="flex-1 button-gradient"
-                                  onClick={() =>
-                                    handleExtendRequestSubmit("accept", invoice)
-                                  }
-                                  disabled={isSubmitting}
-                                >
-                                  {isSubmitting ? "Submitting..." : "Accept"}
-                                </Button>
-                              </div>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
+                          <Calendar className="w-4 h-4 mr-2" />
+                          Accept Extend Request
+                        </Button>
                       )}
 
                       {/* Freelancer: Delivery Now */}
@@ -603,95 +571,13 @@ const InvoicesContent = () => {
                       {/* Client: Accept Extend Request (only when extendDate exists) */}
                       {userType === "client" && invoice.extendDate && (
                         <div className="flex items-center gap-3">
-                          <Popover
-                            open={popoverOpen[invoice.id] || false}
-                            onOpenChange={(open) =>
-                              setPopoverOpen((prev) => ({
-                                ...prev,
-                                [invoice.id]: open,
-                              }))
-                            }
+                          <Button
+                            className="button-gradient"
+                            onClick={() => handleOpenAcceptExtendModal(invoice)}
                           >
-                            <PopoverTrigger asChild>
-                              <Button className="button-gradient">
-                                <Calendar className="w-4 h-4 mr-2" />
-                                Accept Extend Request
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-80">
-                              <div className="space-y-4">
-                                <h3 className="text-lg font-semibold">
-                                  Extend Delivery Request
-                                </h3>
-
-                                {/* Success/Error Message */}
-                                {message.text && (
-                                  <div
-                                    className={`p-3 rounded-md ${
-                                      message.type === "success"
-                                        ? "bg-green-50 text-green-800 border border-green-200"
-                                        : message.type === "error"
-                                        ? "bg-red-50 text-red-800 border border-red-200"
-                                        : "bg-blue-50 text-blue-800 border border-blue-200"
-                                    }`}
-                                  >
-                                    {message.text}
-                                  </div>
-                                )}
-
-                                {/* Show Time and Reason as regular text */}
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Requested Time
-                                  </label>
-                                  <p className="text-gray-900 bg-gray-50 p-3 rounded-md">
-                                    {invoice.extendDate
-                                      ? new Date(
-                                          invoice.extendDate
-                                        ).toLocaleString()
-                                      : "No date specified"}
-                                  </p>
-                                </div>
-
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Reason
-                                  </label>
-                                  <p className="text-gray-900 bg-gray-50 p-3 rounded-md">
-                                    The freelancer has requested an extension to
-                                    complete the project.
-                                  </p>
-                                </div>
-
-                                <div className="flex gap-3 pt-4">
-                                  <Button
-                                    className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                                    onClick={() =>
-                                      handleExtendRequestSubmit(
-                                        "reject",
-                                        invoice
-                                      )
-                                    }
-                                    disabled={isSubmitting}
-                                  >
-                                    Reject
-                                  </Button>
-                                  <Button
-                                    className="flex-1 button-gradient"
-                                    onClick={() =>
-                                      handleExtendRequestSubmit(
-                                        "accept",
-                                        invoice
-                                      )
-                                    }
-                                    disabled={isSubmitting}
-                                  >
-                                    {isSubmitting ? "Submitting..." : "Accept"}
-                                  </Button>
-                                </div>
-                              </div>
-                            </PopoverContent>
-                          </Popover>
+                            <Calendar className="w-4 h-4 mr-2" />
+                            Accept Extend Request
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -734,6 +620,82 @@ const InvoicesContent = () => {
             invoiceId={selectedInvoice?.id}
           />
         )}
+
+        {/* Accept Extend Request Modal */}
+        <Dialog
+          open={isAcceptExtendModalOpen}
+          onOpenChange={setIsAcceptExtendModalOpen}
+        >
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Extend Delivery Request</DialogTitle>
+            </DialogHeader>
+
+            {selectedExtendInvoice && (
+              <div className="space-y-4">
+                {/* Success/Error Message */}
+                {message.text && (
+                  <div
+                    className={`p-3 rounded-md ${
+                      message.type === "success"
+                        ? "bg-green-50 text-green-800 border border-green-200"
+                        : message.type === "error"
+                        ? "bg-red-50 text-red-800 border border-red-200"
+                        : "bg-blue-50 text-blue-800 border border-blue-200"
+                    }`}
+                  >
+                    {message.text}
+                  </div>
+                )}
+
+                {/* Show Extend Date and Reason from invoice data */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Extend Date
+                  </label>
+                  <p className="text-gray-900 bg-gray-50 p-3 rounded-md">
+                    {selectedExtendInvoice.extendDate
+                      ? new Date(
+                          selectedExtendInvoice.extendDate
+                        ).toLocaleDateString()
+                      : "No date specified"}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Reason
+                  </label>
+                  <p className="text-gray-900 bg-gray-50 p-3 rounded-md">
+                    {selectedExtendInvoice.deliveryMessage ||
+                      "Freelancer has requested an extension to complete the project."}
+                  </p>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                    onClick={() =>
+                      handleExtendRequestSubmit("reject", selectedExtendInvoice)
+                    }
+                    disabled={isSubmitting}
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    className="flex-1 button-gradient"
+                    onClick={() =>
+                      handleExtendRequestSubmit("accept", selectedExtendInvoice)
+                    }
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Submitting..." : "Accept"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
