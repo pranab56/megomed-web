@@ -5,15 +5,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { setCurrentUser } from "@/redux/features/currentUser/currentuserSlice";
 import { Star, User, Users } from "lucide-react";
+import { useRouter } from 'next/navigation';
 import { useState } from "react";
-import { useDispatch } from "react-redux";
 
 const AccountTypeDialog = () => {
   const [selectedType, setSelectedType] = useState("");
   const [isOpen, setIsOpen] = useState(true);
-  const dispatch = useDispatch();
+  const route = useRouter();
 
   const handleAccountTypeSelect = (type) => {
     setSelectedType(type);
@@ -23,7 +22,7 @@ const AccountTypeDialog = () => {
     console.log("Selected account type:", selectedType);
     setIsOpen(false);
     localStorage.setItem("accountType", selectedType);
-    dispatch(setCurrentUser({ type: selectedType }));
+    route.push(`/auth/sign-up?type=${selectedType}`)
   };
 
   return (
@@ -52,8 +51,8 @@ const AccountTypeDialog = () => {
             <div
               onClick={() => handleAccountTypeSelect("freelancer")}
               className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${selectedType === "freelancer"
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-200 bg-white hover:border-gray-300"
                 }`}
             >
               <div className="text-center space-y-3">
@@ -84,8 +83,8 @@ const AccountTypeDialog = () => {
             <div
               onClick={() => handleAccountTypeSelect("client")}
               className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${selectedType === "client"
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-200 bg-white hover:border-gray-300"
                 }`}
             >
               <div className="text-center space-y-3">
