@@ -1,16 +1,17 @@
 "use client";
+import useToast from "@/hooks/showToast/ShowToast";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import toast from 'react-hot-toast';
+import { useRespondMutation } from "../../features/tender/tenderApi";
 import { baseURL } from "../../utils/BaseURL";
 import { Card, CardContent, CardFooter } from "../ui/card";
-import { useRouter } from "next/navigation";
-import { useApplyTenderMutation } from "../../features/tender/tenderApi";
-import useToast from "@/hooks/showToast/ShowToast";
 
 function JobTenderCard({ type = "tender", data }) {
   const router = useRouter();
   const showToast = useToast();
-  const [applyTender, { isLoading: isApplyingTender }] =
-    useApplyTenderMutation();
+  const [respond, { isLoading: respondLoading }] = useRespondMutation();
+
   const currentUser = localStorage.getItem("role");
   const userType = currentUser;
   const defaultJobData = {
@@ -27,8 +28,6 @@ function JobTenderCard({ type = "tender", data }) {
     posted: "03/2023",
     deadline: "05/2023",
   };
-
-  console.log("job portal", data);
 
   const cardData =
     data || (type === "job" ? defaultJobData : defaultTenderData);
@@ -47,14 +46,11 @@ function JobTenderCard({ type = "tender", data }) {
     if (type === "tender") {
       // Handle tender application
       try {
-        console.log("Applying for tender:", cardData._id);
-        await applyTender(cardData._id).unwrap();
-
-        // Show success message
-        showToast.success("Tender applied successfully!");
-
-        // Redirect to chat
-        router.push(`/chat/${cardData._id}`);
+        const result = await respond(cardData._id).unwrap();
+        if (result.success) {
+          router.push(`/chat`);
+          toast.success(result.message || "Tender applied successfully!");
+        }
       } catch (error) {
         console.error("Error applying to tender:", error);
         showToast.error("Failed to apply for tender. Please try again.");
@@ -89,14 +85,14 @@ function JobTenderCard({ type = "tender", data }) {
               {userType === "freelancer" && (
                 <button
                   onClick={handleApplyJob}
-                  disabled={isApplyingTender}
+                  disabled={respondLoading}
                   className="px-4 py-2 bg-white text-black rounded-lg cursor-pointer font-medium hover:bg-gray-100 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isApplyingTender
+                  {respondLoading
                     ? "Applying..."
                     : type === "job"
-                    ? "Apply Job"
-                    : "Apply Tender"}
+                      ? "Apply Job"
+                      : "Respond"}
                 </button>
               )}
             </div>
