@@ -8,13 +8,14 @@ import {
 } from "@/components/ui/card";
 import { getImageUrl } from "@/utils/getImageUrl";
 import Image from "next/image";
-import { baseURL } from '../../../utils/BaseURL';
+import { baseURL } from "../../../utils/BaseURL";
 
 function ServiceCard({ data, freelancer }) {
   // Use either data or freelancer prop, prefer freelancer if both exist
   const item = freelancer || data;
 
-  const currentUser = typeof window !== "undefined" ? localStorage.getItem("role") : null;
+  const currentUser =
+    typeof window !== "undefined" ? localStorage.getItem("role") : null;
   const userType = currentUser;
 
   // Check if it's a project (has title and _id)
@@ -98,17 +99,19 @@ function ServiceCard({ data, freelancer }) {
     freelancerId = null,
     location = "",
     jobsDone = 0,
-    coverPhoto = "/services/service_1.png"
+    coverPhoto = "/services/service_1.png",
   } = item || {};
 
   // Handle default images
-  const coverPhotoUrl = coverPhoto && coverPhoto !== "undefined"
-    ? `${baseURL}/${coverPhoto}`
-    : "/services/service_1.png";
+  const coverPhotoUrl =
+    coverPhoto && coverPhoto !== "undefined"
+      ? `${baseURL}/${coverPhoto}`
+      : "/services/service_1.png";
 
-  const profilePhotoUrl = profile && profile !== "undefined"
-    ? `${baseURL}/${profile}`
-    : "/default-avatar.png";
+  const profilePhotoUrl =
+    profile && profile !== "undefined"
+      ? `${baseURL}/${profile}`
+      : "/default-avatar.png";
 
   // Safely extract nested data
   const { experience = [], skills = [] } = freelancerId || {};
@@ -122,9 +125,6 @@ function ServiceCard({ data, freelancer }) {
           alt="card background"
           fill
           className="object-cover"
-          onError={(e) => {
-            e.target.src = "/services/service_1.png";
-          }}
         />
       </div>
 
@@ -166,9 +166,7 @@ function ServiceCard({ data, freelancer }) {
           <h4 className="text-sm font-medium text-blue-600 mb-1">
             {designation}
           </h4>
-          <p className="text-lg text-gray-900 font-semibold">
-            {designation}
-          </p>
+          <p className="text-lg text-gray-900 font-semibold">{designation}</p>
         </div>
 
         {/* Skills section */}
@@ -187,9 +185,7 @@ function ServiceCard({ data, freelancer }) {
 
         {/* Location */}
         {location && (
-          <p className="text-xs text-gray-500 mb-2">
-            📍 {location}
-          </p>
+          <p className="text-xs text-gray-500 mb-2">📍 {location}</p>
         )}
 
         {/* Button at bottom */}
