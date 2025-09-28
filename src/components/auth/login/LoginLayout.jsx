@@ -8,9 +8,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import toast from 'react-hot-toast';
-import { useLoginMutation } from '../../../features/auth/authApi';
-import { saveToken } from '../../../features/auth/authService';
+import toast from "react-hot-toast";
+import { useLoginMutation } from "../../../features/auth/authApi";
+import { saveToken } from "../../../features/auth/authService";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -73,16 +73,15 @@ const LoginPage = () => {
     try {
       const result = await login(formData).unwrap();
       // Store token and user data
-      saveToken(result.data.accessToken)
+      saveToken(result.data.accessToken);
       localStorage.setItem("user", JSON.stringify(result?.data?.user?._id));
-      localStorage.setItem("role", result?.data?.user?.role)
+      localStorage.setItem("role", result?.data?.user?.role);
       // Show success message
       toast.success(`Welcome back, ${result?.data.user.fullName}!`);
       router.push("/");
     } catch (error) {
-      console.error("Login error:", error);
+      // console.error("Login error:", error);
       toast.error(error?.data?.message);
-
     }
   };
 
@@ -137,12 +136,13 @@ const LoginPage = () => {
             value={formData.email}
             onChange={(e) => handleInputChange("email", e.target.value)}
             onKeyPress={handleKeyPress}
-            className={`rounded-full h-12 px-4 ${errors.email ? "border-red-500 focus:border-red-500" : ""
-              }`}
+            className={`rounded-full h-12 px-4 ${
+              errors.email ? "border-red-500 focus:border-red-500" : ""
+            }`}
             disabled={isLoading}
           />
           {errors.email && (
-            <span className='text-sm text-red-500'>{errors.email}</span>
+            <span className="text-sm text-red-500">{errors.email}</span>
           )}
         </div>
 
@@ -161,8 +161,9 @@ const LoginPage = () => {
               value={formData.password}
               onChange={(e) => handleInputChange("password", e.target.value)}
               onKeyPress={handleKeyPress}
-              className={`rounded-full h-12 px-4 pr-12 ${errors.password ? "border-red-500 focus:border-red-500" : ""
-                }`}
+              className={`rounded-full h-12 px-4 pr-12 ${
+                errors.password ? "border-red-500 focus:border-red-500" : ""
+              }`}
               disabled={isLoading}
             />
             <Button
@@ -181,7 +182,7 @@ const LoginPage = () => {
             </Button>
           </div>
           {errors.password && (
-            <span className='text-sm text-red-500'>{errors.password}</span>
+            <span className="text-sm text-red-500">{errors.password}</span>
           )}
         </div>
 

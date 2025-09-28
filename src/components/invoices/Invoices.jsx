@@ -29,7 +29,8 @@ import ViewInvoiceDetailsDialog from "./ViewInvoiceDetailsDialog";
 // Define translations locally
 const invoiceTranslations = {
   title: "Invoices",
-  subtitle: "With our simple invoicing system, managing payments is quick and easy for both freelancers and clients. Never miss a payment or detail again!",
+  subtitle:
+    "With our simple invoicing system, managing payments is quick and easy for both freelancers and clients. Never miss a payment or detail again!",
   createNewInvoice: "Create New Invoice",
   search: "Search",
   invoiceFilter: {
@@ -82,34 +83,27 @@ const InvoicesContent = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4 md:mb-6 gap-4">
           <div
-            className={`w-full  ${userType === "freelancer"
+            className={`w-full  ${
+              userType === "freelancer"
                 ? "flex flex-col items-start"
                 : "flex flex-col items-center"
-              }`}
+            }`}
           >
             <h1
-              className={`text-2xl md:text-3xl font-bold h2-gradient-text mb-2 ${userType === "freelancer" ? "text-left" : "text-center"
-                }`}
+              className={`text-2xl md:text-3xl font-bold h2-gradient-text mb-2 ${
+                userType === "freelancer" ? "text-left" : "text-center"
+              }`}
             >
               {invoiceTranslations.title}
             </h1>
             <p
-              className={`text-gray-600 max-w-2xl text-sm md:text-base ${userType === "freelancer" ? "text-left" : "text-center"
-                }`}
+              className={`text-gray-600 max-w-2xl text-sm md:text-base ${
+                userType === "freelancer" ? "text-left" : "text-center"
+              }`}
             >
               {invoiceTranslations.subtitle}
             </p>
           </div>
-
-          {userType === "freelancer" && (
-            <Button
-              className="button-gradient cursor-pointer w-full md:w-auto"
-              onClick={() => setIsCreateInvoicesDialogOpen(true)}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {invoiceTranslations.createNewInvoice}
-            </Button>
-          )}
         </div>
 
         {/* Search and Filter Bar */}
@@ -182,9 +176,7 @@ const InvoicesContent = () => {
                   <div className="space-y-2">
                     <Button
                       className="button-gradient w-full"
-                      onClick={() =>
-                        setIsViewInvoiceDetailsDialogOpen(true)
-                      }
+                      onClick={() => setIsViewInvoiceDetailsDialogOpen(true)}
                     >
                       <FileText className="w-4 h-4 mr-2" />
                       {invoiceTranslations.viewDetails}
@@ -230,9 +222,7 @@ const InvoicesContent = () => {
                     <div className="flex items-center gap-4">
                       <Button
                         className="button-gradient"
-                        onClick={() =>
-                          setIsViewInvoiceDetailsDialogOpen(true)
-                        }
+                        onClick={() => setIsViewInvoiceDetailsDialogOpen(true)}
                       >
                         <FileText className="w-4 h-4 mr-2" />
                         {invoiceTranslations.viewDetails}
@@ -268,9 +258,7 @@ const InvoicesContent = () => {
                       <div className="flex items-center gap-3">
                         <Button
                           className="button-gradient"
-                          onClick={() =>
-                            setIsExtendDeliveryDialogOpen(true)
-                          }
+                          onClick={() => setIsExtendDeliveryDialogOpen(true)}
                         >
                           <Calendar className="w-4 h-4 mr-2" />
                           {invoiceTranslations.extendDeliveryDate}
@@ -278,9 +266,7 @@ const InvoicesContent = () => {
 
                         <Button
                           className="button-gradient"
-                          onClick={() =>
-                            setIsProjectCompleteDialogOpen(true)
-                          }
+                          onClick={() => setIsProjectCompleteDialogOpen(true)}
                         >
                           <Truck className="w-4 h-4 mr-2" />
                           {invoiceTranslations.deliveryNow}
@@ -331,10 +317,9 @@ const InvoicesContent = () => {
 };
 
 // Dynamic import with no SSR (simplified)
-const InvoicesDynamic = dynamic(
-  () => Promise.resolve(InvoicesContent),
-  { ssr: false }
-);
+const InvoicesDynamic = dynamic(() => Promise.resolve(InvoicesContent), {
+  ssr: false,
+});
 
 function Invoices() {
   return <InvoicesDynamic />;
