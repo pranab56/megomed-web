@@ -13,13 +13,18 @@ import { Input } from "../ui/input";
 
 // Client-side component to determine user type
 const TenderLayoutContent = () => {
-  // const [userType, setUserType] = useState(null);
+  const [userType, setUserType] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedServices, setSelectedServices] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
 
-  const currentUser = localStorage.getItem("role");
-  const userType = currentUser;
+  // Safely access localStorage only on the client side
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const currentUser = localStorage.getItem("role");
+      setUserType(currentUser);
+    }
+  }, []);
 
   // Construct query parameters
   const serviceTypeName =
@@ -83,6 +88,17 @@ const TenderLayoutContent = () => {
 
   const currentBanner =
     userType === "client" ? setTenderBannerClient : setTenderBannerFreelancer;
+
+  // Show loading state while userType is being determined
+  if (userType === null) {
+    return (
+      <div className="max-w-7xl py-6 mx-auto">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl py-6 mx-auto">

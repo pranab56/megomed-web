@@ -20,7 +20,13 @@ const nextConfig = {
         port: "5006",            // ← must match the port in the URL
         pathname: "/**",
       },
-    ],
+      {
+        protocol: "http",        // ← changed from https to http
+        hostname: "92.205.234.176", // ← internal IP
+        port: "5002",            // ← must match the port in the URL
+        pathname: "/**",
+      },
+    ],  
   },
   output: "standalone",
 
