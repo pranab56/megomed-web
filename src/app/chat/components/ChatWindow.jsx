@@ -7,10 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CalendarDays, X } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { IoMdSend } from 'react-icons/io';
 import { MdAttachFile, MdClose, MdImage } from 'react-icons/md';
 import { useCreateInvoiceMutation } from '../../../features/invoice/invoiceApi';
+
+import { useCreateMessageMutation, useGetMessageByIdQuery } from '../../../features/message/messageApi';
 import { useGetAllServicesQuery } from '../../../features/services/servicesApi';
 import { useRunningTenderByClientIdQuery } from '../../../features/tender/tenderApi';
 
@@ -34,59 +36,68 @@ const ChatWindow = ({ clientId, chatId }) => {
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   const [createInvoice, { isLoading: creatingInvoiceLoading }] = useCreateInvoiceMutation();
-
   const { data: tenderResponse, isLoading: runningTenderLoading } = useRunningTenderByClientIdQuery(clientId, { skip: !clientId });
   const { data: serviceTypeResponse, isLoading: serviceLoading } = useGetAllServicesQuery();
+  const [createMessage, { isLoading: createMessageLoading }] = useCreateMessageMutation();
+  const { data: messagesResponse, isLoading: getMessageLoading, refetch: refetchMessages } = useGetMessageByIdQuery(chatId, { skip: !chatId });
 
-  // Extract tender and service data from API responses
+  // Extract data from API responses
   const tenderData = tenderResponse?.data || [];
   const serviceData = serviceTypeResponse?.data || [];
+  const messagesData = messagesResponse?.data?.newResult?.result || [];
 
-  // Mock data for UI only
-  const loginUserId = "user123";
+  // Get current user ID from auth or context - you'll need to replace this with actual auth
+  const loginUserId = "68b80540dcf6e82fd9335831"; // Replace with actual current user ID
+
+  // Mock chat user data - replace with actual data from your chat/user API
   const chatUser = {
     participants: [
-      { _id: "user456", name: "Alex Morgan", userName: "alexm", profile: "https://i.pravatar.cc/150?img=3" }
+      { _id: "68b80540dcf6e82fd9335831", name: "Tanvir Ahmed Swapnil", userName: "tanvir", profile: "uploads\\profile\\bg-1758953796086-168458687.jpg" }
     ],
     isBlocked: false
   };
 
-  const mockMessages = [
-    {
-      _id: "msg1",
-      text: "Hey! How are you?",
-      sender: { _id: "user456", userName: "alexm", profile: "https://i.pravatar.cc/150?img=3" },
-      createdAt: new Date(Date.now() - 3600000),
-      isDeleted: false,
-      read: true
-    },
-    {
-      _id: "msg2",
-      text: "I'm good! 😊 Just working on the new design.",
-      sender: { _id: "user123", userName: "you", profile: "https://i.pravatar.cc/150?img=8" },
-      createdAt: new Date(Date.now() - 1800000),
-      isDeleted: false,
-      read: true
-    },
-    {
-      _id: "msg3",
-      images: ["https://picsum.photos/300/200"],
-      sender: { _id: "user456", userName: "alexm", profile: "https://i.pravatar.cc/150?img=3" },
-      createdAt: new Date(Date.now() - 600000),
-      isDeleted: false,
-      read: false
-    }
-  ];
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messagesData]);
 
-  // Mock handlers
-  const handleCreateNewMessage = () => {
-    console.log("Message sent (mock):", formValues);
-    setFormValues({ message: '', file: null });
-    setImagePreview(null);
-    setShowFileUpload(false);
-    inputRef.current?.focus();
+  const handleCreateNewMessage = async () => {
+
+
+    if (!formValues.message.trim() && !formValues.file) return;
+
+    try {
+      const formData = new FormData();
+
+      if (formValues.message.trim()) {
+        formData.append('message', formValues.message);
+      }
+
+      if (formValues.file) {
+        formData.append('image', formValues.file);
+      }
+      formData.append('chatId', chatId);
+
+
+
+      const result = await createMessage(formData).unwrap();
+      console.log(result);
+
+      // Reset form
+      setFormValues({ message: '', file: null });
+      setImagePreview(null);
+      setShowFileUpload(false);
+      inputRef.current?.focus();
+
+      // Refetch messages to get the latest
+      refetchMessages();
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
   };
 
   const handleFileChange = (e, type) => {
@@ -124,7 +135,6 @@ const ChatWindow = ({ clientId, chatId }) => {
 
   const handleInvoiceSubmit = async () => {
     try {
-      // Prepare the invoice data according to API requirements
       const invoiceData = {
         invoiceType: invoiceForm.invoiceType,
         clientUserId: invoiceForm.clientUserId,
@@ -134,14 +144,9 @@ const ChatWindow = ({ clientId, chatId }) => {
         date: new Date(invoiceForm.date).toISOString()
       };
 
-      console.log("Invoice data to be sent:", invoiceData);
-
-      // Call the create invoice mutation
       const result = await createInvoice(invoiceData).unwrap();
-
       console.log("Invoice created successfully:", result);
 
-      // Reset form and close modal
       setInvoiceForm({
         invoiceType: 'tender',
         clientUserId: clientId,
@@ -154,7 +159,6 @@ const ChatWindow = ({ clientId, chatId }) => {
 
     } catch (error) {
       console.error("Failed to create invoice:", error);
-      // You might want to show an error message to the user here
     }
   };
 
@@ -217,10 +221,25 @@ const ChatWindow = ({ clientId, chatId }) => {
     setShowFileUpload(!showFileUpload);
   };
 
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    // Adjust this base URL according to your server setup
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    return `${baseUrl}/${imagePath.replace(/\\/g, '/')}`;
+  };
+
   if (!clientId || !chatId) {
     return (
       <div className="flex justify-center items-center h-[80vh]">
         <p className="text-gray-500">Select a chat to start messaging</p>
+      </div>
+    );
+  }
+
+  if (getMessageLoading) {
+    return (
+      <div className="flex justify-center items-center h-[80vh]">
+        <p className="text-gray-500">Loading messages...</p>
       </div>
     );
   }
@@ -234,14 +253,14 @@ const ChatWindow = ({ clientId, chatId }) => {
             <div className="flex items-center space-x-4">
               <div className="relative">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={item.profile} />
+                  <AvatarImage src={getImageUrl(item.profile)} />
                   <AvatarFallback>{item.name?.charAt(0) || item.userName?.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">{item.name || item.userName}</h2>
-                <p className="text-sm text-green-500">Larry is Typing...</p>
+                <p className="text-sm text-green-500">Online</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -269,71 +288,78 @@ const ChatWindow = ({ clientId, chatId }) => {
         ))}
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-50" style={{ scrollBehavior: 'auto' }}>
+        <div className="flex-1 overflow-y-auto p-4 bg-gray-50" style={{ scrollBehavior: 'smooth' }}>
           <AnimatePresence initial={false}>
-            {[...mockMessages].reverse().map((message, index) => {
-              const isCurrentUser = message.sender?._id === loginUserId;
-              const isFirst = index === 0;
+            {messagesData.length === 0 ? (
+              <div className="flex justify-center items-center h-full">
+                <p className="text-gray-500">No messages yet. Start the conversation!</p>
+              </div>
+            ) : (
+              [...messagesData].reverse().map((message, index) => {
+                const isCurrentUser = message.sender?._id === loginUserId;
+                const isFirst = index === 0;
 
-              return (
-                <motion.div
-                  key={message._id}
-                  className={`relative flex ${isCurrentUser ? 'justify-end' : 'justify-start'} ${isFirst ? 'mb-6 mt-1' : 'mb-6'}`}
-                >
-                  {!isCurrentUser && (
-                    <Avatar className="h-8 w-8 mr-3 self-start mt-1">
-                      <AvatarImage src={message.sender?.profile} />
-                      <AvatarFallback>{message.sender?.userName?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                  )}
+                return (
+                  <motion.div
+                    key={message._id}
+                    className={`relative flex ${isCurrentUser ? 'justify-end' : 'justify-start'} ${isFirst ? 'mb-6 mt-1' : 'mb-6'}`}
+                  >
+                    {!isCurrentUser && (
+                      <Avatar className="h-8 w-8 mr-3 self-start mt-1">
+                        <AvatarImage src={getImageUrl(message.sender?.profile)} />
+                        <AvatarFallback>{message.sender?.fullName?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                    )}
 
-                  <div className="relative group max-w-[75%]">
-                    <span className={`text-xs ${isCurrentUser ? "justify-end pr-3 pb-2 flex" : "justify-start pl-3 pb-2 flex"}`}>
-                      {formatDate(message.createdAt)}
-                    </span>
+                    <div className="relative group max-w-[75%]">
+                      <span className={`text-xs ${isCurrentUser ? "justify-end pr-3 pb-2 flex" : "justify-start pl-3 pb-2 flex"}`}>
+                        {formatDate(message.createdAt)}
+                      </span>
 
-                    <motion.div
-                      className={`relative pl-4 pt-3 pr-4 pb-3 rounded-xl ${isCurrentUser
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-white text-gray-800 border border-gray-200'
-                        } shadow-sm`}
-                    >
-                      {message.images?.length > 0 && (
-                        <div className="mb-3">
-                          <img
-                            src={message.images[0]}
-                            alt="Attachment"
-                            className="rounded-lg max-w-full h-auto max-h-64 object-cover"
-                          />
-                        </div>
-                      )}
+                      <motion.div
+                        className={`relative pl-4 pt-3 pr-4 pb-3 rounded-xl ${isCurrentUser
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-white text-gray-800 border border-gray-200'
+                          } shadow-sm`}
+                      >
+                        {message.image && (
+                          <div className="mb-3">
+                            <img
+                              src={getImageUrl(message.image)}
+                              alt="Attachment"
+                              className="rounded-lg max-w-full h-auto max-h-64 object-cover"
+                            />
+                          </div>
+                        )}
 
-                      {message.text && (
-                        <p className="whitespace-pre-wrap break-words">{message.text}</p>
-                      )}
+                        {message.message && (
+                          <p className="whitespace-pre-wrap break-words">{message.message}</p>
+                        )}
 
-                      {message.read && isCurrentUser && (
-                        <div className="flex justify-end mt-1">
-                          <svg className="w-4 h-4 text-white opacity-70" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
-                          </svg>
-                          <svg className="w-4 h-4 text-white opacity-70 -ml-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
-                          </svg>
-                        </div>
-                      )}
-                    </motion.div>
-                  </div>
+                        {message.seen && isCurrentUser && (
+                          <div className="flex justify-end mt-1">
+                            <svg className="w-4 h-4 text-white opacity-70" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                            </svg>
+                            <svg className="w-4 h-4 text-white opacity-70 -ml-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                            </svg>
+                          </div>
+                        )}
+                      </motion.div>
+                    </div>
 
-                  {isCurrentUser && (
-                    <Avatar className="h-8 w-8 ml-3 self-end mt-1">
-                      <AvatarImage src={message.sender?.profile} />
-                      <AvatarFallback>Y</AvatarFallback>
-                    </Avatar>
-                  )}
-                </motion.div>
-              );
-            })}
+                    {isCurrentUser && (
+                      <Avatar className="h-8 w-8 ml-3 self-end mt-1">
+                        <AvatarImage src={getImageUrl(message.sender?.profile)} />
+                        <AvatarFallback>{message.sender?.fullName?.charAt(0) || 'Y'}</AvatarFallback>
+                      </Avatar>
+                    )}
+                  </motion.div>
+                );
+              })
+            )}
+            <div ref={messagesEndRef} />
           </AnimatePresence>
         </div>
 
@@ -445,13 +471,14 @@ const ChatWindow = ({ clientId, chatId }) => {
                     handleCreateNewMessage();
                   }
                 }}
+                disabled={createMessageLoading}
               />
 
               <Button
                 onClick={handleCreateNewMessage}
                 size="icon"
                 className="bg-blue-500 hover:bg-blue-600 rounded-full"
-                disabled={!formValues.message.trim() && !formValues.file}
+                disabled={(!formValues.message.trim() && !formValues.file) || createMessageLoading}
               >
                 <IoMdSend className="text-white" />
               </Button>
@@ -616,7 +643,6 @@ const ChatWindow = ({ clientId, chatId }) => {
               </div>
             )}
 
-
             <div>
               <Label htmlFor="service-type" className="text-sm font-medium text-gray-700">
                 Service Type
@@ -647,7 +673,6 @@ const ChatWindow = ({ clientId, chatId }) => {
                 </SelectContent>
               </Select>
             </div>
-
 
             <div>
               <Label htmlFor="amount" className="text-sm font-medium text-gray-700">
