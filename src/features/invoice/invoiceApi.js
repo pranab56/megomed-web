@@ -8,24 +8,45 @@ export const invoiceApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      providesTags: ["invoice"],
+      invalidatesTags: ["invoice"],
     }),
+    createDelivery: builder.mutation({
+      query: ({ data, invoiceID }) => ({
+        url: `/invoice/invoice-delivery/${invoiceID}`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["invoice"],
+    }),
+
     extendRequest: builder.mutation({
       query: (data) => ({
         url: `/invoice/invoice-extend/${data.invoiceID}`,
         method: "POST",
         body: { extendDate: data.extendDate, extendReason: data.reason },
       }),
-      providesTags: ["invoice"],
+      invalidatesTags: ["invoice"],
     }),
     approveExtendRequest: builder.mutation({
-      query: (data) => ({
-        url: `/invoice/invoice-extend-approve/${data.invoiceID}${
+      query: (data) => {
+        console.log("approveExtendRequest API called with:", data);
+        const url = `/invoice/invoice-extend-approve/${data.invoiceID}${
           data.action === "reject" ? "?extendRequest=cancel" : ""
-        }`,
+        }`;
+        console.log("API URL:", url);
+        return {
+          url,
+          method: "POST",
+        };
+      },
+      invalidatesTags: ["invoice"],
+    }),
+    acceptRespondInvoice: builder.mutation({
+      query: (data) => ({
+        url: `/invoice/invoice-approve/${data.invoiceID}`,
         method: "POST",
       }),
-      providesTags: ["invoice"],
+      invalidatesTags: ["invoice"],
     }),
     getInvoiceFreelancer: builder.query({
       query: () => ({
@@ -41,14 +62,26 @@ export const invoiceApi = baseApi.injectEndpoints({
       }),
       providesTags: ["invoice"],
     }),
+
+    //Stripe Payment
+    createStripePayment: builder.mutation({
+      query: () => ({
+        url: "/payment/create-stripe-account",
+        method: "POST",
+      }),
+      invalidatesTags: ["invoice"],
+    }),
   }),
 });
 
 // Export hooks
 export const {
   useCreateInvoiceMutation,
+  useCreateDeliveryMutation,
   useGetInvoiceFreelancerQuery,
   useGetInvoiceClientQuery,
   useExtendRequestMutation,
   useApproveExtendRequestMutation,
+  useCreateStripePaymentMutation,
+  useAcceptRespondInvoiceMutation,
 } = invoiceApi;

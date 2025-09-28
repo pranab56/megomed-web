@@ -14,7 +14,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import useToast from "@/hooks/showToast/ShowToast";
+import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
@@ -33,7 +33,6 @@ const dialogTranslations = {
 };
 
 export default function ExtendDeliveryDialog({ isOpen, onClose, invoiceId }) {
-  const showToast = useToast();
   const [extendRequest, { isLoading }] = useExtendRequestMutation();
 
   React.useEffect(() => {
@@ -64,12 +63,12 @@ export default function ExtendDeliveryDialog({ isOpen, onClose, invoiceId }) {
 
   const onSubmit = async (data) => {
     if (!invoiceId) {
-      showToast.error("Invoice ID is required");
+      toast.error("Invoice ID is required");
       return;
     }
 
     if (!data.date) {
-      showToast.error("Please select a date");
+      toast.error("Please select a date");
       return;
     }
 
@@ -82,9 +81,12 @@ export default function ExtendDeliveryDialog({ isOpen, onClose, invoiceId }) {
         reason: data.reason,
       }).unwrap();
 
-      showToast.success("Delivery date extended successfully", {
-        description: `New delivery date: ${format(data.date, "PPP")}`,
-      });
+      toast.success(
+        `Delivery date extended successfully! New delivery date: ${format(
+          data.date,
+          "PPP"
+        )}`
+      );
       reset();
       onClose();
     } catch (error) {
@@ -103,9 +105,7 @@ export default function ExtendDeliveryDialog({ isOpen, onClose, invoiceId }) {
         errorDescription = error.data.err.message;
       }
 
-      showToast.error(errorMessage, {
-        description: errorDescription,
-      });
+      toast.error(`${errorMessage}: ${errorDescription}`);
     }
   };
   // ss

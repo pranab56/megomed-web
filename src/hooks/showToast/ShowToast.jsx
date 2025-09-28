@@ -1,18 +1,22 @@
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 const useToast = () => {
   return {
     success: (message, options = {}) => {
-      toast.success(message, {
+      const fullMessage = options.description
+        ? `${message}: ${options.description}`
+        : message;
+      toast.success(fullMessage, {
         duration: 3000,
         position: "top-right",
-        description: options.description,
       });
     },
     error: (message, options = {}) => {
-      toast.error(message, {
-        duration: 3000,
+      const fullMessage = options.description
+        ? `${message}: ${options.description}`
+        : message;
+      toast.error(fullMessage, {
+        duration: 5000,
         position: "top-right",
-        description: options.description,
       });
     },
   };
