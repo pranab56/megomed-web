@@ -2,23 +2,34 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import toast from 'react-hot-toast';
-import { useResendOtpMutation, useVerifyForgotOtpMutation } from '../../../features/auth/authApi';
+import toast from "react-hot-toast";
+import {
+  useResendOtpMutation,
+  useVerifyForgotOtpMutation,
+} from "../../../features/auth/authApi";
 
-const ForgotVerify = ({ searchParams }) => {
-  //  const searchParams = useSearchParams();
-  //  const token = searchParams.get("token");
-   const token = searchParams.token;
-   console.log(token)
+const ForgotVerify = () => {
+  const [token, setToken] = useState(null);
+
+  // Get token from localStorage on client side only
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const forgotToken = localStorage.getItem("forgotToken");
+      setToken(forgotToken);
+      console.log(forgotToken);
+    }
+  }, []);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef([]);
   const router = useRouter();
 
   // Use Redux Query mutations with their built-in states
-  const [verify, { isLoading: verifyLoading, error: verifyError }] = useVerifyForgotOtpMutation();
-  const [resend, { isLoading: resendLoading, error: resendError }] = useResendOtpMutation();
+  const [verify, { isLoading: verifyLoading, error: verifyError }] =
+    useVerifyForgotOtpMutation();
+  const [resend, { isLoading: resendLoading, error: resendError }] =
+    useResendOtpMutation();
 
   // Initialize refs
   useEffect(() => {
@@ -47,24 +58,26 @@ const ForgotVerify = ({ searchParams }) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
+  };
 
-    // Handle paste
-    if (e.key === "v" && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      navigator.clipboard.readText().then((text) => {
-        const digits = text.replace(/\D/g, "").slice(0, 6);
-        const newOtp = [...otp];
+  // Handle paste event
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData("text");
+    const digits = pastedText.replace(/\D/g, "").slice(0, 6);
 
-        for (let i = 0; i < digits.length && i < 6; i++) {
-          newOtp[i] = digits[i];
-        }
+    if (digits.length > 0) {
+      const newOtp = [...otp];
 
-        setOtp(newOtp);
+      for (let i = 0; i < digits.length && i < 6; i++) {
+        newOtp[i] = digits[i];
+      }
 
-        // Focus the next empty input or last input
-        const nextIndex = Math.min(digits.length, 5);
-        inputRefs.current[nextIndex]?.focus();
-      });
+      setOtp(newOtp);
+
+      // Focus the next empty input or last input
+      const nextIndex = Math.min(digits.length, 5);
+      inputRefs.current[nextIndex]?.focus();
     }
   };
 
@@ -79,17 +92,27 @@ const ForgotVerify = ({ searchParams }) => {
     }
 
     try {
-      const response = await verify({ value: { otp: otpValue }, token }).unwrap();
-      console.log("response", response)
+      const response = await verify({
+        value: { otp: otpValue },
+        token,
+      }).unwrap();
+      console.log("response", response);
       // router.push("/auth/login")
       if (response?.success) {
-        router.push(`/auth/reset-password?token=${response.data.forgetOtpMatchToken}`)
+        // Store token in localStorage instead of URL
+        if (typeof window !== "undefined") {
+          localStorage.setItem("resetToken", response.data.forgetOtpMatchToken);
+        }
+
+        router.push("/auth/reset-password");
         toast.success("Email verified successfully. Please log in.");
       }
       // Handle successful verification (e.g., redirect user)
     } catch (error) {
       console.log(error);
-      toast.error(error?.data?.message || "Verification failed. Please try again.");
+      toast.error(
+        error?.data?.message || "Verification failed. Please try again."
+      );
       // Error is already handled by Redux Query's error state
     }
   };
@@ -132,6 +155,7 @@ const ForgotVerify = ({ searchParams }) => {
                 value={digit}
                 onChange={(e) => handleInputChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
+                onPaste={handlePaste}
                 className={`
                   w-10 h-10 md:w-12 md:h-12 text-center text-lg md:text-xl font-semibold 
                   rounded-lg border-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200
@@ -144,7 +168,6 @@ const ForgotVerify = ({ searchParams }) => {
             ))}
           </div>
 
-
           {/* Resend Code */}
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-2">
@@ -154,7 +177,8 @@ const ForgotVerify = ({ searchParams }) => {
                 variant="link"
                 onClick={handleResend}
                 disabled={resendLoading}
-                className="p-0 h-auto text-blue-600 hover:text-blue-800 font-semibold underline">
+                className="p-0 h-auto text-blue-600 hover:text-blue-800 font-semibold underline"
+              >
                 {resendLoading ? "Sending..." : "Resend"}
               </Button>
             </p>
@@ -165,7 +189,8 @@ const ForgotVerify = ({ searchParams }) => {
             <Button
               type="submit"
               disabled={verifyLoading || otp.join("").length !== 6}
-              className="w-60 button-gradient-rounded h-12 font-semibold text-base">
+              className="w-60 button-gradient-rounded h-12 font-semibold text-base"
+            >
               {verifyLoading ? "Verifying..." : "Submit"}
             </Button>
           </div>

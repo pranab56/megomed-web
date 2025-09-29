@@ -2,25 +2,37 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import toast from 'react-hot-toast';
-import { useResendOtpMutation, useVerifyOtpMutation } from '../../../features/auth/authApi';
+import toast from "react-hot-toast";
+import {
+  useResendOtpMutation,
+  useVerifyOtpMutation,
+} from "../../../features/auth/authApi";
 
 const OTPForm = () => {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-  
+  // const searchParams = useSearchParams();
+  // const token = searchParams.get("token");
+  const [token, setToken] = useState(null);
+
+  // Get token from localStorage on client side only
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const otpToken = localStorage.getItem("otpToken");
+      setToken(otpToken);
+    }
+  }, []);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [countdown, setCountdown] = useState(0);
   const inputRefs = useRef([]);
   const countdownRef = useRef(null);
   const router = useRouter();
 
-
   // Use Redux Query mutations with their built-in states
-  const [verify, { isLoading: verifyLoading, error: verifyError }] = useVerifyOtpMutation();
-  const [resend, { isLoading: resendLoading, error: resendError }] = useResendOtpMutation();
+  const [verify, { isLoading: verifyLoading, error: verifyError }] =
+    useVerifyOtpMutation();
+  const [resend, { isLoading: resendLoading, error: resendError }] =
+    useResendOtpMutation();
 
   // Initialize refs
   useEffect(() => {
@@ -73,24 +85,26 @@ const OTPForm = () => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
+  };
 
-    // Handle paste
-    if (e.key === "v" && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      navigator.clipboard.readText().then((text) => {
-        const digits = text.replace(/\D/g, "").slice(0, 6);
-        const newOtp = [...otp];
+  // Handle paste event
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData("text");
+    const digits = pastedText.replace(/\D/g, "").slice(0, 6);
 
-        for (let i = 0; i < digits.length && i < 6; i++) {
-          newOtp[i] = digits[i];
-        }
+    if (digits.length > 0) {
+      const newOtp = [...otp];
 
-        setOtp(newOtp);
+      for (let i = 0; i < digits.length && i < 6; i++) {
+        newOtp[i] = digits[i];
+      }
 
-        // Focus the next empty input or last input
-        const nextIndex = Math.min(digits.length, 5);
-        inputRefs.current[nextIndex]?.focus();
-      });
+      setOtp(newOtp);
+
+      // Focus the next empty input or last input
+      const nextIndex = Math.min(digits.length, 5);
+      inputRefs.current[nextIndex]?.focus();
     }
   };
 
@@ -105,17 +119,30 @@ const OTPForm = () => {
     }
 
     try {
-      const response = await verify({ value: { otp: otpValue }, token: token }).unwrap();
-      console.log("response", response)
+      const response = await verify({
+        value: { otp: otpValue },
+        token: token,
+      }).unwrap();
+      console.log("response", response);
       // router.push("/auth/login")
       if (response?.success) {
-        router.push("/auth/login")
-        toast.success(response.message || "Email verified successfully. Please log in.");
+        router.push("/auth/login");
+
+        // Check if we're on the client side before using localStorage
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("otpToken");
+        }
+
+        toast.success(
+          response.message || "Email verified successfully. Please log in."
+        );
       }
       // Handle successful verification (e.g., redirect user)
     } catch (error) {
       console.log(error);
-      toast.error(error?.data?.message || "Verification failed. Please try again.");
+      toast.error(
+        error?.data?.message || "Verification failed. Please try again."
+      );
       // Error is already handled by Redux Query's error state
     }
   };
@@ -137,7 +164,7 @@ const OTPForm = () => {
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   // Get error message from either mutation
@@ -169,6 +196,7 @@ const OTPForm = () => {
                 value={digit}
                 onChange={(e) => handleInputChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
+                onPaste={handlePaste}
                 className={`
                   w-10 h-10 md:w-12 md:h-12 text-center text-lg md:text-xl font-semibold 
                   rounded-lg border-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200
@@ -200,7 +228,8 @@ const OTPForm = () => {
                   variant="link"
                   onClick={handleResend}
                   disabled={resendLoading}
-                  className="p-0 h-auto text-blue-600 hover:text-blue-800 font-semibold underline">
+                  className="p-0 h-auto text-blue-600 hover:text-blue-800 font-semibold underline"
+                >
                   {resendLoading ? "Sending..." : "Resend"}
                 </Button>
               )}
@@ -212,7 +241,8 @@ const OTPForm = () => {
             <Button
               type="submit"
               disabled={verifyLoading || otp.join("").length !== 6}
-              className="w-60 button-gradient-rounded h-12 font-semibold text-base">
+              className="w-60 button-gradient-rounded h-12 font-semibold text-base"
+            >
               {verifyLoading ? "Verifying..." : "Submit"}
             </Button>
           </div>

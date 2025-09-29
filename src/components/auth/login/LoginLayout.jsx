@@ -74,8 +74,12 @@ const LoginPage = () => {
       const result = await login(formData).unwrap();
       // Store token and user data
       saveToken(result.data.accessToken);
-      localStorage.setItem("user", JSON.stringify(result?.data?.user?._id));
-      localStorage.setItem("role", result?.data?.user?.role);
+
+      // Check if we're on the client side before using localStorage
+      if (typeof window !== "undefined") {
+        localStorage.setItem("user", JSON.stringify(result?.data?.user?._id));
+        localStorage.setItem("role", result?.data?.user?.role);
+      }
       // Show success message
       toast.success(`Welcome back, ${result?.data.user.fullName}!`);
       router.push("/");

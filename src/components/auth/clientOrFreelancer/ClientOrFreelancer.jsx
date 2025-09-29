@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Star, User, Users } from "lucide-react";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const AccountTypeDialog = () => {
@@ -19,14 +19,30 @@ const AccountTypeDialog = () => {
   };
 
   const handleGetStarted = () => {
+    if (!selectedType) {
+      return; // Don't proceed if no account type is selected
+    }
     console.log("Selected account type:", selectedType);
     setIsOpen(false);
-    localStorage.setItem("accountType", selectedType);
-    route.push(`/auth/sign-up?type=${selectedType}`)
+
+    // Check if we're on the client side before using localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("accountType", selectedType);
+    }
+
+    route.push(`/auth/sign-up?type=${selectedType}`);
+  };
+
+  const handleOpenChange = (open) => {
+    // Only allow closing if an account type is selected
+    if (!open && !selectedType) {
+      return; // Prevent closing without selection
+    }
+    setIsOpen(open);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[480px] p-0 bg-white rounded-3xl border-0 shadow-2xl">
         <div className="px-8 py-8">
           {/* Header with Avatar Icon */}
@@ -50,10 +66,11 @@ const AccountTypeDialog = () => {
             {/* Freelancer Option */}
             <div
               onClick={() => handleAccountTypeSelect("freelancer")}
-              className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${selectedType === "freelancer"
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-200 bg-white hover:border-gray-300"
-                }`}
+              className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${
+                selectedType === "freelancer"
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
             >
               <div className="text-center space-y-3">
                 <div className="mx-auto w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center">
@@ -82,10 +99,11 @@ const AccountTypeDialog = () => {
             {/* Client Option */}
             <div
               onClick={() => handleAccountTypeSelect("client")}
-              className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${selectedType === "client"
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-200 bg-white hover:border-gray-300"
-                }`}
+              className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${
+                selectedType === "client"
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
             >
               <div className="text-center space-y-3">
                 <div className="mx-auto w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center">
