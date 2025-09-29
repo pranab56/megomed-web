@@ -7,7 +7,7 @@ import provideIcon from "@/utils/IconProvider/provideIcon";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { useResetPasswordMutation } from '../../../features/auth/authApi';
+import { useResetPasswordMutation } from "../../../features/auth/authApi";
 
 const ResetPasswordForm = () => {
   const searchParams = useSearchParams();
@@ -90,11 +90,12 @@ const ResetPasswordForm = () => {
 
     const data = {
       newPassword: password,
-      confirmPassword: confirmPassword
-    }
+      confirmPassword: confirmPassword,
+    };
 
     try {
       const result = await resetPassword({ data, token }).unwrap();
+      localStorage.removeItem("forgotToken");
       console.log("Reset password response:", result);
       setSuccess(true);
     } catch (error) {
@@ -187,8 +188,9 @@ const ResetPasswordForm = () => {
                 placeholder="Enter your Password"
                 value={password}
                 onChange={(e) => handlePasswordChange(e.target.value)}
-                className={`rounded-full h-12 px-4 pr-12 ${error && !password ? "border-red-500" : ""
-                  }`}
+                className={`rounded-full h-12 px-4 pr-12 ${
+                  error && !password ? "border-red-500" : ""
+                }`}
                 autoComplete="new-password"
                 disabled={isLoading}
               />
@@ -213,13 +215,23 @@ const ResetPasswordForm = () => {
                 <li className={password.length >= 8 ? "text-green-600" : ""}>
                   At least 8 characters {password.length >= 8 && "✓"}
                 </li>
-                <li className={/(?=.*[A-Z])/.test(password) ? "text-green-600" : ""}>
+                <li
+                  className={
+                    /(?=.*[A-Z])/.test(password) ? "text-green-600" : ""
+                  }
+                >
                   One uppercase letter {/(?=.*[A-Z])/.test(password) && "✓"}
                 </li>
-                <li className={/(?=.*[a-z])/.test(password) ? "text-green-600" : ""}>
+                <li
+                  className={
+                    /(?=.*[a-z])/.test(password) ? "text-green-600" : ""
+                  }
+                >
                   One lowercase letter {/(?=.*[a-z])/.test(password) && "✓"}
                 </li>
-                <li className={/(?=.*\d)/.test(password) ? "text-green-600" : ""}>
+                <li
+                  className={/(?=.*\d)/.test(password) ? "text-green-600" : ""}
+                >
                   One number {/(?=.*\d)/.test(password) && "✓"}
                 </li>
               </ul>
@@ -240,12 +252,13 @@ const ResetPasswordForm = () => {
                 placeholder="Confirm your Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className={`rounded-full h-12 px-4 pr-12 ${getPasswordMatchStatus() === "no-match"
-                  ? "border-red-500"
-                  : getPasswordMatchStatus() === "match"
+                className={`rounded-full h-12 px-4 pr-12 ${
+                  getPasswordMatchStatus() === "no-match"
+                    ? "border-red-500"
+                    : getPasswordMatchStatus() === "match"
                     ? "border-green-500"
                     : ""
-                  }`}
+                }`}
                 autoComplete="new-password"
                 disabled={isLoading}
               />

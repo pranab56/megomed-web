@@ -7,15 +7,16 @@ import provideIcon from "@/utils/IconProvider/provideIcon";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import toast from 'react-hot-toast';
-import { useForgotPasswordMutation } from '../../../features/auth/authApi';
+import toast from "react-hot-toast";
+import { useForgotPasswordMutation } from "../../../features/auth/authApi";
 
 const ForgotPasswordForm = () => {
   const [email, setEmail] = useState("");
   const [validationError, setValidationError] = useState("");
   const router = useRouter();
 
-  const [forgotPassword, { isLoading, error: apiError }] = useForgotPasswordMutation();
+  const [forgotPassword, { isLoading, error: apiError }] =
+    useForgotPasswordMutation();
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -41,12 +42,17 @@ const ForgotPasswordForm = () => {
       const response = await forgotPassword({ email }).unwrap();
       console.log("Forgot password response: ", response);
       if (response?.success) {
-        toast.success(response?.message || "Password reset instructions sent to your email.");
-        router.push(`/auth/forgot_verify?token=${response.data.forgetToken}`);
+        toast.success(
+          response?.message || "Password reset instructions sent to your email."
+        );
+        localStorage.setItem("forgotToken", response.data.forgetToken);
+        router.push(`/auth/forgot_verify`);
       }
     } catch (error) {
       console.log("error ", error);
-      toast.error(error?.data?.message || "something went wrong. Please try again.");
+      toast.error(
+        error?.data?.message || "something went wrong. Please try again."
+      );
       // API error will be handled by the apiError state from RTK Query
     }
   };
@@ -61,11 +67,10 @@ const ForgotPasswordForm = () => {
   };
 
   // Get error message from API or validation
-  const errorMessage = validationError ||
-    (apiError?.data?.message ||
-      (apiError && "Something went wrong. Please try again."));
-
-
+  const errorMessage =
+    validationError ||
+    apiError?.data?.message ||
+    (apiError && "Something went wrong. Please try again.");
 
   return (
     <div className="p-6 sm:p-8">
@@ -100,8 +105,9 @@ const ForgotPasswordForm = () => {
               placeholder="Enter your email"
               value={email}
               onChange={handleEmailChange}
-              className={`rounded-full h-12 px-4 ${errorMessage ? "border-red-500" : ""
-                }`}
+              className={`rounded-full h-12 px-4 ${
+                errorMessage ? "border-red-500" : ""
+              }`}
               autoComplete="email"
               disabled={isLoading}
             />

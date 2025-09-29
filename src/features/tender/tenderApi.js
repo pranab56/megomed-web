@@ -11,7 +11,6 @@ export const tenderApi = baseApi.injectEndpoints({
       invalidatesTags: ["tender"],
     }),
 
-
     getAllTenderByClient: builder.query({
       query: ({ categoryName, serviceTypeName, searchTerm }) => {
         let url = `/tender/me`;
@@ -82,7 +81,6 @@ export const tenderApi = baseApi.injectEndpoints({
       invalidatesTags: ["tender"],
     }),
 
-
     respond: builder.mutation({
       query: (id) => ({
         url: `/tender/respond/${id}`,
@@ -98,8 +96,6 @@ export const tenderApi = baseApi.injectEndpoints({
       }),
       providesTags: ["tender"],
     }),
-
-
   }),
 });
 
@@ -110,5 +106,5 @@ export const {
   useGetAllTenderQuery,
   useSingleTenderQuery,
   useRespondMutation,
-  useRunningTenderByClientIdQuery
+  useRunningTenderByClientIdQuery,
 } = tenderApi;

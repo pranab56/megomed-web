@@ -2,23 +2,26 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import toast from 'react-hot-toast';
-import { useResendOtpMutation, useVerifyForgotOtpMutation } from '../../../features/auth/authApi';
+import toast from "react-hot-toast";
+import {
+  useResendOtpMutation,
+  useVerifyForgotOtpMutation,
+} from "../../../features/auth/authApi";
 
-const ForgotVerify = ({ searchParams }) => {
-  //  const searchParams = useSearchParams();
-  //  const token = searchParams.get("token");
-   const token = searchParams.token;
-   console.log(token)
+const ForgotVerify = () => {
+  const token = localStorage.getItem("forgotToken");
+  console.log(token);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef([]);
   const router = useRouter();
 
   // Use Redux Query mutations with their built-in states
-  const [verify, { isLoading: verifyLoading, error: verifyError }] = useVerifyForgotOtpMutation();
-  const [resend, { isLoading: resendLoading, error: resendError }] = useResendOtpMutation();
+  const [verify, { isLoading: verifyLoading, error: verifyError }] =
+    useVerifyForgotOtpMutation();
+  const [resend, { isLoading: resendLoading, error: resendError }] =
+    useResendOtpMutation();
 
   // Initialize refs
   useEffect(() => {
@@ -79,17 +82,24 @@ const ForgotVerify = ({ searchParams }) => {
     }
 
     try {
-      const response = await verify({ value: { otp: otpValue }, token }).unwrap();
-      console.log("response", response)
+      const response = await verify({
+        value: { otp: otpValue },
+        token,
+      }).unwrap();
+      console.log("response", response);
       // router.push("/auth/login")
       if (response?.success) {
-        router.push(`/auth/reset-password?token=${response.data.forgetOtpMatchToken}`)
+        router.push(
+          `/auth/reset-password?token=${response.data.forgetOtpMatchToken}`
+        );
         toast.success("Email verified successfully. Please log in.");
       }
       // Handle successful verification (e.g., redirect user)
     } catch (error) {
       console.log(error);
-      toast.error(error?.data?.message || "Verification failed. Please try again.");
+      toast.error(
+        error?.data?.message || "Verification failed. Please try again."
+      );
       // Error is already handled by Redux Query's error state
     }
   };
@@ -144,7 +154,6 @@ const ForgotVerify = ({ searchParams }) => {
             ))}
           </div>
 
-
           {/* Resend Code */}
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-2">
@@ -154,7 +163,8 @@ const ForgotVerify = ({ searchParams }) => {
                 variant="link"
                 onClick={handleResend}
                 disabled={resendLoading}
-                className="p-0 h-auto text-blue-600 hover:text-blue-800 font-semibold underline">
+                className="p-0 h-auto text-blue-600 hover:text-blue-800 font-semibold underline"
+              >
                 {resendLoading ? "Sending..." : "Resend"}
               </Button>
             </p>
@@ -165,7 +175,8 @@ const ForgotVerify = ({ searchParams }) => {
             <Button
               type="submit"
               disabled={verifyLoading || otp.join("").length !== 6}
-              className="w-60 button-gradient-rounded h-12 font-semibold text-base">
+              className="w-60 button-gradient-rounded h-12 font-semibold text-base"
+            >
               {verifyLoading ? "Verifying..." : "Submit"}
             </Button>
           </div>

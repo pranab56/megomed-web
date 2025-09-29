@@ -2,25 +2,29 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import toast from 'react-hot-toast';
-import { useResendOtpMutation, useVerifyOtpMutation } from '../../../features/auth/authApi';
+import toast from "react-hot-toast";
+import {
+  useResendOtpMutation,
+  useVerifyOtpMutation,
+} from "../../../features/auth/authApi";
 
 const OTPForm = () => {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-  
+  // const searchParams = useSearchParams();
+  // const token = searchParams.get("token");
+  const token = localStorage.getItem("otpToken");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [countdown, setCountdown] = useState(0);
   const inputRefs = useRef([]);
   const countdownRef = useRef(null);
   const router = useRouter();
 
-
   // Use Redux Query mutations with their built-in states
-  const [verify, { isLoading: verifyLoading, error: verifyError }] = useVerifyOtpMutation();
-  const [resend, { isLoading: resendLoading, error: resendError }] = useResendOtpMutation();
+  const [verify, { isLoading: verifyLoading, error: verifyError }] =
+    useVerifyOtpMutation();
+  const [resend, { isLoading: resendLoading, error: resendError }] =
+    useResendOtpMutation();
 
   // Initialize refs
   useEffect(() => {
@@ -105,17 +109,25 @@ const OTPForm = () => {
     }
 
     try {
-      const response = await verify({ value: { otp: otpValue }, token: token }).unwrap();
-      console.log("response", response)
+      const response = await verify({
+        value: { otp: otpValue },
+        token: token,
+      }).unwrap();
+      console.log("response", response);
       // router.push("/auth/login")
       if (response?.success) {
-        router.push("/auth/login")
-        toast.success(response.message || "Email verified successfully. Please log in.");
+        router.push("/auth/login");
+        localStorage.removeItem("otpToken");
+        toast.success(
+          response.message || "Email verified successfully. Please log in."
+        );
       }
       // Handle successful verification (e.g., redirect user)
     } catch (error) {
       console.log(error);
-      toast.error(error?.data?.message || "Verification failed. Please try again.");
+      toast.error(
+        error?.data?.message || "Verification failed. Please try again."
+      );
       // Error is already handled by Redux Query's error state
     }
   };
@@ -137,7 +149,7 @@ const OTPForm = () => {
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   // Get error message from either mutation
@@ -200,7 +212,8 @@ const OTPForm = () => {
                   variant="link"
                   onClick={handleResend}
                   disabled={resendLoading}
-                  className="p-0 h-auto text-blue-600 hover:text-blue-800 font-semibold underline">
+                  className="p-0 h-auto text-blue-600 hover:text-blue-800 font-semibold underline"
+                >
                   {resendLoading ? "Sending..." : "Resend"}
                 </Button>
               )}
@@ -212,7 +225,8 @@ const OTPForm = () => {
             <Button
               type="submit"
               disabled={verifyLoading || otp.join("").length !== 6}
-              className="w-60 button-gradient-rounded h-12 font-semibold text-base">
+              className="w-60 button-gradient-rounded h-12 font-semibold text-base"
+            >
               {verifyLoading ? "Verifying..." : "Submit"}
             </Button>
           </div>
