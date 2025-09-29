@@ -31,9 +31,12 @@ const SignUpPage = () => {
 
   // Get account type from localStorage on component mount
   useEffect(() => {
-    const storedAccountType = localStorage.getItem("accountType");
-    if (storedAccountType) {
-      setAccountType(storedAccountType);
+    // Check if we're on the client side before using localStorage
+    if (typeof window !== "undefined") {
+      const storedAccountType = localStorage.getItem("accountType");
+      if (storedAccountType) {
+        setAccountType(storedAccountType);
+      }
     }
   }, []);
 
@@ -146,8 +149,12 @@ const SignUpPage = () => {
         const token = response?.data?.createUserToken;
         // router.push(`/auth/verify-email${token ? `?token=${token}` : ""}`);
         router.push(`/auth/verify-email`);
-        localStorage.setItem("otpToken", token);
-        localStorage.removeItem("accountType");
+
+        // Check if we're on the client side before using localStorage
+        if (typeof window !== "undefined") {
+          localStorage.setItem("otpToken", token);
+          localStorage.removeItem("accountType");
+        }
       }
     } catch (error) {
       console.error("Signup error:", error.data?.message || error);

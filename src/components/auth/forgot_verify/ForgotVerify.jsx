@@ -11,8 +11,16 @@ import {
 } from "../../../features/auth/authApi";
 
 const ForgotVerify = () => {
-  const token = localStorage.getItem("forgotToken");
-  console.log(token);
+  const [token, setToken] = useState(null);
+
+  // Get token from localStorage on client side only
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const forgotToken = localStorage.getItem("forgotToken");
+      setToken(forgotToken);
+      console.log(forgotToken);
+    }
+  }, []);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef([]);
   const router = useRouter();

@@ -13,7 +13,15 @@ import {
 const OTPForm = () => {
   // const searchParams = useSearchParams();
   // const token = searchParams.get("token");
-  const token = localStorage.getItem("otpToken");
+  const [token, setToken] = useState(null);
+
+  // Get token from localStorage on client side only
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const otpToken = localStorage.getItem("otpToken");
+      setToken(otpToken);
+    }
+  }, []);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [countdown, setCountdown] = useState(0);
   const inputRefs = useRef([]);
@@ -117,7 +125,12 @@ const OTPForm = () => {
       // router.push("/auth/login")
       if (response?.success) {
         router.push("/auth/login");
-        localStorage.removeItem("otpToken");
+
+        // Check if we're on the client side before using localStorage
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("otpToken");
+        }
+
         toast.success(
           response.message || "Email verified successfully. Please log in."
         );

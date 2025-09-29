@@ -1,12 +1,12 @@
 import ResetPasswordForm from "@/components/auth/resetpassword/ResetPassword";
-import React from "react";
+import React, { Suspense } from "react";
 
 function page() {
-	return (
-		<>
-			<ResetPasswordForm />
-		</>
-	);
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
+  );
 }
 
 export default page;

@@ -24,7 +24,12 @@ const AccountTypeDialog = () => {
     }
     console.log("Selected account type:", selectedType);
     setIsOpen(false);
-    localStorage.setItem("accountType", selectedType);
+
+    // Check if we're on the client side before using localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("accountType", selectedType);
+    }
+
     route.push(`/auth/sign-up?type=${selectedType}`);
   };
 

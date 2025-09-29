@@ -1,12 +1,12 @@
 import SignUpPage from "@/components/auth/signup/SignUpLayout";
-import React from "react";
+import React, { Suspense } from "react";
 
 function page() {
-	return (
-		<>
-			<SignUpPage />
-		</>
-	);
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignUpPage />
+    </Suspense>
+  );
 }
 
 export default page;

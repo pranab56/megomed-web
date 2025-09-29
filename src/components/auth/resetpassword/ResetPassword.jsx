@@ -95,7 +95,12 @@ const ResetPasswordForm = () => {
 
     try {
       const result = await resetPassword({ data, token }).unwrap();
-      localStorage.removeItem("forgotToken");
+
+      // Check if we're on the client side before using localStorage
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("forgotToken");
+      }
+
       console.log("Reset password response:", result);
       setSuccess(true);
     } catch (error) {

@@ -45,7 +45,12 @@ const ForgotPasswordForm = () => {
         toast.success(
           response?.message || "Password reset instructions sent to your email."
         );
-        localStorage.setItem("forgotToken", response.data.forgetToken);
+
+        // Check if we're on the client side before using localStorage
+        if (typeof window !== "undefined") {
+          localStorage.setItem("forgotToken", response.data.forgetToken);
+        }
+
         router.push(`/auth/forgot_verify`);
       }
     } catch (error) {
