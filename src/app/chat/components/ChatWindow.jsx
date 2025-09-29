@@ -34,6 +34,8 @@ import { useGetAllServicesQuery } from "../../../features/services/servicesApi";
 import { useRunningTenderByClientIdQuery } from "../../../features/tender/tenderApi";
 import { connectSocket, getSocket } from "../../../utils/socket";
 import { getImageUrl } from "@/utils/getImageUrl";
+import { getToken } from "../../../features/auth/authService";
+import { jwtDecode } from "jwt-decode";
 
 const ChatWindow = ({ clientId, chatId }) => {
   const [formValues, setFormValues] = useState({ message: "", file: null });
@@ -610,14 +612,14 @@ const ChatWindow = ({ clientId, chatId }) => {
                 >
                   Create Invoice
                 </Button>
-                <Button
+                {/* <Button
                   variant="outline"
                   size="sm"
                   onClick={testChatWindowSocket}
                   className="bg-green-500 text-white hover:bg-green-600"
                 >
                   Test Socket
-                </Button>
+                </Button> */}
               </div>
             </div>
           </div>
@@ -638,26 +640,74 @@ const ChatWindow = ({ clientId, chatId }) => {
               </div>
             ) : (
               messagesData.map((message, index) => {
-                // Try multiple ways to get current user ID
-                const currentUserId =
-                  loginUserId ||
-                  (typeof window !== "undefined"
-                    ? localStorage.getItem("user")
-                    : null) ||
-                  (typeof window !== "undefined"
-                    ? localStorage.getItem("userId")
-                    : null);
+                // Get current user ID from JWT token using authService
+                let currentUserId = null;
+                try {
+                  const token = getToken();
+                  if (token) {
+                    const decoded = jwtDecode(token);
+                    currentUserId = decoded.userId || decoded.id;
+                    console.log("🔑 JWT Decoded User ID:", currentUserId);
+                  }
+                } catch (error) {
+                  console.error("❌ Error decoding JWT:", error);
+                }
 
-                // Check if this is a message we just sent (has our user ID in sender or isSentByMe flag)
-                const isCurrentUser =
+                // Fallback to localStorage if JWT fails
+                if (!currentUserId) {
+                  currentUserId =
+                    loginUserId ||
+                    (typeof window !== "undefined"
+                      ? localStorage.getItem("user")
+                      : null) ||
+                    (typeof window !== "undefined"
+                      ? localStorage.getItem("userId")
+                      : null);
+                }
+
+                // Check if message sender ID matches current user ID
+                const isOurMessage =
                   message.sender?._id === currentUserId ||
                   message.isSentByMe === true;
+
+                // Check if this is a message we just sent (has our user ID in sender or isSentByMe flag)
+                const isCurrentUser = isOurMessage;
 
                 // Force test: if message contains "test" or is from real-time, show on right
                 const forceRight =
                   message.message?.includes("test") || message.isSentByMe;
+
+                // Final decision: if it's our message, show on right (sender side)
                 const finalIsCurrentUser = isCurrentUser || forceRight;
                 const isFirst = index === 0;
+
+                // Debug: Log message alignment
+                console.log("🔍 Message alignment debug:");
+                console.log("  - Message ID:", message._id);
+                console.log("  - Sender ID:", message.sender?._id);
+                console.log("  - Sender Name:", message.sender?.fullName);
+                console.log("  - JWT User ID:", currentUserId);
+                console.log("  - Login User ID:", loginUserId);
+                console.log("  - Is Our Message:", isOurMessage);
+                console.log("  - Is Current User:", isCurrentUser);
+                console.log("  - Force Right:", forceRight);
+                console.log("  - Final Is Current User:", finalIsCurrentUser);
+                console.log(
+                  "  - Match Check:",
+                  message.sender?._id,
+                  "===",
+                  currentUserId,
+                  "?",
+                  message.sender?._id === currentUserId
+                );
+                console.log(
+                  "  - Alignment:",
+                  finalIsCurrentUser ? "RIGHT (SENDER)" : "LEFT (RECEIVER)"
+                );
+                console.log(
+                  "  - Message Text:",
+                  message.message?.substring(0, 20) + "..."
+                );
 
                 return (
                   <motion.div
@@ -671,6 +721,7 @@ const ChatWindow = ({ clientId, chatId }) => {
                         <AvatarImage
                           src={getImageUrl(message.sender?.profile)}
                         />
+
                         <AvatarFallback>
                           {message.sender?.fullName?.charAt(0)}
                         </AvatarFallback>

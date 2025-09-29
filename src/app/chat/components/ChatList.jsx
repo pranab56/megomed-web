@@ -416,12 +416,12 @@ const ChatList = ({ setIsChatActive, status }) => {
             onChange={handleSearchChange}
           />
         </div>
-        <button
+        {/* <button
           onClick={testSocketConnection}
           className="mt-2 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
         >
           Test Socket
-        </button>
+        </button> */}
       </div>
 
       <div
