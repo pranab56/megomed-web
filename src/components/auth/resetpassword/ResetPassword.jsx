@@ -5,13 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import provideIcon from "@/utils/IconProvider/provideIcon";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useResetPasswordMutation } from "../../../features/auth/authApi";
 
 const ResetPasswordForm = () => {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+  const [token, setToken] = useState(null);
+
+  // Get token from localStorage on client side only
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const resetToken = localStorage.getItem("resetToken");
+      setToken(resetToken);
+    }
+  }, []);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);

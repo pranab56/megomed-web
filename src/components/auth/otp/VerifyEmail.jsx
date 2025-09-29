@@ -85,24 +85,26 @@ const OTPForm = () => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
+  };
 
-    // Handle paste
-    if (e.key === "v" && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      navigator.clipboard.readText().then((text) => {
-        const digits = text.replace(/\D/g, "").slice(0, 6);
-        const newOtp = [...otp];
+  // Handle paste event
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData("text");
+    const digits = pastedText.replace(/\D/g, "").slice(0, 6);
 
-        for (let i = 0; i < digits.length && i < 6; i++) {
-          newOtp[i] = digits[i];
-        }
+    if (digits.length > 0) {
+      const newOtp = [...otp];
 
-        setOtp(newOtp);
+      for (let i = 0; i < digits.length && i < 6; i++) {
+        newOtp[i] = digits[i];
+      }
 
-        // Focus the next empty input or last input
-        const nextIndex = Math.min(digits.length, 5);
-        inputRefs.current[nextIndex]?.focus();
-      });
+      setOtp(newOtp);
+
+      // Focus the next empty input or last input
+      const nextIndex = Math.min(digits.length, 5);
+      inputRefs.current[nextIndex]?.focus();
     }
   };
 
@@ -194,6 +196,7 @@ const OTPForm = () => {
                 value={digit}
                 onChange={(e) => handleInputChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
+                onPaste={handlePaste}
                 className={`
                   w-10 h-10 md:w-12 md:h-12 text-center text-lg md:text-xl font-semibold 
                   rounded-lg border-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200
