@@ -10,7 +10,7 @@ import { useResendOtpMutation, useVerifyOtpMutation } from '../../../features/au
 const OTPForm = () => {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-
+  
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [countdown, setCountdown] = useState(0);
   const inputRefs = useRef([]);

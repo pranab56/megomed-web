@@ -97,11 +97,6 @@ const SignUpPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!accountType) {
-      console.error("No account type selected");
-      return;
-    }
-
     if (!validateForm()) {
       return;
     }

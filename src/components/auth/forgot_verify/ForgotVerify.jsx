@@ -7,9 +7,11 @@ import { useEffect, useRef, useState } from "react";
 import toast from 'react-hot-toast';
 import { useResendOtpMutation, useVerifyForgotOtpMutation } from '../../../features/auth/authApi';
 
-const ForgotVerify = () => {
-   const searchParams = useSearchParams();
-   const token = searchParams.get("token");
+const ForgotVerify = ({ searchParams }) => {
+  //  const searchParams = useSearchParams();
+  //  const token = searchParams.get("token");
+   const token = searchParams.token;
+   console.log(token)
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef([]);
   const router = useRouter();
