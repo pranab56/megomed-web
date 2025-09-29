@@ -107,8 +107,8 @@ const TenderLayoutContent = () => {
           src={currentBanner.src}
           header={currentBanner.header}
           text={currentBanner.text}
-          buttonName={"Post Your Tender"}
-          buttonLink={"/create-tender-client"}
+          buttonName={userType === "client" ? "Post Your Tender" : ""}
+          buttonLink={userType === "client" ? "/create-tender-client" : ""}
         />
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 px-4 md:px-6 lg:px-10 2xl:px-0 w-full">
           <Heading

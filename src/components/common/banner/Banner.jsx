@@ -12,14 +12,14 @@ function Banner({ src, header, text, buttonName, buttonLink }) {
           {header}
         </h2>
         <p className="text-sm sm:text-base text-gray-700">{text}</p>
-        {/* {buttonName &&
+        {buttonName &&
           (buttonLink ? (
             <Link href={buttonLink}>
               <Button className="button-gradient">{buttonName}</Button>
             </Link>
           ) : (
             <Button className="button-gradient">{buttonName}</Button>
-          ))} */}
+          ))}
       </div>
 
       {/* Image section */}

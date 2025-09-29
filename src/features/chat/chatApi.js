@@ -1,5 +1,4 @@
-import { baseApi } from '../../utils/apiBaseQuery';
-
+import { baseApi } from "../../utils/apiBaseQuery";
 
 export const chatApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -7,7 +6,7 @@ export const chatApi = baseApi.injectEndpoints({
       query: (data) => ({
         url: "/chat",
         method: "POST",
-        body: data
+        body: data,
       }),
       invalidatesTags: ["chat"],
     }),
@@ -28,7 +27,6 @@ export const chatApi = baseApi.injectEndpoints({
       invalidatesTags: ["chat"],
     }),
 
-
     singleChat: builder.query({
       query: ({ chatId }) => ({
         url: `/chat/${chatId}`,
@@ -36,7 +34,6 @@ export const chatApi = baseApi.injectEndpoints({
       }),
       providesTags: ["chat"],
     }),
-
 
     myChatList: builder.query({
       query: () => ({
@@ -46,7 +43,6 @@ export const chatApi = baseApi.injectEndpoints({
       providesTags: ["chat"],
     }),
 
-
     deleteChat: builder.mutation({
       query: ({ chatId }) => ({
         url: `/chat/${chatId}`,
@@ -54,7 +50,7 @@ export const chatApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["chat"],
     }),
-  })
+  }),
 });
 
 // Export hooks
@@ -64,5 +60,5 @@ export const {
   useChatPinUnpinMutation,
   useSingleChatQuery,
   useMyChatListQuery,
-  useDeleteChatMutation
+  useDeleteChatMutation,
 } = chatApi;

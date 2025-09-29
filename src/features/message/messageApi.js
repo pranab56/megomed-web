@@ -1,5 +1,4 @@
-import { baseApi } from '../../utils/apiBaseQuery';
-
+import { baseApi } from "../../utils/apiBaseQuery";
 
 export const messageApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -9,7 +8,7 @@ export const messageApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
         headers: {
-          'Content-Type': 'application/json',
+          // Remove Content-Type to let browser set it automatically for FormData
           Authorization: `Bearer ${localStorage.getItem("loginToken")}`,
         },
       }),
@@ -21,18 +20,25 @@ export const messageApi = baseApi.injectEndpoints({
         url: `/message/my-messages/${id}`,
         method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("loginToken")}`,
         },
       }),
       providesTags: ["message"],
     }),
-
-  })
+    markMessageAsSeen: builder.mutation({
+      query: (id) => ({
+        url: `/message/seen/${id}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["message"],
+    }),
+  }),
 });
 
 // Export hooks
 export const {
   useCreateMessageMutation,
-  useGetMessageByIdQuery
+  useGetMessageByIdQuery,
+  useMarkMessageAsSeenMutation,
 } = messageApi;
