@@ -7,14 +7,14 @@ import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import toast from 'react-hot-toast';
-import { useSignupMutation } from '../../../features/auth/authApi';
+import toast from "react-hot-toast";
+import { useSignupMutation } from "../../../features/auth/authApi";
 import AccountTypeDialog from "../clientOrFreelancer/ClientOrFreelancer";
 
 const SignUpPage = () => {
   const searchParams = useSearchParams();
   const type = searchParams.get("type");
-  console.log(type)
+  console.log(type);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -92,6 +92,28 @@ const SignUpPage = () => {
         [field]: "",
       }));
     }
+
+    // Special handling for password fields to clear confirm password error when passwords match
+    if (
+      field === "password" &&
+      formData.confirmPassword &&
+      value === formData.confirmPassword
+    ) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        confirmPassword: "",
+      }));
+    }
+    if (
+      field === "confirmPassword" &&
+      formData.password &&
+      value === formData.password
+    ) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        confirmPassword: "",
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -106,23 +128,24 @@ const SignUpPage = () => {
         fullName: formData.name,
         email: formData.email,
         password: formData.password,
-        role: type
+        role: type,
       };
 
       const response = await createAccount(payload).unwrap();
-
 
       console.log("Signup response:", response);
 
       if (response.success) {
         // Success - navigate to verification
         const token = response?.data?.createUserToken;
-        router.push(`/auth/verify-email${token ? `?token=${token}` : ''}`);
+        router.push(`/auth/verify-email${token ? `?token=${token}` : ""}`);
         localStorage.removeItem("accountType");
       }
     } catch (error) {
       console.error("Signup error:", error.data?.message || error);
-      toast.error(error.data?.message || "something went wrong. Please try again.");
+      toast.error(
+        error.data?.message || "something went wrong. Please try again."
+      );
 
       // Error is handled by RTK Query error state
     }
@@ -138,7 +161,7 @@ const SignUpPage = () => {
   };
 
   const togglePasswordVisibility = (field) => {
-    if (field === 'password') {
+    if (field === "password") {
       setShowPassword(!showPassword);
     } else {
       setShowConfirmPassword(!showConfirmPassword);
@@ -147,22 +170,33 @@ const SignUpPage = () => {
 
   // Get error message from validation or API
   const getFieldError = (field) => {
-    return validationErrors[field] ||
-      (apiError?.data?.errors?.[field]) ||
-      "";
+    return validationErrors[field] || apiError?.data?.errors?.[field] || "";
   };
 
   const getGeneralError = () => {
-    return apiError?.data?.message ||
-      (apiError && "Something went wrong. Please try again.");
+    return (
+      apiError?.data?.message ||
+      (apiError && "Something went wrong. Please try again.")
+    );
   };
 
   const isFormValid = () => {
-    return formData.name &&
+    // Check if all fields have values
+    const hasAllFields =
+      formData.name &&
       formData.email &&
       formData.password &&
-      formData.confirmPassword &&
-      !Object.keys(validationErrors).length;
+      formData.confirmPassword;
+
+    // Check if passwords match
+    const passwordsMatch = formData.password === formData.confirmPassword;
+
+    // Check if there are any validation errors
+    const hasErrors = Object.values(validationErrors).some(
+      (error) => error !== ""
+    );
+
+    return hasAllFields && passwordsMatch && !hasErrors;
   };
 
   return (
@@ -208,18 +242,24 @@ const SignUpPage = () => {
               placeholder="Enter your name"
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
-              className={`rounded-full h-11 px-4 ${getFieldError("name") ? "border-red-500" : ""
-                }`}
+              className={`rounded-full h-11 px-4 ${
+                getFieldError("name") ? "border-red-500" : ""
+              }`}
               disabled={isLoading}
             />
             {getFieldError("name") && (
-              <p className="text-red-500 text-xs mt-1">{getFieldError("name")}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {getFieldError("name")}
+              </p>
             )}
           </div>
 
           {/* Email Field */}
           <div className="space-y-1">
-            <Label htmlFor="email" className="text-gray-700 font-medium text-sm">
+            <Label
+              htmlFor="email"
+              className="text-gray-700 font-medium text-sm"
+            >
               Email*
             </Label>
             <Input
@@ -228,18 +268,24 @@ const SignUpPage = () => {
               placeholder="Enter your email"
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
-              className={`rounded-full h-11 px-4 ${getFieldError("email") ? "border-red-500" : ""
-                }`}
+              className={`rounded-full h-11 px-4 ${
+                getFieldError("email") ? "border-red-500" : ""
+              }`}
               disabled={isLoading}
             />
             {getFieldError("email") && (
-              <p className="text-red-500 text-xs mt-1">{getFieldError("email")}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {getFieldError("email")}
+              </p>
             )}
           </div>
 
           {/* Password Field */}
           <div className="space-y-1">
-            <Label htmlFor="password" className="text-gray-700 font-medium text-sm">
+            <Label
+              htmlFor="password"
+              className="text-gray-700 font-medium text-sm"
+            >
               Password*
             </Label>
             <div className="relative">
@@ -249,8 +295,9 @@ const SignUpPage = () => {
                 placeholder="Create a password"
                 value={formData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
-                className={`rounded-full h-11 px-4 pr-12 ${getFieldError("password") ? "border-red-500" : ""
-                  }`}
+                className={`rounded-full h-11 px-4 pr-12 ${
+                  getFieldError("password") ? "border-red-500" : ""
+                }`}
                 disabled={isLoading}
               />
               <Button
@@ -258,7 +305,7 @@ const SignUpPage = () => {
                 variant="ghost"
                 size="sm"
                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => togglePasswordVisibility('password')}
+                onClick={() => togglePasswordVisibility("password")}
                 disabled={isLoading}
               >
                 {showPassword ? (
@@ -269,7 +316,9 @@ const SignUpPage = () => {
               </Button>
             </div>
             {getFieldError("password") && (
-              <p className="text-red-500 text-xs mt-1">{getFieldError("password")}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {getFieldError("password")}
+              </p>
             )}
             {!getFieldError("password") &&
               formData.password &&
@@ -282,7 +331,10 @@ const SignUpPage = () => {
 
           {/* Confirm Password Field */}
           <div className="space-y-1">
-            <Label htmlFor="confirmPassword" className="text-gray-700 font-medium text-sm">
+            <Label
+              htmlFor="confirmPassword"
+              className="text-gray-700 font-medium text-sm"
+            >
               Confirm Password*
             </Label>
             <div className="relative">
@@ -291,9 +343,12 @@ const SignUpPage = () => {
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm your password"
                 value={formData.confirmPassword}
-                onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                className={`rounded-full h-11 px-4 pr-12 ${getFieldError("confirmPassword") ? "border-red-500" : ""
-                  }`}
+                onChange={(e) =>
+                  handleInputChange("confirmPassword", e.target.value)
+                }
+                className={`rounded-full h-11 px-4 pr-12 ${
+                  getFieldError("confirmPassword") ? "border-red-500" : ""
+                }`}
                 disabled={isLoading}
               />
               <Button
@@ -301,7 +356,7 @@ const SignUpPage = () => {
                 variant="ghost"
                 size="sm"
                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => togglePasswordVisibility('confirmPassword')}
+                onClick={() => togglePasswordVisibility("confirmPassword")}
                 disabled={isLoading}
               >
                 {showConfirmPassword ? (
