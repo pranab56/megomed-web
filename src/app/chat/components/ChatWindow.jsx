@@ -22,11 +22,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { IoMdSend } from "react-icons/io";
 import { MdAttachFile, MdClose, MdImage } from "react-icons/md";
 import { useCreateInvoiceMutation } from "../../../features/invoice/invoiceApi";
+import toast from "react-hot-toast";
 
 import { useMyChatListQuery } from "../../../features/chat/chatApi";
 import {
   useCreateMessageMutation,
   useGetMessageByIdQuery,
+  useReportMutation,
 } from "../../../features/message/messageApi";
 import { useGetAllServicesQuery } from "../../../features/services/servicesApi";
 import { useRunningTenderByClientIdQuery } from "../../../features/tender/tenderApi";
@@ -71,6 +73,8 @@ const ChatWindow = ({ clientId, chatId }) => {
     refetch: refetchMessages,
   } = useGetMessageByIdQuery(chatId, { skip: !chatId });
   const { data: AllChat, isLoading } = useMyChatListQuery();
+
+  const [report, { isLoading: reportLoading }] = useReportMutation();
 
   const findChatById = (chatId) => {
     const allChats = [
@@ -353,14 +357,42 @@ const ChatWindow = ({ clientId, chatId }) => {
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
-  const handleReportSubmit = () => {
+  const handleReportSubmit = async () => {
+    if (!reportReason.trim() || !reportMessage.trim()) {
+      toast.error(
+        "Please fill in all fields! Both reason and message are required."
+      );
+      return;
+    }
+
     console.log("Report submitted:", {
       reason: reportReason,
-      message: reportMessage,
+      text: reportMessage,
+      reportedUserId: clientId,
+      chatId: chatId,
     });
-    setReportReason("");
-    setReportMessage("");
-    setShowReportModal(false);
+
+    try {
+      const result = await report({
+        reason: reportReason,
+        text: reportMessage,
+        reportedUserId: clientId,
+        chatId: chatId,
+      }).unwrap();
+
+      toast.success(
+        "Report submitted successfully! We'll review your report within 24 hours."
+      );
+      console.log("Report submitted successfully:", result);
+
+      // Reset form and close modal
+      setReportReason("");
+      setReportMessage("");
+      setShowReportModal(false);
+    } catch (error) {
+      console.error("Failed to submit report:", error);
+      toast.error("Failed to submit report! Please try again later.");
+    }
   };
 
   const handleCloseModal = () => {
@@ -511,13 +543,6 @@ const ChatWindow = ({ clientId, chatId }) => {
     }
   };
 
-  // const getImageUrl = (imagePath) => {
-  //   if (!imagePath) return null;
-  //   // Adjust this base URL according to your server setup
-  //   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-  //   return `${baseUrl}/${imagePath.replace(/\\/g, "/")}`;
-  // };
-
   if (!clientId || !chatId) {
     return (
       <div className="flex justify-center items-center h-[80vh]">
@@ -574,6 +599,7 @@ const ChatWindow = ({ clientId, chatId }) => {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowReportModal(true)}
+                  disabled={reportLoading}
                 >
                   Report
                 </Button>
@@ -965,9 +991,13 @@ const ChatWindow = ({ clientId, chatId }) => {
                   <Button
                     onClick={handleReportSubmit}
                     className="px-6 bg-blue-600 hover:bg-blue-700"
-                    disabled={!reportReason.trim()}
+                    disabled={
+                      !reportReason.trim() ||
+                      !reportMessage.trim() ||
+                      reportLoading
+                    }
                   >
-                    Report Freelancer
+                    {reportLoading ? "Submitting..." : "Report Freelancer"}
                   </Button>
                 </div>
               </motion.div>

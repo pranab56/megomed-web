@@ -33,6 +33,18 @@ export const messageApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["message"],
     }),
+    report: builder.mutation({
+      query: (data) => ({
+        url: `/report`,
+        method: "POST",
+        body: data,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("loginToken")}`,
+        },
+      }),
+      invalidatesTags: ["message"],
+    }),
   }),
 });
 
@@ -41,4 +53,5 @@ export const {
   useCreateMessageMutation,
   useGetMessageByIdQuery,
   useMarkMessageAsSeenMutation,
+  useReportMutation,
 } = messageApi;
