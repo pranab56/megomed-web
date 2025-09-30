@@ -181,7 +181,11 @@ export default function EducationDialogAddEdit({
               </Label>
               <Select
                 onValueChange={(value) => setValue("degree", value)}
-                defaultValue={education?.degree || ""}
+                defaultValue={
+                  Array.isArray(education?.degree)
+                    ? String(education.degree[0] || "")
+                    : String(education?.degree || "")
+                }
                 required
               >
                 <SelectTrigger className="w-full border-gray-200 focus:border-blue-500 focus:ring-blue-500">

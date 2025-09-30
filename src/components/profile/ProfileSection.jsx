@@ -26,26 +26,21 @@ import {
 } from "../../features/clientProfile/ClientProfile";
 import AddNewProjectDialog from "./AddNewProjectDialog";
 import EducationDialogAddEdit from "./EducationDialogAddEdit";
-
-
+import { useRouter } from "next/navigation";
 function ProfileSections() {
   const [isAddProjectDialogOpen, setIsAddProjectDialogOpen] = useState(false);
   const [isAddEducationDialogOpen, setIsAddEducationDialogOpen] =
     useState(false);
   const [editingEducation, setEditingEducation] = useState(null); // Track which education is being edited
-
-
+  const router = useRouter();
   const { data, isLoading } = useGetMyprofileQuery();
   const [updateProfileInfo, { isLoading: isDeleting }] =
     useUpdateProfileInfoMutation();
 
-
   const isFreelancerAndLoggedIn = true;
-
 
   const educationCertifications =
     data?.data?.freelancerId?.educationCertifications || [];
-
 
   const formatDateRange = (startDate, endDate) => {
     const startYear = new Date(startDate).getFullYear();
@@ -53,13 +48,11 @@ function ProfileSections() {
     return `${startYear} - ${endYear}`;
   };
 
-
   // Function to handle edit click
   const handleEditEducation = (education) => {
     setEditingEducation(education);
     setIsAddEducationDialogOpen(true);
   };
-
 
   // Function to handle dialog close
   const handleEducationDialogClose = () => {
@@ -67,13 +60,11 @@ function ProfileSections() {
     setIsAddEducationDialogOpen(false);
   };
 
-
   // Function to handle add new education
   const handleAddNewEducation = () => {
     setEditingEducation(null);
     setIsAddEducationDialogOpen(true);
   };
-
 
   // Function to handle delete education
   const handleDeleteEducation = async (educationId) => {
@@ -84,7 +75,6 @@ function ProfileSections() {
         _id: educationId,
       };
 
-
       await updateProfileInfo(deleteData).unwrap();
       toast.success("Education deleted successfully!");
     } catch (error) {
@@ -92,7 +82,6 @@ function ProfileSections() {
       toast.error("Failed to delete education. Please try again.");
     }
   };
-
 
   if (isLoading) {
     return (
@@ -116,7 +105,6 @@ function ProfileSections() {
             </CardContent>
           </Card>
 
-
           <Card className="max-h-auto">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg font-semibold text-blue-600 h2-gradient-text">
@@ -128,7 +116,6 @@ function ProfileSections() {
               <div className="h-10 w-full bg-gray-200 rounded animate-pulse"></div>
             </CardContent>
           </Card>
-
 
           <Card className="max-h-60">
             <CardHeader>
@@ -151,7 +138,6 @@ function ProfileSections() {
       </div>
     );
   }
-
 
   return (
     <div className="w-full ">
@@ -228,7 +214,6 @@ function ProfileSections() {
           </CardContent>
         </Card>
 
-
         {/* Projects */}
         <Card className="max-h-auto">
           <CardHeader className="pb-4">
@@ -241,14 +226,12 @@ function ProfileSections() {
               Discover my achievements and detailed case studies.
             </p>
 
-
             <Link href={`/showcase-projects`} className="w-full md:w-auto">
               <Button className="button-gradient w-full md:w-auto">
                 <Eye className="w-4 h-4 mr-2" />
                 View All Project
               </Button>
             </Link>
-
 
             {isFreelancerAndLoggedIn && (
               <Button
@@ -261,7 +244,6 @@ function ProfileSections() {
             )}
           </CardContent>
         </Card>
-
 
         {/* Contact */}
         <Card className="max-h-60">
@@ -276,15 +258,16 @@ function ProfileSections() {
                 <UserPlus className="w-4 h-4 mr-2" />
                 Follow
               </Button>
-
-
-              <Button className="w-full md:w-40 button-gradient ">
-                <Calendar className="w-4 h-4 mr-2" />
-                Schedule Meeting
-              </Button>
-
-
-              <Button className="w-full md:w-40 button-gradient ">
+              <Link href="https://calendly.com/" target="_blank">
+                <Button className="w-full md:w-40 button-gradient ">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Schedule Meeting
+                </Button>
+              </Link>
+              <Button
+                className="w-full md:w-40 button-gradient "
+                onClick={() => router.push("/chat")}
+              >
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Message
               </Button>
@@ -293,7 +276,6 @@ function ProfileSections() {
         </Card>
       </div>
 
-
       {/* Add New Project Dialog */}
       {isAddProjectDialogOpen && (
         <AddNewProjectDialog
@@ -301,7 +283,6 @@ function ProfileSections() {
           onClose={() => setIsAddProjectDialogOpen(false)}
         />
       )}
-
 
       {/* Add/Edit Education Dialog */}
       {isAddEducationDialogOpen && (
@@ -316,8 +297,4 @@ function ProfileSections() {
   );
 }
 
-
 export default ProfileSections;
-
-
-

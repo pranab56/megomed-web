@@ -30,7 +30,6 @@ import {
 } from "../../features/clientProfile/ClientProfile";
 import { useGetAllServicesQuery } from "../../features/services/servicesApi";
 
-
 function ProfileHeader({ setCoverPhoto }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [profileImage, setProfileImage] = useState(
@@ -42,7 +41,6 @@ function ProfileHeader({ setCoverPhoto }) {
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
 
-
   const [profileData, setProfileData] = useState({
     name: "Sabbir Ahmed",
     dailyRate: "500",
@@ -53,7 +51,6 @@ function ProfileHeader({ setCoverPhoto }) {
     designation: "",
     yearsOfExperience: "",
   });
-
 
   const { data, isLoading } = useGetMyprofileQuery();
   const [updateMyprofile, { isLoading: isUpdating }] =
@@ -69,7 +66,6 @@ function ProfileHeader({ setCoverPhoto }) {
     isError: serviceError,
   } = useGetAllServicesQuery();
 
-
   // Set categories and services when data is loaded
   useEffect(() => {
     if (categoryData?.success && categoryData.data) {
@@ -77,13 +73,11 @@ function ProfileHeader({ setCoverPhoto }) {
     }
   }, [categoryData]);
 
-
   useEffect(() => {
     if (serviceData?.success && serviceData.data) {
       setServices(serviceData.data);
     }
   }, [serviceData]);
-
 
   const {
     control,
@@ -96,47 +90,170 @@ function ProfileHeader({ setCoverPhoto }) {
     mode: "onChange",
   });
 
-
   // Update form values when profile data changes
   useEffect(() => {
     if (data?.data) {
       console.log("Profile data loaded:", data.data);
       console.log("Profile image URL:", data.data.profile);
       console.log("Processed profile URL:", getImageUrl(data.data.profile));
+      console.log("Services data:", services);
+      console.log("Categories data:", categories);
+      console.log("Service type from API:", data.data.serviceType);
+      console.log("Category type from API:", data.data.categoryType);
 
+      // Helper function to find service/category ID by name or return ID if already an ID
+      const findServiceId = (serviceValue) => {
+        if (!serviceValue) return "";
+
+        // If services are not loaded yet, return the value as is (might be an ID)
+        if (!services.length) {
+          console.log(
+            "Services not loaded yet, returning value as is:",
+            serviceValue
+          );
+          return String(serviceValue);
+        }
+
+        // Check if it's already an ID by looking for a service with this ID
+        const serviceById = services.find((s) => s._id === serviceValue);
+        if (serviceById) {
+          console.log(
+            "Found service by ID:",
+            serviceValue,
+            "Found:",
+            serviceById
+          );
+          return serviceById._id;
+        }
+
+        // Otherwise, try to find by name
+        const serviceByName = services.find((s) => s.name === serviceValue);
+        console.log(
+          "Finding service ID for:",
+          serviceValue,
+          "Found:",
+          serviceByName
+        );
+        return serviceByName ? serviceByName._id : String(serviceValue);
+      };
+
+      const findCategoryId = (categoryValue) => {
+        if (!categoryValue) return "";
+
+        // If categories are not loaded yet, return the value as is (might be an ID)
+        if (!categories.length) {
+          console.log(
+            "Categories not loaded yet, returning value as is:",
+            categoryValue
+          );
+          return String(categoryValue);
+        }
+
+        // Check if it's already an ID by looking for a category with this ID
+        const categoryById = categories.find((c) => c._id === categoryValue);
+        if (categoryById) {
+          console.log(
+            "Found category by ID:",
+            categoryValue,
+            "Found:",
+            categoryById
+          );
+          return categoryById._id;
+        }
+
+        // Otherwise, try to find by name
+        const categoryByName = categories.find((c) => c.name === categoryValue);
+        console.log(
+          "Finding category ID for:",
+          categoryValue,
+          "Found:",
+          categoryByName
+        );
+        return categoryByName ? categoryByName._id : String(categoryValue);
+      };
 
       const newProfileData = {
         name: data.data.fullName || "Sabbir Ahmed",
         dailyRate: data.data.dailyRate?.toString() || "500",
-        serviceType: data.data.serviceType || "",
-        categoryType: data.data.categoryType || "",
-        location: data.data.location || "Bangladesh",
-        language: data.data.language || "Bengali",
-        designation: data.data.designation || "",
-        yearsOfExperience: data.data.yearsOfExperience || "",
+        serviceType: Array.isArray(data.data.serviceType)
+          ? findServiceId(data.data.serviceType[0])
+          : findServiceId(data.data.serviceType),
+        categoryType: Array.isArray(data.data.categoryType)
+          ? findCategoryId(data.data.categoryType[0])
+          : findCategoryId(data.data.categoryType),
+        location: String(data.data.location || "Bangladesh"),
+        language: String(data.data.language || "Bengali"),
+        designation: String(data.data.designation || ""),
+        yearsOfExperience: String(data.data.yearsOfExperience || ""),
       };
 
-
+      console.log("Processed profile data:", newProfileData);
       setProfileData(newProfileData);
-
 
       // Reset form with new values
       reset(newProfileData);
-
 
       // Set profile image preview
       if (data.data.profile) {
         setProfileImage(getImageUrl(data.data.profile));
       }
 
-
       // Set cover photo for MyProfileLayout
       if (data.data.coverPhoto && setCoverPhoto) {
         setCoverPhoto(data.data.coverPhoto);
       }
     }
-  }, [data, reset, setCoverPhoto]);
+  }, [data, reset, setCoverPhoto, services, categories]);
 
+  // Update form when services/categories are loaded after profile data
+  useEffect(() => {
+    if (data?.data && (services.length > 0 || categories.length > 0)) {
+      console.log("Services/Categories loaded, updating form values");
+
+      // Helper function to find service/category ID by name or return ID if already an ID
+      const findServiceId = (serviceValue) => {
+        if (!serviceValue) return "";
+
+        // Check if it's already an ID by looking for a service with this ID
+        const serviceById = services.find((s) => s._id === serviceValue);
+        if (serviceById) {
+          return serviceById._id;
+        }
+
+        // Otherwise, try to find by name
+        const serviceByName = services.find((s) => s.name === serviceValue);
+        return serviceByName ? serviceByName._id : String(serviceValue);
+      };
+
+      const findCategoryId = (categoryValue) => {
+        if (!categoryValue) return "";
+
+        // Check if it's already an ID by looking for a category with this ID
+        const categoryById = categories.find((c) => c._id === categoryValue);
+        if (categoryById) {
+          return categoryById._id;
+        }
+
+        // Otherwise, try to find by name
+        const categoryByName = categories.find((c) => c.name === categoryValue);
+        return categoryByName ? categoryByName._id : String(categoryValue);
+      };
+
+      // Update only the service and category fields
+      const currentValues = {
+        serviceType: Array.isArray(data.data.serviceType)
+          ? findServiceId(data.data.serviceType[0])
+          : findServiceId(data.data.serviceType),
+        categoryType: Array.isArray(data.data.categoryType)
+          ? findCategoryId(data.data.categoryType[0])
+          : findCategoryId(data.data.categoryType),
+      };
+
+      console.log("Updating form with service/category values:", currentValues);
+      setValue("serviceType", currentValues.serviceType);
+      setValue("categoryType", currentValues.categoryType);
+    }
+  }, [services, categories, data, setValue]);
 
   const handleImageUpload = (event, type) => {
     const file = event.target.files[0];
@@ -148,13 +265,11 @@ function ProfileHeader({ setCoverPhoto }) {
         return;
       }
 
-
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert("Image size should be less than 5MB");
         return;
       }
-
 
       // Store the file for upload
       if (type === "profile") {
@@ -171,37 +286,56 @@ function ProfileHeader({ setCoverPhoto }) {
     }
   };
 
-
   const onSubmit = async (formData) => {
     console.log("=== FORM SUBMISSION STARTED ===");
     console.log("Form submitted with data:", formData);
 
-
     try {
+      // Helper functions to convert IDs back to names for payload
+      const getServiceNameById = (serviceId) => {
+        if (!serviceId || !services.length) return "";
+        const service = services.find((s) => s._id === serviceId);
+        return service ? service.name : String(serviceId);
+      };
+
+      const getCategoryNameById = (categoryId) => {
+        if (!categoryId || !categories.length) return "";
+        const category = categories.find((c) => c._id === categoryId);
+        return category ? category.name : String(categoryId);
+      };
+
       // Create FormData for file upload
       const submitData = new FormData();
-
 
       // Add text fields
       submitData.append("fullName", formData.name);
       submitData.append("dailyRate", formData.dailyRate);
-      submitData.append("serviceType", formData.serviceType);
-      submitData.append("categoryType", formData.categoryType);
+      const serviceName = getServiceNameById(formData.serviceType);
+      const categoryName = getCategoryNameById(formData.categoryType);
+
+      console.log("Converting IDs to names:");
+      console.log("Service ID:", formData.serviceType, "-> Name:", serviceName);
+      console.log(
+        "Category ID:",
+        formData.categoryType,
+        "-> Name:",
+        categoryName
+      );
+
+      submitData.append("serviceType", serviceName);
+      submitData.append("categoryType", categoryName);
       submitData.append("location", formData.location);
       submitData.append("language", formData.language);
-
 
       // Add designation if available
       if (formData.designation) {
         submitData.append("designation", formData.designation);
       }
 
-
       // Add years of experience if available
       if (formData.yearsOfExperience) {
         submitData.append("yearsOfExperience", formData.yearsOfExperience);
       }
-
 
       // Add profile image file if selected
       if (profileImageFile) {
@@ -209,30 +343,24 @@ function ProfileHeader({ setCoverPhoto }) {
         console.log("Adding profile image file:", profileImageFile.name);
       }
 
-
       // Add cover image file if selected
       if (coverImageFile) {
         submitData.append("coverPhoto", coverImageFile);
         console.log("Adding cover photo file:", coverImageFile.name);
       }
 
-
       console.log("Sending FormData with files:", submitData);
-
 
       // Call the API to update profile
       const response = await updateMyprofile(submitData).unwrap();
       console.log("API Response:", response);
 
-
       // Update local state
       setProfileData(formData);
       console.log("Profile updated successfully:", formData);
 
-
       // Show success message
       toast.success("Profile updated successfully!");
-
 
       // Close dialog
       setIsDialogOpen(false);
@@ -242,20 +370,18 @@ function ProfileHeader({ setCoverPhoto }) {
     }
   };
 
-
   const handleCancel = () => {
     // Reset form to current profile data
     reset(profileData);
     setIsDialogOpen(false);
   };
 
-
   // Reset form when dialog opens
   const handleDialogOpen = (open) => {
     if (open) {
       // Always reset to current profile data
+      console.log("Dialog opening, resetting form with:", profileData);
       reset(profileData);
-
 
       // Always set profile image preview to current profile image from API
       if (data?.data?.profile) {
@@ -264,7 +390,6 @@ function ProfileHeader({ setCoverPhoto }) {
         setProfileImage("/client/profile/client.png");
       }
 
-
       // Always set cover image preview to current cover image from API
       if (data?.data?.coverPhoto) {
         setCoverImage(getImageUrl(data.data.coverPhoto));
@@ -272,14 +397,51 @@ function ProfileHeader({ setCoverPhoto }) {
         setCoverImage(null);
       }
 
-
       // Clear any selected files
       setProfileImageFile(null);
       setCoverImageFile(null);
+
+      // Force update service and category fields if they're available
+      if (data?.data && services.length > 0 && categories.length > 0) {
+        console.log("Dialog opened, updating service/category fields");
+
+        const findServiceId = (serviceValue) => {
+          if (!serviceValue) return "";
+          const serviceById = services.find((s) => s._id === serviceValue);
+          if (serviceById) return serviceById._id;
+          const serviceByName = services.find((s) => s.name === serviceValue);
+          return serviceByName ? serviceByName._id : String(serviceValue);
+        };
+
+        const findCategoryId = (categoryValue) => {
+          if (!categoryValue) return "";
+          const categoryById = categories.find((c) => c._id === categoryValue);
+          if (categoryById) return categoryById._id;
+          const categoryByName = categories.find(
+            (c) => c.name === categoryValue
+          );
+          return categoryByName ? categoryByName._id : String(categoryValue);
+        };
+
+        const serviceId = Array.isArray(data.data.serviceType)
+          ? findServiceId(data.data.serviceType[0])
+          : findServiceId(data.data.serviceType);
+        const categoryId = Array.isArray(data.data.categoryType)
+          ? findCategoryId(data.data.categoryType[0])
+          : findCategoryId(data.data.categoryType);
+
+        console.log(
+          "Setting service ID:",
+          serviceId,
+          "category ID:",
+          categoryId
+        );
+        setValue("serviceType", serviceId);
+        setValue("categoryType", categoryId);
+      }
     }
     setIsDialogOpen(open);
   };
-
 
   // Loading state for dropdowns
   if (categoryLoading || serviceLoading) {
@@ -299,7 +461,6 @@ function ProfileHeader({ setCoverPhoto }) {
     );
   }
 
-
   return (
     <div className="w-full mx-auto relative bg-white my-5">
       {/* Edit button positioned absolutely */}
@@ -317,7 +478,6 @@ function ProfileHeader({ setCoverPhoto }) {
                 Edit Profile
               </DialogTitle>
             </DialogHeader>
-
 
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -359,7 +519,6 @@ function ProfileHeader({ setCoverPhoto }) {
                       </Button>
                     </div>
                   </div>
-
 
                   {/* Cover Image */}
                   <div className="flex flex-col items-center space-y-3">
@@ -421,7 +580,6 @@ function ProfileHeader({ setCoverPhoto }) {
                   </div>
                 </div>
 
-
                 {/* Right Column - Form Fields */}
                 <div className="space-y-4">
                   {/* Name */}
@@ -439,8 +597,9 @@ function ProfileHeader({ setCoverPhoto }) {
                         <Input
                           {...field}
                           id="name"
-                          className={`w-full ${errors.name ? "border-red-500" : ""
-                            }`}
+                          className={`w-full ${
+                            errors.name ? "border-red-500" : ""
+                          }`}
                           placeholder="Enter your full name"
                         />
                       )}
@@ -451,7 +610,6 @@ function ProfileHeader({ setCoverPhoto }) {
                       </p>
                     )}
                   </div>
-
 
                   {/* Daily Rate */}
                   <div className="space-y-2">
@@ -473,8 +631,9 @@ function ProfileHeader({ setCoverPhoto }) {
                             {...field}
                             id="dailyRate"
                             type="number"
-                            className={`w-full pl-8 ${errors.dailyRate ? "border-red-500" : ""
-                              }`}
+                            className={`w-full pl-8 ${
+                              errors.dailyRate ? "border-red-500" : ""
+                            }`}
                             placeholder="500"
                           />
                         </div>
@@ -487,7 +646,6 @@ function ProfileHeader({ setCoverPhoto }) {
                     )}
                   </div>
 
-
                   {/* Service Type Dropdown */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">
@@ -499,20 +657,21 @@ function ProfileHeader({ setCoverPhoto }) {
                       rules={{ required: "Service type is required" }}
                       render={({ field }) => (
                         <Select
-                          value={field.value}
+                          value={String(field.value || "")}
                           onValueChange={field.onChange}
                         >
                           <SelectTrigger
-                            className={`w-full ${errors.serviceType ? "border-red-500" : ""
-                              }`}
+                            className={`w-full ${
+                              errors.serviceType ? "border-red-500" : ""
+                            }`}
                           >
                             <SelectValue
                               placeholder={
                                 serviceLoading
                                   ? "Loading services..."
                                   : services.length === 0
-                                    ? "No services available"
-                                    : "Select service type"
+                                  ? "No services available"
+                                  : "Select service type"
                               }
                             />
                           </SelectTrigger>
@@ -547,7 +706,6 @@ function ProfileHeader({ setCoverPhoto }) {
                     )}
                   </div>
 
-
                   {/* Category Type Dropdown */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">
@@ -559,20 +717,21 @@ function ProfileHeader({ setCoverPhoto }) {
                       rules={{ required: "Category type is required" }}
                       render={({ field }) => (
                         <Select
-                          value={field.value}
+                          value={String(field.value || "")}
                           onValueChange={field.onChange}
                         >
                           <SelectTrigger
-                            className={`w-full ${errors.categoryType ? "border-red-500" : ""
-                              }`}
+                            className={`w-full ${
+                              errors.categoryType ? "border-red-500" : ""
+                            }`}
                           >
                             <SelectValue
                               placeholder={
                                 categoryLoading
                                   ? "Loading categories..."
                                   : categories.length === 0
-                                    ? "No categories available"
-                                    : "Select category"
+                                  ? "No categories available"
+                                  : "Select category"
                               }
                             />
                           </SelectTrigger>
@@ -607,7 +766,6 @@ function ProfileHeader({ setCoverPhoto }) {
                     )}
                   </div>
 
-
                   {/* Location */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">
@@ -619,12 +777,13 @@ function ProfileHeader({ setCoverPhoto }) {
                       rules={{ required: "Location is required" }}
                       render={({ field }) => (
                         <Select
-                          value={field.value}
+                          value={String(field.value || "")}
                           onValueChange={field.onChange}
                         >
                           <SelectTrigger
-                            className={`w-full ${errors.location ? "border-red-500" : ""
-                              }`}
+                            className={`w-full ${
+                              errors.location ? "border-red-500" : ""
+                            }`}
                           >
                             <SelectValue placeholder="Select location" />
                           </SelectTrigger>
@@ -649,7 +808,6 @@ function ProfileHeader({ setCoverPhoto }) {
                     )}
                   </div>
 
-
                   {/* Designation */}
                   <div className="space-y-2">
                     <Label
@@ -671,7 +829,6 @@ function ProfileHeader({ setCoverPhoto }) {
                       )}
                     />
                   </div>
-
 
                   {/* Years of Experience */}
                   <div className="space-y-2">
@@ -695,7 +852,6 @@ function ProfileHeader({ setCoverPhoto }) {
                     />
                   </div>
 
-
                   {/* Language */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">
@@ -707,12 +863,13 @@ function ProfileHeader({ setCoverPhoto }) {
                       rules={{ required: "Language is required" }}
                       render={({ field }) => (
                         <Select
-                          value={field.value}
+                          value={String(field.value || "")}
                           onValueChange={field.onChange}
                         >
                           <SelectTrigger
-                            className={`w-full ${errors.language ? "border-red-500" : ""
-                              }`}
+                            className={`w-full ${
+                              errors.language ? "border-red-500" : ""
+                            }`}
                           >
                             <SelectValue placeholder="Select language" />
                           </SelectTrigger>
@@ -737,7 +894,6 @@ function ProfileHeader({ setCoverPhoto }) {
                 </div>
               </div>
 
-
               {/* Dialog Footer */}
               <div className="flex justify-end gap-3 pt-6 border-t mt-8">
                 <Button type="button" variant="outline" onClick={handleCancel}>
@@ -755,7 +911,6 @@ function ProfileHeader({ setCoverPhoto }) {
           </DialogContent>
         </Dialog>
       </div>
-
 
       {/* Main profile content */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 py-6">
@@ -791,7 +946,6 @@ function ProfileHeader({ setCoverPhoto }) {
               {data?.data?.fullName || profileData.name}
             </h1>
 
-
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-600 mb-3 text-sm sm:text-base">
               <p>{data?.data?.designation || "Professional"}</p>
               <span>|</span>
@@ -799,7 +953,6 @@ function ProfileHeader({ setCoverPhoto }) {
               <span>|</span>
               <p>{data?.data?.location || profileData.location}</p>
             </div>
-
 
             {/* Country Flags */}
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
@@ -827,7 +980,6 @@ function ProfileHeader({ setCoverPhoto }) {
           </div>
         </div>
 
-
         {/* Status & Info */}
         <div className="flex flex-col sm:flex-row lg:flex-col items-center sm:items-center lg:items-end gap-3 w-full lg:w-auto">
           {/* Available Badge */}
@@ -836,13 +988,11 @@ function ProfileHeader({ setCoverPhoto }) {
             Available
           </Badge>
 
-
           {/* Verified Freelancer */}
           <div className="flex items-center gap-2 text-sm text-gray-700">
             <Shield className="w-4 h-4 text-blue-600" />
             <span>Verified Freelancer</span>
           </div>
-
 
           {/* Day Rate */}
           <div className="flex items-center gap-2 text-sm">
@@ -859,8 +1009,4 @@ function ProfileHeader({ setCoverPhoto }) {
   );
 }
 
-
 export default ProfileHeader;
-
-
-
