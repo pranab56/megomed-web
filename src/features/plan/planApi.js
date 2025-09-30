@@ -1,10 +1,10 @@
-import { baseApi } from '../../utils/apiBaseQuery';
+import { baseApi } from "../../utils/apiBaseQuery";
 
 export const planApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAllPlan: builder.query({
       query: (category) => {
-        let url = '/package/packages';
+        let url = "/package/packages";
         if (category) {
           url += `?category=${category}`;
         }
@@ -12,7 +12,7 @@ export const planApi = baseApi.injectEndpoints({
         return {
           url: url,
           method: "GET",
-        }
+        };
       },
       providesTags: ["plan"],
     }),
@@ -24,11 +24,20 @@ export const planApi = baseApi.injectEndpoints({
       }),
       providesTags: ["plan"],
     }),
-  })
+
+    connectStripe: builder.mutation({
+      query: () => ({
+        url: `/payment/create-stripe-account`,
+        method: "POST",
+      }),
+      invalidatesTags: ["plan"],
+    }),
+  }),
 });
 
 // Export hooks
 export const {
   useGetAllPlanQuery,
-  useGetPerticularPlanQuery
+  useGetPerticularPlanQuery,
+  useConnectStripeMutation,
 } = planApi;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetTopFreeLancerQuery } from '../../features/freelancer/freelancerApi';
+import { useGetTopFreeLancerQuery } from "../../features/freelancer/freelancerApi";
 import Banner from "../common/banner/Banner";
 import Heading from "../common/heading/Heading";
 import ServiceCard from "../common/ServiceCard/ServiceCard";
@@ -10,7 +10,7 @@ function TopTalent() {
     src: "/services/service_1.png",
     header: "Find Top Talent",
     text: "Select top-tier talent that aligns with your organization's goals and needs. Our platform connects you with skilled professionals who can drive innovation, improve productivity, and ensure the success of your projects, delivering exceptional results every time.",
-    buttonName: "Hire Freelancers",
+    buttonName: "",
   };
 
   const { data: topFreelancher, isLoading, error } = useGetTopFreeLancerQuery();

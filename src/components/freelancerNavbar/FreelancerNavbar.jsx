@@ -23,13 +23,21 @@ import provideIcon from "@/utils/IconProvider/provideIcon";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useConnectStripeMutation } from "@/features/plan/planApi";
+import toast from "react-hot-toast";
+import { useGetMyprofileQuery } from "@/features/clientProfile/ClientProfile";
+import { getImageUrl } from "@/utils/getImageUrl";
 
 function FreelancerNavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const { data: userData } = useGetMyprofileQuery();
 
+  console.log("userData //////////////////////////", userData);
+  const [connectStripe, { isLoading: isConnectStripeLoading }] =
+    useConnectStripeMutation();
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -66,6 +74,24 @@ function FreelancerNavBar() {
     },
   ];
 
+  const handleConnectStripe = async () => {
+    try {
+      const response = await connectStripe().unwrap();
+      console.log("response", response);
+
+      // Show the message from the API response
+      toast.success(response?.data?.message || "Redirecting to Stripe...");
+
+      // Redirect to the URL from the response data
+      if (response?.data?.url) {
+        window.open(response.data.url, "_blank");
+      }
+    } catch (error) {
+      console.error("Failed to connect Stripe:", error);
+      toast.error("Failed to connect Stripe. Please try again.");
+    }
+  };
+
   // Helper function to determine if link is active
   const isActiveLink = (href) => {
     return pathname === href;
@@ -80,7 +106,7 @@ function FreelancerNavBar() {
 
   const handleSignOut = () => {
     localStorage.clear();
-    router.push("/auth/login")
+    router.push("/auth/login");
   };
 
   if (!mounted) {
@@ -103,10 +129,11 @@ function FreelancerNavBar() {
             <Link
               key={index}
               href={item.href}
-              className={`font-medium transition-colors ${isActiveLink(item.href)
+              className={`font-medium transition-colors ${
+                isActiveLink(item.href)
                   ? "text-blue-600 hover:text-blue-700"
                   : "text-gray-700 hover:text-gray-900"
-                }`}
+              }`}
             >
               {item.label}
             </Link>
@@ -122,37 +149,52 @@ function FreelancerNavBar() {
                 className="flex items-center space-x-3 shadow-md border hover:bg-gray-50 h-12"
               >
                 <Image
-                  src={user.avatar}
-                  alt={user.name}
+                  src={
+                    userData?.data?.profile
+                      ? getImageUrl(userData.data.profile)
+                      : "/client/profile/client.png"
+                  }
+                  alt={userData?.data?.fullName || "User"}
                   width={40}
                   height={40}
                   className="w-10 h-10 rounded-full object-cover"
                 />
                 <div className="text-left">
                   <p className="text-sm font-medium text-gray-900">
-                    {user.name}
+                    {userData?.data?.fullName || "User"}
                   </p>
-                  <p className="text-xs text-gray-500">{user.role}</p>
+                  <p className="text-xs text-gray-500">
+                    {userData?.data?.designation || "Freelancer"}
+                  </p>
                 </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-60">
               <DropdownMenuItem asChild>
                 <Link href={`/profile`} className="w-full cursor-pointer">
                   View Profile
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/settings`} className="w-full cursor-pointer">
-                  Account Settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              {userData?.data?.stripeConnected === true ? (
+                <DropdownMenuItem className="w-full cursor-pointer">
+                  Connect Stripe{" "}
+                  <span className="text-green-500">Connected</span>
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  className="w-full cursor-pointer flex items-center gap-2"
+                  onClick={handleConnectStripe}
+                >
+                  Connect Stripe{" "}
+                  <span className="w-4 h-4 text-red-500">Pending</span>
+                </DropdownMenuItem>
+              )}
+              {/* <DropdownMenuItem asChild>
                 <Link href={`/billing`} className="w-full cursor-pointer">
                   Billing & Plans
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator /> */}
               <DropdownMenuItem asChild>
                 <Link href={`/help`} className="w-full cursor-pointer">
                   Help & Support
@@ -181,16 +223,24 @@ function FreelancerNavBar() {
               <DrawerHeader className="text-left">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <img
-                      src={user.avatar}
-                      alt={user.name}
+                    <Image
+                      src={
+                        userData?.data?.profile
+                          ? getImageUrl(userData.data.profile)
+                          : "/client/profile/client.png"
+                      }
+                      alt={userData?.data?.fullName || "User"}
+                      width={40}
+                      height={40}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div>
                       <DrawerTitle className="text-sm font-medium">
-                        {user.name}
+                        {userData?.data?.fullName || "User"}
                       </DrawerTitle>
-                      <p className="text-xs text-gray-500">{user.role}</p>
+                      <p className="text-xs text-gray-500">
+                        {userData?.data?.designation || "Freelancer"}
+                      </p>
                     </div>
                   </div>
                   <DrawerClose asChild>
@@ -206,8 +256,9 @@ function FreelancerNavBar() {
                   <Button
                     key={index}
                     variant="ghost"
-                    className={`w-full justify-start ${isActiveLink(item.href) ? "bg-blue-50 text-blue-600" : ""
-                      }`}
+                    className={`w-full justify-start ${
+                      isActiveLink(item.href) ? "bg-blue-50 text-blue-600" : ""
+                    }`}
                     asChild
                   >
                     <Link href={item.href}>{item.label}</Link>
@@ -227,16 +278,17 @@ function FreelancerNavBar() {
                     variant="ghost"
                     className="w-full justify-start"
                     asChild
+                    onClick={handleConnectStripe}
                   >
-                    <Link href={`/settings`}>Account Settings</Link>
+                    Connect Stripe
                   </Button>
-                  <Button
+                  {/* <Button
                     variant="ghost"
                     className="w-full justify-start"
                     asChild
                   >
                     <Link href={`/billing`}>Billing & Plans</Link>
-                  </Button>
+                  </Button> */}
                   <Button
                     variant="ghost"
                     className="w-full justify-start"

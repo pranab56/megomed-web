@@ -7,84 +7,52 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useGetFreelancerPublicProfileQuery } from "@/features/clientProfile/ClientProfile";
 import {
-  Calendar,
-  Edit3,
-  Eye,
-  MessageCircle,
-  Plus,
-  Star,
-  Trash2,
-  UserPlus,
-} from "lucide-react";
+  useFollowFreelancerMutation,
+  useIsFollowedQuery,
+} from "@/features/hireFreelancer/hireFreelancerApi";
+
+import { Calendar, Eye, MessageCircle, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+
+import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { FaPlus, FaRegFaceSmile } from "react-icons/fa6";
-import {
-  useGetMyprofileQuery,
-  useUpdateProfileInfoMutation,
-} from "../../features/clientProfile/ClientProfile";
-import AddNewProjectDialog from "./AddNewProjectDialog";
-import EducationDialogAddEdit from "./EducationDialogAddEdit";
-import { useRouter } from "next/navigation";
-import { IoHappy } from "react-icons/io5";
 function ProfileSections() {
-  const [isAddProjectDialogOpen, setIsAddProjectDialogOpen] = useState(false);
-  const [isAddEducationDialogOpen, setIsAddEducationDialogOpen] =
-    useState(false);
-  const [editingEducation, setEditingEducation] = useState(null); // Track which education is being edited
   const router = useRouter();
-  const { data, isLoading } = useGetMyprofileQuery();
-  const [updateProfileInfo, { isLoading: isDeleting }] =
-    useUpdateProfileInfoMutation();
+  // const { id } = useParams();
+  const params = useParams();
+  const id = params.id;
 
-  const isFreelancerAndLoggedIn = true;
+  console.log("ProfileHeader - Params object:", params);
+  console.log("ProfileHeader - Extracted ID:", id);
 
+  const { data, isLoading, error } = useGetFreelancerPublicProfileQuery(id, {
+    skip: !id, // Skip the query if no ID is available
+  });
+
+  const { data: isFollowed, isLoading: isFollowedLoading } = useIsFollowedQuery(
+    id,
+    {
+      skip: !id, // Skip the query if no ID is available
+    }
+  );
+  const followed = isFollowed?.data;
+  console.log("Is Followed:", isFollowed?.data);
+
+  const [followFreelancer, { isLoading: isFollowing }] =
+    useFollowFreelancerMutation();
+
+  console.log("Freelancer ID from params:", id);
+  console.log("API Response data:", data);
+  console.log("API Error:", error);
   const educationCertifications =
     data?.data?.freelancerId?.educationCertifications || [];
-
-  const followers = data?.data?.followers;
 
   const formatDateRange = (startDate, endDate) => {
     const startYear = new Date(startDate).getFullYear();
     const endYear = new Date(endDate).getFullYear();
     return `${startYear} - ${endYear}`;
-  };
-
-  // Function to handle edit click
-  const handleEditEducation = (education) => {
-    setEditingEducation(education);
-    setIsAddEducationDialogOpen(true);
-  };
-
-  // Function to handle dialog close
-  const handleEducationDialogClose = () => {
-    setEditingEducation(null);
-    setIsAddEducationDialogOpen(false);
-  };
-
-  // Function to handle add new education
-  const handleAddNewEducation = () => {
-    setEditingEducation(null);
-    setIsAddEducationDialogOpen(true);
-  };
-
-  // Function to handle delete education
-  const handleDeleteEducation = async (educationId) => {
-    try {
-      const deleteData = {
-        type: "education",
-        operation: "delete",
-        _id: educationId,
-      };
-
-      await updateProfileInfo(deleteData).unwrap();
-      toast.success("Education deleted successfully!");
-    } catch (error) {
-      console.error("Failed to delete education:", error);
-      toast.error("Failed to delete education. Please try again.");
-    }
   };
 
   if (isLoading) {
@@ -143,6 +111,40 @@ function ProfileSections() {
     );
   }
 
+  if (!id) {
+    return (
+      <div className="w-full">
+        <div className="text-center py-8">
+          <p className="text-gray-500">No freelancer ID provided</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full">
+        <div className="text-center py-8">
+          <p className="text-red-500">
+            Error loading freelancer profile: {error.message}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const handleFollow = async () => {
+    try {
+      const response = await followFreelancer({
+        freelancerUserId: id,
+      }).unwrap();
+      toast.success(response?.data || "Freelancer followed successfully!");
+    } catch (error) {
+      console.error("Failed to follow freelancer:", error);
+      toast.error("Failed to follow freelancer. Please try again.");
+    }
+  };
+
   return (
     <div className="w-full ">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -151,14 +153,6 @@ function ProfileSections() {
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-lg font-semibold text-blue-600 h2-gradient-text">
               Education & Certifications
-              {isFreelancerAndLoggedIn && (
-                <>
-                  <Plus
-                    className="w-4 h-4 text-blue-600 cursor-pointer hover:text-blue-700"
-                    onClick={handleAddNewEducation}
-                  />
-                </>
-              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -174,18 +168,6 @@ function ProfileSections() {
                         >
                           {item.degree}
                         </Badge>
-                        {isFreelancerAndLoggedIn && (
-                          <div className="absolute right-1 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 items-center">
-                            <Edit3
-                              className="w-3 h-3 text-blue-600 cursor-pointer hover:text-blue-700"
-                              onClick={() => handleEditEducation(item)}
-                            />
-                            <Trash2
-                              className="w-3 h-3 text-blue-600 cursor-pointer hover:text-blue-700"
-                              onClick={() => handleDeleteEducation(item._id)}
-                            />
-                          </div>
-                        )}
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -203,15 +185,6 @@ function ProfileSections() {
                   <p className="text-gray-500 text-sm">
                     No education records found
                   </p>
-                  {isFreelancerAndLoggedIn && (
-                    <Button
-                      variant="link"
-                      className="text-blue-600 p-0 h-auto"
-                      onClick={handleAddNewEducation}
-                    >
-                      Add your first education
-                    </Button>
-                  )}
                 </div>
               )}
             </div>
@@ -236,16 +209,6 @@ function ProfileSections() {
                 View All Project
               </Button>
             </Link>
-
-            {isFreelancerAndLoggedIn && (
-              <Button
-                className="button-gradient w-full md:w-auto"
-                onClick={() => setIsAddProjectDialogOpen(true)}
-              >
-                <FaPlus className="w-4 h-4 mr-2" />
-                Add new project
-              </Button>
-            )}
           </CardContent>
         </Card>
 
@@ -258,9 +221,12 @@ function ProfileSections() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3 flex flex-col items-center">
-              <Button className="w-full md:w-40 button-gradient ">
-                <FaRegFaceSmile className="w-4 h-4 mr-2 animate-bounce" />
-                Followers ({followers})
+              <Button
+                className="w-full md:w-40 button-gradient"
+                onClick={handleFollow}
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                {followed === "true" ? "Unfollow" : "Follow"}
               </Button>
               <Link href="https://calendly.com/" target="_blank">
                 <Button className="w-full md:w-40 button-gradient ">
@@ -279,24 +245,6 @@ function ProfileSections() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Add New Project Dialog */}
-      {isAddProjectDialogOpen && (
-        <AddNewProjectDialog
-          isOpen={isAddProjectDialogOpen}
-          onClose={() => setIsAddProjectDialogOpen(false)}
-        />
-      )}
-
-      {/* Add/Edit Education Dialog */}
-      {isAddEducationDialogOpen && (
-        <EducationDialogAddEdit
-          isOpen={isAddEducationDialogOpen}
-          onClose={handleEducationDialogClose}
-          education={editingEducation} // Pass the education data to edit
-          isEditing={!!editingEducation} // Indicate if we're editing or adding
-        />
-      )}
     </div>
   );
 }

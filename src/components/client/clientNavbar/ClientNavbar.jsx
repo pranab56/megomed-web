@@ -59,7 +59,10 @@ function ClientNavBar() {
 
   // Debug: Check what's in navItems
   console.log("Nav Items:", navItems);
-  console.log("Package route exists:", navItems.find(item => item.href === '/package'));
+  console.log(
+    "Package route exists:",
+    navItems.find((item) => item.href === "/package")
+  );
 
   // Helper function to determine if link is active
   const isActiveLink = (href) => {
@@ -75,7 +78,7 @@ function ClientNavBar() {
 
   const handleSignOut = () => {
     localStorage.clear();
-    router.push("/auth/login")
+    router.push("/auth/login");
   };
 
   useEffect(() => {
@@ -102,10 +105,11 @@ function ClientNavBar() {
               <Link
                 key={index}
                 href={item.href}
-                className={`font-medium transition-colors ${isActiveLink(item.href)
-                  ? "text-blue-600 hover:text-blue-700"
-                  : "text-gray-700 hover:text-gray-900"
-                  }`}
+                className={`font-medium transition-colors ${
+                  isActiveLink(item.href)
+                    ? "text-blue-600 hover:text-blue-700"
+                    : "text-gray-700 hover:text-gray-900"
+                }`}
               >
                 {item.label}
               </Link>
@@ -145,16 +149,16 @@ function ClientNavBar() {
                   {translations.viewProfile}
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              {/* <DropdownMenuItem asChild>
                 <Link href={`/settings`} className="w-full cursor-pointer">
                   {translations.accountSettings}
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              </DropdownMenuItem> */}
+              {/* <DropdownMenuItem asChild>
                 <Link href={`/billing`} className="w-full cursor-pointer">
                   {translations.billingPlans}
                 </Link>
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href={`/help`} className="w-full cursor-pointer">
@@ -209,8 +213,9 @@ function ClientNavBar() {
                   <Button
                     key={index}
                     variant="ghost"
-                    className={`w-full justify-start ${isActiveLink(item.href) ? "bg-blue-50 text-blue-600" : ""
-                      }`}
+                    className={`w-full justify-start ${
+                      isActiveLink(item.href) ? "bg-blue-50 text-blue-600" : ""
+                    }`}
                     asChild
                   >
                     <Link href={item.href}>{item.label}</Link>
@@ -228,7 +233,7 @@ function ClientNavBar() {
                       {translations.viewProfile}
                     </Link>
                   </Button>
-                  <Button
+                  {/* <Button
                     variant="ghost"
                     className="w-full justify-start"
                     asChild
@@ -236,14 +241,14 @@ function ClientNavBar() {
                     <Link href={`/settings`}>
                       {translations.accountSettings}
                     </Link>
-                  </Button>
-                  <Button
+                  </Button> */}
+                  {/* <Button
                     variant="ghost"
                     className="w-full justify-start"
                     asChild
                   >
                     <Link href={`/billing`}>{translations.billingPlans}</Link>
-                  </Button>
+                  </Button> */}
                   <Button
                     variant="ghost"
                     className="w-full justify-start"

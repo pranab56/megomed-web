@@ -23,6 +23,7 @@ import { IoMdSend } from "react-icons/io";
 import { MdAttachFile, MdClose, MdImage } from "react-icons/md";
 import { useCreateInvoiceMutation } from "../../../features/invoice/invoiceApi";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 import { useMyChatListQuery } from "../../../features/chat/chatApi";
 import {
@@ -38,6 +39,7 @@ import { getToken } from "../../../features/auth/authService";
 import { jwtDecode } from "jwt-decode";
 
 const ChatWindow = ({ clientId, chatId }) => {
+  const router = useRouter();
   const [formValues, setFormValues] = useState({ message: "", file: null });
   const [imagePreview, setImagePreview] = useState(null);
   const [showFileUpload, setShowFileUpload] = useState(false);
@@ -77,6 +79,15 @@ const ChatWindow = ({ clientId, chatId }) => {
   const { data: AllChat, isLoading } = useMyChatListQuery();
 
   const [report, { isLoading: reportLoading }] = useReportMutation();
+
+  // Handle view freelancer profile
+  const handleViewProfile = () => {
+    if (!clientId) {
+      toast.error("Freelancer ID not found");
+      return;
+    }
+    router.push(`/profile/view-public/${clientId}`);
+  };
 
   const findChatById = (chatId) => {
     const allChats = [
@@ -594,7 +605,7 @@ const ChatWindow = ({ clientId, chatId }) => {
 
             <div className="flex items-center space-x-4">
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleViewProfile}>
                   View Freelancer Profile
                 </Button>
                 <Button
