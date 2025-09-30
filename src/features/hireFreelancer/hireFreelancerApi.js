@@ -17,9 +17,20 @@ export const hireFreelancerApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["hireFreelancer"],
     }),
+
+    isFollowed: builder.query({
+      query: (freelancerId) => ({
+        url: `/follow/is-follow/${freelancerId}`,
+        method: "GET",
+      }),
+      providesTags: ["hireFreelancer"],
+    }),
   }),
 });
 
 // Export hooks
-export const { useHireFreelancerMutation, useFollowFreelancerMutation } =
-  hireFreelancerApi;
+export const {
+  useHireFreelancerMutation,
+  useFollowFreelancerMutation,
+  useIsFollowedQuery,
+} = hireFreelancerApi;

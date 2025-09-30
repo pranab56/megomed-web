@@ -8,7 +8,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useGetFreelancerPublicProfileQuery } from "@/features/clientProfile/ClientProfile";
-import { useFollowFreelancerMutation } from "@/features/hireFreelancer/hireFreelancerApi";
+import {
+  useFollowFreelancerMutation,
+  useIsFollowedQuery,
+} from "@/features/hireFreelancer/hireFreelancerApi";
 
 import { Calendar, Eye, MessageCircle, UserPlus } from "lucide-react";
 import Link from "next/link";
@@ -27,6 +30,15 @@ function ProfileSections() {
   const { data, isLoading, error } = useGetFreelancerPublicProfileQuery(id, {
     skip: !id, // Skip the query if no ID is available
   });
+
+  const { data: isFollowed, isLoading: isFollowedLoading } = useIsFollowedQuery(
+    id,
+    {
+      skip: !id, // Skip the query if no ID is available
+    }
+  );
+  const followed = isFollowed?.data;
+  console.log("Is Followed:", isFollowed?.data);
 
   const [followFreelancer, { isLoading: isFollowing }] =
     useFollowFreelancerMutation();
@@ -126,7 +138,7 @@ function ProfileSections() {
       const response = await followFreelancer({
         freelancerUserId: id,
       }).unwrap();
-      toast.success(response?.message || "Freelancer followed successfully!");
+      toast.success(response?.data || "Freelancer followed successfully!");
     } catch (error) {
       console.error("Failed to follow freelancer:", error);
       toast.error("Failed to follow freelancer. Please try again.");
@@ -214,7 +226,7 @@ function ProfileSections() {
                 onClick={handleFollow}
               >
                 <UserPlus className="w-4 h-4 mr-2" />
-                Follow
+                {followed === "true" ? "Unfollow" : "Follow"}
               </Button>
               <Link href="https://calendly.com/" target="_blank">
                 <Button className="w-full md:w-40 button-gradient ">
