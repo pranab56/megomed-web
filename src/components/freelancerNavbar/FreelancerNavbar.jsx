@@ -27,7 +27,7 @@ import { useConnectStripeMutation } from "@/features/plan/planApi";
 import toast from "react-hot-toast";
 import { useGetMyprofileQuery } from "@/features/clientProfile/ClientProfile";
 import { getImageUrl } from "@/utils/getImageUrl";
-import { TbExclamationCircleFilled } from "react-icons/tb";
+
 function FreelancerNavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -189,12 +189,12 @@ function FreelancerNavBar() {
                   <span className="w-4 h-4 text-red-500">Pending</span>
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem asChild>
+              {/* <DropdownMenuItem asChild>
                 <Link href={`/billing`} className="w-full cursor-pointer">
                   Billing & Plans
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator /> */}
               <DropdownMenuItem asChild>
                 <Link href={`/help`} className="w-full cursor-pointer">
                   Help & Support
@@ -282,13 +282,13 @@ function FreelancerNavBar() {
                   >
                     Connect Stripe
                   </Button>
-                  <Button
+                  {/* <Button
                     variant="ghost"
                     className="w-full justify-start"
                     asChild
                   >
                     <Link href={`/billing`}>Billing & Plans</Link>
-                  </Button>
+                  </Button> */}
                   <Button
                     variant="ghost"
                     className="w-full justify-start"
