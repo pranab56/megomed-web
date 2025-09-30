@@ -81,7 +81,7 @@ export const tenderApi = baseApi.injectEndpoints({
       invalidatesTags: ["tender"],
     }),
 
-    respond: builder.mutation({
+    applyTender: builder.mutation({
       query: (id) => ({
         url: `/tender/respond/${id}`,
         method: "PATCH",
@@ -107,4 +107,5 @@ export const {
   useSingleTenderQuery,
   useRespondMutation,
   useRunningTenderByClientIdQuery,
+  useApplyTenderMutation,
 } = tenderApi;

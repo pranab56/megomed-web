@@ -30,7 +30,18 @@ function JobTenderSidebar({ jobData }) {
   const [applyTender, { isLoading: isApplyingTender }] =
     useApplyTenderMutation();
 
-  console.log(jobData);
+  console.log("JobTenderSidebar - jobData:", jobData);
+  console.log("JobTenderSidebar - jobData structure:", {
+    _id: jobData?._id,
+    title: jobData?.title,
+    image: jobData?.image,
+    jobType: jobData?.jobType,
+    categoryName: jobData?.categoryName,
+    serviceTypeName: jobData?.serviceTypeName,
+    startDate: jobData?.startDate,
+    endDate: jobData?.endDate,
+    createdAt: jobData?.createdAt,
+  });
 
   const [role, setRole] = useState(null);
   // Only render on client side to prevent hydration issues
@@ -139,7 +150,7 @@ function JobTenderSidebar({ jobData }) {
       // Update local state
       setRespondedToTender(true);
 
-      router.push(`/chat/${jobData._id}`);
+      router.push(`/chat`);
 
       // Show success message
       showToast.success(

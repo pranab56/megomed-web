@@ -88,29 +88,10 @@ function JobTenderDetails({ jobData }) {
     };
   };
 
-  const job = jobData
-    ? mapJobData(jobData)
-    : isTenderPage
-    ? {
-        title: "Project Details",
-        role: "Business Analyst",
-        fullDescription: ["Project details not available"],
-        location: "Remote",
-        datePosted: formatDate(new Date()),
-        deadLine: "N/A",
-        requirements: ["Details not specified"],
-        startDate: "N/A",
-        endDate: "N/A",
-        postedOn: "N/A",
-      }
-    : {
-        title: "Job Details",
-        description: "Job information not available",
-        fullDescription: ["Job details not available"],
-        responsibilities: ["Responsibilities not specified"],
-        requirements: ["Requirements not specified"],
-        benefits: ["Benefits not specified"],
-      };
+  const job = jobData ? mapJobData(jobData) : null;
+
+  console.log("JobTenderDetails - Raw jobData:", jobData);
+  console.log("JobTenderDetails - Mapped job:", job);
 
   const handleCopyLink = async () => {
     try {
@@ -148,7 +129,7 @@ function JobTenderDetails({ jobData }) {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 mb-6 2xl:mb-10">
-      {/* Header Section */}
+      {/* Single Card with All Information */}
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between">
@@ -203,105 +184,46 @@ function JobTenderDetails({ jobData }) {
         </CardContent>
       </Card>
 
-      {/* Responsibilities Section */}
-      {!isTenderPage && job.responsibilities && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900">
-              {jobDetailsTranslations.responsibilitiesTitle ||
-                "RESPONSIBILITIES"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {job.responsibilities.map((responsibility, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  {index === 0 ? (
-                    <div
-                      className="text-gray-700 leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: job.description }}
-                    />
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Requirements Section */}
+      {/* Important Dates Section */}
       <Card>
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900">
-            {jobDetailsTranslations.requirementsTitle || "Requirements"}
+            {jobDetailsTranslations.importantDatesTitle || "Important Dates"}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {job.requirements.map((requirement, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
-                <p className="text-gray-700 leading-relaxed">{requirement}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Benefits Section - Only show for jobs */}
-      {!isTenderPage && job.benefits && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900">
-              {jobDetailsTranslations.benefitsTitle || "Benefits"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {job.benefits.map((benefit, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <p className="text-gray-700">{benefit}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Important Dates Section - For tenders */}
-      {isTenderPage && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900">
-              {jobDetailsTranslations.importantDatesTitle || "Important Dates"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
               <p className="text-gray-700">
-                {jobDetailsTranslations.startDateLabel || "Start Date"}:{" "}
+                <span className="font-semibold">
+                  {jobDetailsTranslations.startDateLabel || "Start Date"}:
+                </span>{" "}
                 {job.startDate || "N/A"}
               </p>
-
               <p className="text-gray-700">
-                {jobDetailsTranslations.endDateLabel || "End Date"}:{" "}
+                <span className="font-semibold">
+                  {jobDetailsTranslations.endDateLabel || "End Date"}:
+                </span>{" "}
                 {job.endDate || "N/A"}
               </p>
-
+            </div>
+            <div className="space-y-3">
               <p className="text-gray-700">
-                {jobDetailsTranslations.postedOnLabel || "Posted On"}:{" "}
+                <span className="font-semibold">
+                  {jobDetailsTranslations.postedOnLabel || "Posted On"}:
+                </span>{" "}
                 {job.postedOn || "N/A"}
               </p>
-
               <p className="text-gray-700">
-                {jobDetailsTranslations.deadlineLabel || "Deadline"}:{" "}
+                <span className="font-semibold">
+                  {jobDetailsTranslations.deadlineLabel || "Deadline"}:
+                </span>{" "}
                 {job.deadLine || "N/A"}
               </p>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </CardContent>
+      </Card>
 
       <ShowLoginDialog open={openLoginDialog} onOpenChange={setOpenLoginDialog}>
         <DialogTitle className="text-2xl font-bold">

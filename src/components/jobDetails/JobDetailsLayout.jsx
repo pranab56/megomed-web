@@ -17,6 +17,9 @@ function JobDetailsLayout() {
   // Extract job data from API response
   const jobData = data?.data;
 
+  console.log("Full API Response:", data);
+  console.log("Extracted Job Data:", jobData);
+
   // Only render on client side to prevent hydration issues
   useEffect(() => {
     setIsClient(true);
