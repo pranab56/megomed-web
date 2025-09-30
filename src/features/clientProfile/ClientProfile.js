@@ -9,6 +9,16 @@ export const clientProfileApi = baseApi.injectEndpoints({
       }),
       providesTags: ["clientProfile"],
     }),
+    getFreelancerPublicProfile: builder.query({
+      query: (id) => {
+        console.log("Freelancer ID:", id);
+        return {
+          url: `/users/single-freelancer/${id}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["clientProfile"],
+    }),
 
     updateMyprofile: builder.mutation({
       query: (data) => ({
@@ -41,6 +51,7 @@ export const clientProfileApi = baseApi.injectEndpoints({
 // Export hooks
 export const {
   useGetMyprofileQuery,
+  useGetFreelancerPublicProfileQuery,
   useUpdateMyprofileMutation,
   useUpdateProfileInfoMutation,
   useUpdateSocialLinkMutation,

@@ -1,10 +1,31 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useGetMyprofileQuery } from "@/features/clientProfile/ClientProfile";
+import { useGetFreelancerPublicProfileQuery } from "@/features/clientProfile/ClientProfile";
+import { useParams } from "next/navigation";
 
 function SkillsSection() {
-  const { data, isLoading } = useGetMyprofileQuery();
+  const params = useParams();
+  const id = params.id;
+
+  console.log("ProfileHeader - Params object:", params);
+  console.log("ProfileHeader - Extracted ID:", id);
+
+  const { data, isLoading, error } = useGetFreelancerPublicProfileQuery(id, {
+    skip: !id, // Skip the query if no ID is available
+  });
+
+  if (error) {
+    return (
+      <div className="w-full">
+        <div className="text-center py-8">
+          <p className="text-red-500">
+            Error loading freelancer profile: {error.message}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const apiSkills = data?.data?.freelancerId?.skills || [];
 
@@ -69,6 +90,16 @@ function SkillsSection() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!id) {
+    return (
+      <div className="w-full">
+        <div className="text-center py-8">
+          <p className="text-gray-500">No freelancer ID provided</p>
         </div>
       </div>
     );

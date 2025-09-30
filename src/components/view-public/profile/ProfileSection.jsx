@@ -7,15 +7,28 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useGetMyprofileQuery } from "@/features/clientProfile/ClientProfile";
+import { useGetFreelancerPublicProfileQuery } from "@/features/clientProfile/ClientProfile";
+
 import { Calendar, Eye, MessageCircle, UserPlus } from "lucide-react";
 import Link from "next/link";
 
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 function ProfileSections() {
   const router = useRouter();
-  const { data, isLoading } = useGetMyprofileQuery();
+  // const { id } = useParams();
+  const params = useParams();
+  const id = params.id;
 
+  console.log("ProfileHeader - Params object:", params);
+  console.log("ProfileHeader - Extracted ID:", id);
+
+  const { data, isLoading, error } = useGetFreelancerPublicProfileQuery(id, {
+    skip: !id, // Skip the query if no ID is available
+  });
+
+  console.log("Freelancer ID from params:", id);
+  console.log("API Response data:", data);
+  console.log("API Error:", error);
   const educationCertifications =
     data?.data?.freelancerId?.educationCertifications || [];
 
@@ -76,6 +89,28 @@ function ProfileSections() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (!id) {
+    return (
+      <div className="w-full">
+        <div className="text-center py-8">
+          <p className="text-gray-500">No freelancer ID provided</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full">
+        <div className="text-center py-8">
+          <p className="text-red-500">
+            Error loading freelancer profile: {error.message}
+          </p>
         </div>
       </div>
     );

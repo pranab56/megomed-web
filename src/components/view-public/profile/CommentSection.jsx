@@ -2,12 +2,20 @@ import { useEffect, useState } from "react";
 
 import { Card, CardContent } from "@/components/ui/card";
 
-import { useGetMyprofileQuery } from "@/features/clientProfile/ClientProfile";
+import { useGetFreelancerPublicProfileQuery } from "@/features/clientProfile/ClientProfile";
+import { useParams } from "next/navigation";
 
 function CommentSection() {
   const [comment, setComment] = useState("");
+  const params = useParams();
+  const id = params.id;
 
-  const { data } = useGetMyprofileQuery();
+  console.log("ProfileHeader - Params object:", params);
+  console.log("ProfileHeader - Extracted ID:", id);
+
+  const { data, isLoading, error } = useGetFreelancerPublicProfileQuery(id, {
+    skip: !id, // Skip the query if no ID is available
+  });
 
   // Load existing comment when component mounts
   useEffect(() => {

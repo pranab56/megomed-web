@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetTopFreeLancerQuery } from '../../features/freelancer/freelancerApi';
+import { useGetTopFreeLancerQuery } from "../../features/freelancer/freelancerApi";
 import Banner from "../common/banner/Banner";
 import Heading from "../common/heading/Heading";
 import ServiceCard from "../common/ServiceCard/ServiceCard";

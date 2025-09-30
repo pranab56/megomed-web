@@ -1,23 +1,19 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
-import { useGetAllCategoryQuery } from "@/features/category/categoryApi";
-import { useGetMyprofileQuery } from "@/features/clientProfile/ClientProfile";
-import { useGetAllServicesQuery } from "@/features/services/servicesApi";
+
 import { getImageUrl } from "@/utils/getImageUrl";
 import { DollarSign, Shield } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import Link from "next/link";
 import { socialPlatforms } from "@/components/profile/socialPlatforms";
-
+import { useGetFreelancerPublicProfileQuery } from "@/features/clientProfile/ClientProfile";
+import { useParams } from "next/navigation";
 function ProfileHeader({ setCoverPhoto }) {
   const [profileImage, setProfileImage] = useState(
     "/client/profile/client.png"
   );
-
-  const [categories, setCategories] = useState([]);
-  const [services, setServices] = useState([]);
 
   // Helper function to get platform icon
   const getPlatformIcon = (platformName) => {
@@ -35,180 +31,17 @@ function ProfileHeader({ setCoverPhoto }) {
     designation: "",
     yearsOfExperience: "",
   });
+  const params = useParams();
+  const id = params.id;
 
-  const { data } = useGetMyprofileQuery();
+  console.log("ProfileHeader - Params object:", params);
+  console.log("ProfileHeader - Extracted ID:", id);
 
-  const { data: categoryData, isLoading: categoryLoading } =
-    useGetAllCategoryQuery();
-  const { data: serviceData, isLoading: serviceLoading } =
-    useGetAllServicesQuery();
+  const { data, isLoading, error } = useGetFreelancerPublicProfileQuery(id, {
+    skip: !id, // Skip the query if no ID is available
+  });
 
-  // Set categories and services when data is loaded
-  useEffect(() => {
-    if (categoryData?.success && categoryData.data) {
-      setCategories(categoryData.data);
-    }
-  }, [categoryData]);
-
-  useEffect(() => {
-    if (serviceData?.success && serviceData.data) {
-      setServices(serviceData.data);
-    }
-  }, [serviceData]);
-
-  // Update form values when profile data changes
-  useEffect(() => {
-    if (data?.data) {
-      // Helper function to find service/category ID by name or return ID if already an ID
-      const findServiceId = (serviceValue) => {
-        if (!serviceValue) return "";
-
-        // If services are not loaded yet, return the value as is (might be an ID)
-        if (!services.length) {
-          console.log(
-            "Services not loaded yet, returning value as is:",
-            serviceValue
-          );
-          return String(serviceValue);
-        }
-
-        // Check if it's already an ID by looking for a service with this ID
-        const serviceById = services.find((s) => s._id === serviceValue);
-        if (serviceById) {
-          console.log(
-            "Found service by ID:",
-            serviceValue,
-            "Found:",
-            serviceById
-          );
-          return serviceById._id;
-        }
-
-        // Otherwise, try to find by name
-        const serviceByName = services.find((s) => s.name === serviceValue);
-        console.log(
-          "Finding service ID for:",
-          serviceValue,
-          "Found:",
-          serviceByName
-        );
-        return serviceByName ? serviceByName._id : String(serviceValue);
-      };
-
-      const findCategoryId = (categoryValue) => {
-        if (!categoryValue) return "";
-
-        // If categories are not loaded yet, return the value as is (might be an ID)
-        if (!categories.length) {
-          console.log(
-            "Categories not loaded yet, returning value as is:",
-            categoryValue
-          );
-          return String(categoryValue);
-        }
-
-        // Check if it's already an ID by looking for a category with this ID
-        const categoryById = categories.find((c) => c._id === categoryValue);
-        if (categoryById) {
-          console.log(
-            "Found category by ID:",
-            categoryValue,
-            "Found:",
-            categoryById
-          );
-          return categoryById._id;
-        }
-
-        // Otherwise, try to find by name
-        const categoryByName = categories.find((c) => c.name === categoryValue);
-        console.log(
-          "Finding category ID for:",
-          categoryValue,
-          "Found:",
-          categoryByName
-        );
-        return categoryByName ? categoryByName._id : String(categoryValue);
-      };
-
-      const newProfileData = {
-        name: data.data.fullName || "Sabbir Ahmed",
-        dailyRate: data.data.dailyRate?.toString() || "500",
-        serviceType: Array.isArray(data.data.serviceType)
-          ? findServiceId(data.data.serviceType[0])
-          : findServiceId(data.data.serviceType),
-        categoryType: Array.isArray(data.data.categoryType)
-          ? findCategoryId(data.data.categoryType[0])
-          : findCategoryId(data.data.categoryType),
-        location: String(data.data.location || "Bangladesh"),
-        language: String(data.data.language || "Bengali"),
-        designation: String(data.data.designation || ""),
-        yearsOfExperience: String(data.data.yearsOfExperience || ""),
-      };
-
-      console.log("Processed profile data:", newProfileData);
-      setProfileData(newProfileData);
-
-      // Set profile image preview
-      if (data.data.profile) {
-        setProfileImage(getImageUrl(data.data.profile));
-      }
-
-      // Set cover photo for MyProfileLayout
-      if (data.data.coverPhoto && setCoverPhoto) {
-        setCoverPhoto(data.data.coverPhoto);
-      }
-    }
-  }, [data, setCoverPhoto, services, categories]);
-
-  // Update form when services/categories are loaded after profile data
-  useEffect(() => {
-    if (data?.data && (services.length > 0 || categories.length > 0)) {
-      console.log("Services/Categories loaded, updating form values");
-
-      // Helper function to find service/category ID by name or return ID if already an ID
-      const findServiceId = (serviceValue) => {
-        if (!serviceValue) return "";
-
-        // Check if it's already an ID by looking for a service with this ID
-        const serviceById = services.find((s) => s._id === serviceValue);
-        if (serviceById) {
-          return serviceById._id;
-        }
-
-        // Otherwise, try to find by name
-        const serviceByName = services.find((s) => s.name === serviceValue);
-        return serviceByName ? serviceByName._id : String(serviceValue);
-      };
-
-      const findCategoryId = (categoryValue) => {
-        if (!categoryValue) return "";
-
-        // Check if it's already an ID by looking for a category with this ID
-        const categoryById = categories.find((c) => c._id === categoryValue);
-        if (categoryById) {
-          return categoryById._id;
-        }
-
-        // Otherwise, try to find by name
-        const categoryByName = categories.find((c) => c.name === categoryValue);
-        return categoryByName ? categoryByName._id : String(categoryValue);
-      };
-
-      // Update only the service and category fields
-      const currentValues = {
-        serviceType: Array.isArray(data.data.serviceType)
-          ? findServiceId(data.data.serviceType[0])
-          : findServiceId(data.data.serviceType),
-        categoryType: Array.isArray(data.data.categoryType)
-          ? findCategoryId(data.data.categoryType[0])
-          : findCategoryId(data.data.categoryType),
-      };
-
-      console.log("Updating form with service/category values:", currentValues);
-    }
-  }, [services, categories, data]);
-
-  if (categoryLoading || serviceLoading) {
+  if (isLoading) {
     return (
       <div className="w-full mx-auto relative bg-white my-5 p-4">
         <div className="animate-pulse">
@@ -220,6 +53,28 @@ function ProfileHeader({ setCoverPhoto }) {
               <div className="h-4 bg-gray-200 rounded w-1/2"></div>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!id) {
+    return (
+      <div className="w-full">
+        <div className="text-center py-8">
+          <p className="text-gray-500">No freelancer ID provided</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full">
+        <div className="text-center py-8">
+          <p className="text-red-500">
+            Error loading freelancer profile: {error.message}
+          </p>
         </div>
       </div>
     );

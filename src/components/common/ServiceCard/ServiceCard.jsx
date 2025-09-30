@@ -10,13 +10,40 @@ import { getImageUrl } from "@/utils/getImageUrl";
 import Image from "next/image";
 import { baseURL } from "../../../utils/BaseURL";
 
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { useHireFreelancerMutation } from "@/features/hireFreelancer/hireFreelancerApi";
+
 function ServiceCard({ data, freelancer }) {
   // Use either data or freelancer prop, prefer freelancer if both exist
   const item = freelancer || data;
+  const router = useRouter();
+  const [hireFreelancer, { isLoading: isHiring }] = useHireFreelancerMutation();
 
-  const currentUser =
-    typeof window !== "undefined" ? localStorage.getItem("role") : null;
+  const currentUser = localStorage.getItem("role");
   const userType = currentUser;
+
+  // Handle hire freelancer
+  const handleHireFreelancer = async () => {
+    if (userType !== "client") {
+      toast.error("Only clients can hire freelancers");
+      return;
+    }
+
+    if (!item._id) {
+      toast.error("Freelancer ID not found");
+      return;
+    }
+
+    try {
+      await hireFreelancer(item._id).unwrap();
+      toast.success("Freelancer hired successfully!");
+      router.push("/chat");
+    } catch (error) {
+      console.error("Failed to hire freelancer:", error);
+      toast.error("Failed to hire freelancer. Please try again.");
+    }
+  };
 
   // Check if it's a project (has title and _id)
   const isProject = item && item._id && item.title;
@@ -189,8 +216,12 @@ function ServiceCard({ data, freelancer }) {
         )}
 
         {/* Button at bottom */}
-        <Button className="w-full bg-[#00298A] hover:bg-[#00298A]/90 text-white py-2.5 font-medium mt-auto">
-          Hire Freelancer →
+        <Button
+          onClick={handleHireFreelancer}
+          disabled={isHiring || userType !== "client"}
+          className="w-full bg-[#00298A] hover:bg-[#00298A]/90 text-white py-2.5 font-medium mt-auto disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isHiring ? "Hiring..." : "Hire Freelancer →"}
         </Button>
       </div>
     </Card>
