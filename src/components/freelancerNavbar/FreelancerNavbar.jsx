@@ -80,7 +80,7 @@ function FreelancerNavBar() {
 
   const handleSignOut = () => {
     localStorage.clear();
-    router.push("/auth/login")
+    router.push("/auth/login");
   };
 
   if (!mounted) {
@@ -103,10 +103,11 @@ function FreelancerNavBar() {
             <Link
               key={index}
               href={item.href}
-              className={`font-medium transition-colors ${isActiveLink(item.href)
+              className={`font-medium transition-colors ${
+                isActiveLink(item.href)
                   ? "text-blue-600 hover:text-blue-700"
                   : "text-gray-700 hover:text-gray-900"
-                }`}
+              }`}
             >
               {item.label}
             </Link>
@@ -206,8 +207,9 @@ function FreelancerNavBar() {
                   <Button
                     key={index}
                     variant="ghost"
-                    className={`w-full justify-start ${isActiveLink(item.href) ? "bg-blue-50 text-blue-600" : ""
-                      }`}
+                    className={`w-full justify-start ${
+                      isActiveLink(item.href) ? "bg-blue-50 text-blue-600" : ""
+                    }`}
                     asChild
                   >
                     <Link href={item.href}>{item.label}</Link>

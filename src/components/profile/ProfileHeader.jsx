@@ -46,6 +46,8 @@ function ProfileHeader({ setCoverPhoto }) {
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
 
+  const curentUser = localStorage.getItem("role");
+
   // Helper function to get platform icon
   const getPlatformIcon = (platformName) => {
     const platform = socialPlatforms.find((p) => p.value === platformName);
@@ -123,13 +125,13 @@ function ProfileHeader({ setCoverPhoto }) {
   // Update form values when profile data changes
   useEffect(() => {
     if (data?.data) {
-      console.log("Profile data loaded:", data.data);
-      console.log("Profile image URL:", data.data.profile);
-      console.log("Processed profile URL:", getImageUrl(data.data.profile));
-      console.log("Services data:", services);
-      console.log("Categories data:", categories);
-      console.log("Service type from API:", data.data.serviceType);
-      console.log("Category type from API:", data.data.categoryType);
+      // console.log("Profile data loaded:", data.data);
+      // console.log("Profile image URL:", data.data.profile);
+      // console.log("Processed profile URL:", getImageUrl(data.data.profile));
+      // console.log("Services data:", services);
+      // console.log("Categories data:", categories);
+      // console.log("Service type from API:", data.data.serviceType);
+      // console.log("Category type from API:", data.data.categoryType);
 
       // Helper function to find service/category ID by name or return ID if already an ID
       const findServiceId = (serviceValue) => {
@@ -495,451 +497,464 @@ function ProfileHeader({ setCoverPhoto }) {
     <div className="w-full mx-auto relative bg-white my-5">
       {/* Edit button positioned absolutely */}
       <div className="flex items-center justify-end">
-        <Dialog open={isDialogOpen} onOpenChange={handleDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="button-gradient">
-              Edit Profile
-              <Edit className="w-4 h-4 ml-2" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="md:min-w-3xl lg:min-w-5xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader className="flex flex-row items-center justify-between pb-4">
-              <DialogTitle className="text-xl font-semibold text-blue-600 h2-gradient-text">
+        {curentUser === "freelancer" && (
+          <Dialog open={isDialogOpen} onOpenChange={handleDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="button-gradient">
                 Edit Profile
-              </DialogTitle>
-            </DialogHeader>
+                <Edit className="w-4 h-4 ml-2" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="md:min-w-3xl lg:min-w-5xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader className="flex flex-row items-center justify-between pb-4">
+                <DialogTitle className="text-xl font-semibold text-blue-600 h2-gradient-text">
+                  Edit Profile
+                </DialogTitle>
+              </DialogHeader>
 
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left Column - Profile Images */}
-                <div className="space-y-6">
-                  {/* Profile Picture */}
-                  <div className="flex flex-col items-center space-y-3">
-                    <div className="w-32 h-32 md:w-52 md:h-52 rounded-full overflow-hidden border-4 ">
-                      <Image
-                        src={profileImage}
-                        alt="Profile"
-                        width={300}
-                        height={300}
-                        className="w-full h-full object-cover "
-                      />
-                    </div>
-                    <div className="relative">
-                      <Input
-                        id="profile-upload"
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleImageUpload(e, "profile")}
-                        className="absolute inset-0 opacity-0 cursor-pointer "
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-2"
-                        asChild
-                      >
-                        <label
-                          htmlFor="profile-upload"
-                          className="cursor-pointer"
-                        >
-                          <Upload className="w-4 h-4" />
-                          Change Profile Picture
-                        </label>
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Cover Image */}
-                  <div className="flex flex-col items-center space-y-3">
-                    <div className="w-52 h-32 rounded-lg overflow-hidden relative">
-                      {coverImage || data?.data?.coverPhoto ? (
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Left Column - Profile Images */}
+                  <div className="space-y-6">
+                    {/* Profile Picture */}
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className="w-32 h-32 md:w-52 md:h-52 rounded-full overflow-hidden border-4 ">
                         <Image
-                          src={coverImage || getImageUrl(data.data.coverPhoto)}
-                          alt="Cover"
-                          width={208}
-                          height={128}
-                          className="w-full h-full object-cover"
+                          src={profileImage}
+                          alt="Profile"
+                          width={300}
+                          height={300}
+                          className="w-full h-full object-cover "
                         />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center text-white relative">
-                          <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600"></div>
-                          <div className="relative z-10 text-center">
-                            <div className="text-lg font-bold">UI/UX</div>
-                            <div className="text-lg font-bold">DESIGN</div>
-                            <div className="text-xs opacity-80 mt-1">
-                              WATCH NOW
-                            </div>
-                          </div>
-                          {/* Design elements */}
-                          <div className="absolute right-4 top-4">
-                            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                              <div className="w-4 h-4 bg-orange-400 rounded-sm"></div>
-                            </div>
-                          </div>
-                          <div className="absolute left-4 bottom-4 text-xs opacity-60">
-                            Websites to learn
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="relative">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleImageUpload(e, "cover")}
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                        id="cover-upload"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-2"
-                        asChild
-                      >
-                        <label
-                          htmlFor="cover-upload"
-                          className="cursor-pointer"
-                        >
-                          <Upload className="w-4 h-4" />
-                          Change Cover
-                        </label>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column - Form Fields */}
-                <div className="space-y-4">
-                  {/* Name */}
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="text-sm font-medium">
-                      Name <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="name"
-                      control={control}
-                      rules={{
-                        required: "Name is required",
-                      }}
-                      render={({ field }) => (
+                      </div>
+                      <div className="relative">
                         <Input
-                          {...field}
-                          id="name"
-                          className={`w-full ${
-                            errors.name ? "border-red-500" : ""
-                          }`}
-                          placeholder="Enter your full name"
+                          id="profile-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, "profile")}
+                          className="absolute inset-0 opacity-0 cursor-pointer "
                         />
-                      )}
-                    />
-                    {errors.name && (
-                      <p className="text-sm text-red-500">
-                        {errors.name.message}
-                      </p>
-                    )}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center gap-2"
+                          asChild
+                        >
+                          <label
+                            htmlFor="profile-upload"
+                            className="cursor-pointer"
+                          >
+                            <Upload className="w-4 h-4" />
+                            Change Profile Picture
+                          </label>
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Cover Image */}
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className="w-52 h-32 rounded-lg overflow-hidden relative">
+                        {coverImage || data?.data?.coverPhoto ? (
+                          <Image
+                            src={
+                              coverImage || getImageUrl(data.data.coverPhoto)
+                            }
+                            alt="Cover"
+                            width={208}
+                            height={128}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center text-white relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600"></div>
+                            <div className="relative z-10 text-center">
+                              <div className="text-lg font-bold">UI/UX</div>
+                              <div className="text-lg font-bold">DESIGN</div>
+                              <div className="text-xs opacity-80 mt-1">
+                                WATCH NOW
+                              </div>
+                            </div>
+                            {/* Design elements */}
+                            <div className="absolute right-4 top-4">
+                              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                                <div className="w-4 h-4 bg-orange-400 rounded-sm"></div>
+                              </div>
+                            </div>
+                            <div className="absolute left-4 bottom-4 text-xs opacity-60">
+                              Websites to learn
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, "cover")}
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          id="cover-upload"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center gap-2"
+                          asChild
+                        >
+                          <label
+                            htmlFor="cover-upload"
+                            className="cursor-pointer"
+                          >
+                            <Upload className="w-4 h-4" />
+                            Change Cover
+                          </label>
+                        </Button>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Daily Rate */}
-                  <div className="space-y-2">
-                    <Label htmlFor="dailyRate" className="text-sm font-medium">
-                      Daily Rate <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="dailyRate"
-                      control={control}
-                      rules={{
-                        required: "Daily rate is required",
-                      }}
-                      render={({ field }) => (
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                            $
-                          </span>
+                  {/* Right Column - Form Fields */}
+                  <div className="space-y-4">
+                    {/* Name */}
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-sm font-medium">
+                        Name <span className="text-red-500">*</span>
+                      </Label>
+                      <Controller
+                        name="name"
+                        control={control}
+                        rules={{
+                          required: "Name is required",
+                        }}
+                        render={({ field }) => (
                           <Input
                             {...field}
-                            id="dailyRate"
-                            type="number"
-                            className={`w-full pl-8 ${
-                              errors.dailyRate ? "border-red-500" : ""
+                            id="name"
+                            className={`w-full ${
+                              errors.name ? "border-red-500" : ""
                             }`}
-                            placeholder="500"
+                            placeholder="Enter your full name"
                           />
-                        </div>
+                        )}
+                      />
+                      {errors.name && (
+                        <p className="text-sm text-red-500">
+                          {errors.name.message}
+                        </p>
                       )}
-                    />
-                    {errors.dailyRate && (
-                      <p className="text-sm text-red-500">
-                        {errors.dailyRate.message}
-                      </p>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Service Type Dropdown */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      Service Type <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="serviceType"
-                      control={control}
-                      rules={{ required: "Service type is required" }}
-                      render={({ field }) => (
-                        <Select
-                          value={String(field.value || "")}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger
-                            className={`w-full ${
-                              errors.serviceType ? "border-red-500" : ""
-                            }`}
-                          >
-                            <SelectValue
-                              placeholder={
-                                serviceLoading
-                                  ? "Loading services..."
-                                  : services.length === 0
-                                  ? "No services available"
-                                  : "Select service type"
-                              }
+                    {/* Daily Rate */}
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="dailyRate"
+                        className="text-sm font-medium"
+                      >
+                        Daily Rate <span className="text-red-500">*</span>
+                      </Label>
+                      <Controller
+                        name="dailyRate"
+                        control={control}
+                        rules={{
+                          required: "Daily rate is required",
+                        }}
+                        render={({ field }) => (
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                              $
+                            </span>
+                            <Input
+                              {...field}
+                              id="dailyRate"
+                              type="number"
+                              className={`w-full pl-8 ${
+                                errors.dailyRate ? "border-red-500" : ""
+                              }`}
+                              placeholder="500"
                             />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {services.length > 0 ? (
-                              services.map((service) => (
-                                <SelectItem
-                                  key={service._id}
-                                  value={service._id}
-                                >
-                                  {service.name}
+                          </div>
+                        )}
+                      />
+                      {errors.dailyRate && (
+                        <p className="text-sm text-red-500">
+                          {errors.dailyRate.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Service Type Dropdown */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">
+                        Service Type <span className="text-red-500">*</span>
+                      </Label>
+                      <Controller
+                        name="serviceType"
+                        control={control}
+                        rules={{ required: "Service type is required" }}
+                        render={({ field }) => (
+                          <Select
+                            value={String(field.value || "")}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger
+                              className={`w-full ${
+                                errors.serviceType ? "border-red-500" : ""
+                              }`}
+                            >
+                              <SelectValue
+                                placeholder={
+                                  serviceLoading
+                                    ? "Loading services..."
+                                    : services.length === 0
+                                    ? "No services available"
+                                    : "Select service type"
+                                }
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {services.length > 0 ? (
+                                services.map((service) => (
+                                  <SelectItem
+                                    key={service._id}
+                                    value={service._id}
+                                  >
+                                    {service.name}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="" disabled>
+                                  No services available
                                 </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem value="" disabled>
-                                No services available
-                              </SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.serviceType && (
+                        <p className="text-sm text-red-500">
+                          {errors.serviceType.message}
+                        </p>
                       )}
-                    />
-                    {errors.serviceType && (
-                      <p className="text-sm text-red-500">
-                        {errors.serviceType.message}
-                      </p>
-                    )}
-                    {serviceError && (
-                      <p className="text-sm text-yellow-600">
-                        Failed to load services
-                      </p>
-                    )}
-                  </div>
+                      {serviceError && (
+                        <p className="text-sm text-yellow-600">
+                          Failed to load services
+                        </p>
+                      )}
+                    </div>
 
-                  {/* Category Type Dropdown */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      Category Type <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="categoryType"
-                      control={control}
-                      rules={{ required: "Category type is required" }}
-                      render={({ field }) => (
-                        <Select
-                          value={String(field.value || "")}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger
-                            className={`w-full ${
-                              errors.categoryType ? "border-red-500" : ""
-                            }`}
+                    {/* Category Type Dropdown */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">
+                        Category Type <span className="text-red-500">*</span>
+                      </Label>
+                      <Controller
+                        name="categoryType"
+                        control={control}
+                        rules={{ required: "Category type is required" }}
+                        render={({ field }) => (
+                          <Select
+                            value={String(field.value || "")}
+                            onValueChange={field.onChange}
                           >
-                            <SelectValue
-                              placeholder={
-                                categoryLoading
-                                  ? "Loading categories..."
-                                  : categories.length === 0
-                                  ? "No categories available"
-                                  : "Select category"
-                              }
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categories.length > 0 ? (
-                              categories.map((category) => (
-                                <SelectItem
-                                  key={category._id}
-                                  value={category._id}
-                                >
-                                  {category.name}
+                            <SelectTrigger
+                              className={`w-full ${
+                                errors.categoryType ? "border-red-500" : ""
+                              }`}
+                            >
+                              <SelectValue
+                                placeholder={
+                                  categoryLoading
+                                    ? "Loading categories..."
+                                    : categories.length === 0
+                                    ? "No categories available"
+                                    : "Select category"
+                                }
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categories.length > 0 ? (
+                                categories.map((category) => (
+                                  <SelectItem
+                                    key={category._id}
+                                    value={category._id}
+                                  >
+                                    {category.name}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="" disabled>
+                                  No categories available
                                 </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem value="" disabled>
-                                No categories available
+                              )}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.categoryType && (
+                        <p className="text-sm text-red-500">
+                          {errors.categoryType.message}
+                        </p>
+                      )}
+                      {categoryError && (
+                        <p className="text-sm text-yellow-600">
+                          Failed to load categories
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Location */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">
+                        Location <span className="text-red-500">*</span>
+                      </Label>
+                      <Controller
+                        name="location"
+                        control={control}
+                        rules={{ required: "Location is required" }}
+                        render={({ field }) => (
+                          <Select
+                            value={String(field.value || "")}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger
+                              className={`w-full ${
+                                errors.location ? "border-red-500" : ""
+                              }`}
+                            >
+                              <SelectValue placeholder="Select location" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Bangladesh">
+                                Bangladesh
                               </SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
+                              <SelectItem value="India">India</SelectItem>
+                              <SelectItem value="Pakistan">Pakistan</SelectItem>
+                              <SelectItem value="USA">USA</SelectItem>
+                              <SelectItem value="UK">UK</SelectItem>
+                              <SelectItem value="Canada">Canada</SelectItem>
+                              <SelectItem value="Australia">
+                                Australia
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.location && (
+                        <p className="text-sm text-red-500">
+                          {errors.location.message}
+                        </p>
                       )}
-                    />
-                    {errors.categoryType && (
-                      <p className="text-sm text-red-500">
-                        {errors.categoryType.message}
-                      </p>
-                    )}
-                    {categoryError && (
-                      <p className="text-sm text-yellow-600">
-                        Failed to load categories
-                      </p>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Location */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      Location <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="location"
-                      control={control}
-                      rules={{ required: "Location is required" }}
-                      render={({ field }) => (
-                        <Select
-                          value={String(field.value || "")}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger
-                            className={`w-full ${
-                              errors.location ? "border-red-500" : ""
-                            }`}
+                    {/* Designation */}
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="designation"
+                        className="text-sm font-medium"
+                      >
+                        Designation
+                      </Label>
+                      <Controller
+                        name="designation"
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            id="designation"
+                            className="w-full"
+                            placeholder="Enter your designation"
+                          />
+                        )}
+                      />
+                    </div>
+
+                    {/* Years of Experience */}
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="yearsOfExperience"
+                        className="text-sm font-medium"
+                      >
+                        Years of Experience
+                      </Label>
+                      <Controller
+                        name="yearsOfExperience"
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            id="yearsOfExperience"
+                            className="w-full"
+                            placeholder="e.g., 5 years"
+                          />
+                        )}
+                      />
+                    </div>
+
+                    {/* Language */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">
+                        Language <span className="text-red-500">*</span>
+                      </Label>
+                      <Controller
+                        name="language"
+                        control={control}
+                        rules={{ required: "Language is required" }}
+                        render={({ field }) => (
+                          <Select
+                            value={String(field.value || "")}
+                            onValueChange={field.onChange}
                           >
-                            <SelectValue placeholder="Select location" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Bangladesh">
-                              Bangladesh
-                            </SelectItem>
-                            <SelectItem value="India">India</SelectItem>
-                            <SelectItem value="Pakistan">Pakistan</SelectItem>
-                            <SelectItem value="USA">USA</SelectItem>
-                            <SelectItem value="UK">UK</SelectItem>
-                            <SelectItem value="Canada">Canada</SelectItem>
-                            <SelectItem value="Australia">Australia</SelectItem>
-                          </SelectContent>
-                        </Select>
+                            <SelectTrigger
+                              className={`w-full ${
+                                errors.language ? "border-red-500" : ""
+                              }`}
+                            >
+                              <SelectValue placeholder="Select language" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Bengali">Bengali</SelectItem>
+                              <SelectItem value="English">English</SelectItem>
+                              <SelectItem value="Hindi">Hindi</SelectItem>
+                              <SelectItem value="Urdu">Urdu</SelectItem>
+                              <SelectItem value="Arabic">Arabic</SelectItem>
+                              <SelectItem value="Spanish">Spanish</SelectItem>
+                              <SelectItem value="French">French</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.language && (
+                        <p className="text-sm text-red-500">
+                          {errors.language.message}
+                        </p>
                       )}
-                    />
-                    {errors.location && (
-                      <p className="text-sm text-red-500">
-                        {errors.location.message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Designation */}
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="designation"
-                      className="text-sm font-medium"
-                    >
-                      Designation
-                    </Label>
-                    <Controller
-                      name="designation"
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          id="designation"
-                          className="w-full"
-                          placeholder="Enter your designation"
-                        />
-                      )}
-                    />
-                  </div>
-
-                  {/* Years of Experience */}
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="yearsOfExperience"
-                      className="text-sm font-medium"
-                    >
-                      Years of Experience
-                    </Label>
-                    <Controller
-                      name="yearsOfExperience"
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          id="yearsOfExperience"
-                          className="w-full"
-                          placeholder="e.g., 5 years"
-                        />
-                      )}
-                    />
-                  </div>
-
-                  {/* Language */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      Language <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="language"
-                      control={control}
-                      rules={{ required: "Language is required" }}
-                      render={({ field }) => (
-                        <Select
-                          value={String(field.value || "")}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger
-                            className={`w-full ${
-                              errors.language ? "border-red-500" : ""
-                            }`}
-                          >
-                            <SelectValue placeholder="Select language" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Bengali">Bengali</SelectItem>
-                            <SelectItem value="English">English</SelectItem>
-                            <SelectItem value="Hindi">Hindi</SelectItem>
-                            <SelectItem value="Urdu">Urdu</SelectItem>
-                            <SelectItem value="Arabic">Arabic</SelectItem>
-                            <SelectItem value="Spanish">Spanish</SelectItem>
-                            <SelectItem value="French">French</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    {errors.language && (
-                      <p className="text-sm text-red-500">
-                        {errors.language.message}
-                      </p>
-                    )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Dialog Footer */}
-              <div className="flex justify-end gap-3 pt-6 border-t mt-8">
-                <Button type="button" variant="outline" onClick={handleCancel}>
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 button-gradient"
-                  disabled={isUpdating}
-                >
-                  {isUpdating ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+                {/* Dialog Footer */}
+                <div className="flex justify-end gap-3 pt-6 border-t mt-8">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancel}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-blue-600 hover:bg-blue-700 button-gradient"
+                    disabled={isUpdating}
+                  >
+                    {isUpdating ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       {/* Main profile content */}

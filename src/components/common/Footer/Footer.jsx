@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 function Footer() {
+  const curentUser = localStorage.getItem("role");
   const forClientsLinks = [
     {
       label: "Find Freelancers",
@@ -60,7 +61,11 @@ function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-gray-600 text-sm hover:text-black transition-colors block py-1"
+                      className={`text-gray-600 text-sm transition-colors block py-1 ${
+                        curentUser === "freelancer"
+                          ? "cursor-not-allowed opacity-50 pointer-events-none"
+                          : "hover:text-black"
+                      }`}
                     >
                       {link.label}
                     </Link>
@@ -78,7 +83,11 @@ function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-gray-600 text-sm hover:text-black transition-colors block py-1"
+                      className={`text-gray-600 text-sm transition-colors block py-1 ${
+                        curentUser === "client"
+                          ? "cursor-not-allowed opacity-50 pointer-events-none"
+                          : "hover:text-black"
+                      }`}
                     >
                       {link.label}
                     </Link>
