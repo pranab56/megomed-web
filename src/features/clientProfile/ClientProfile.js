@@ -1,4 +1,4 @@
-import { baseApi } from '../../utils/apiBaseQuery';
+import { baseApi } from "../../utils/apiBaseQuery";
 
 export const clientProfileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -27,13 +27,21 @@ export const clientProfileApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["clientProfile"],
     }),
-
-  })
+    updateSocialLink: builder.mutation({
+      query: (data) => ({
+        url: "/freelancer-info/update",
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["clientProfile"],
+    }),
+  }),
 });
 
 // Export hooks
 export const {
   useGetMyprofileQuery,
   useUpdateMyprofileMutation,
-  useUpdateProfileInfoMutation
+  useUpdateProfileInfoMutation,
+  useUpdateSocialLinkMutation,
 } = clientProfileApi;

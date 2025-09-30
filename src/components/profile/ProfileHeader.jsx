@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getImageUrl } from "@/utils/getImageUrl";
-import { DollarSign, Edit, Shield, Upload } from "lucide-react";
+import { DollarSign, Edit, Plus, Shield, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -27,11 +27,16 @@ import { useGetAllCategoryQuery } from "../../features/category/categoryApi";
 import {
   useGetMyprofileQuery,
   useUpdateMyprofileMutation,
+  useUpdateSocialLinkMutation,
 } from "../../features/clientProfile/ClientProfile";
 import { useGetAllServicesQuery } from "../../features/services/servicesApi";
+import SocialLinkAddDialog from "./SocialLinkAddDialog";
+import { socialPlatforms } from "./socialPlatforms";
+import Link from "next/link";
 
 function ProfileHeader({ setCoverPhoto }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSocialLinkDialogOpen, setIsSocialLinkDialogOpen] = useState(false);
   const [profileImage, setProfileImage] = useState(
     "/client/profile/client.png"
   );
@@ -40,6 +45,29 @@ function ProfileHeader({ setCoverPhoto }) {
   const [coverImageFile, setCoverImageFile] = useState(null);
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
+
+  // Helper function to get platform icon
+  const getPlatformIcon = (platformName) => {
+    const platform = socialPlatforms.find((p) => p.value === platformName);
+    return platform?.icon || null;
+  };
+
+  // Function to delete social link
+  const handleDeleteSocialLink = async (socialLinkId) => {
+    try {
+      const deleteData = {
+        type: "socialLink",
+        operation: "delete",
+        _id: socialLinkId,
+      };
+
+      await updateSocialLink(deleteData).unwrap();
+      toast.success("Social link deleted successfully!");
+    } catch (error) {
+      console.error("Failed to delete social link:", error);
+      toast.error("Failed to delete social link. Please try again.");
+    }
+  };
 
   const [profileData, setProfileData] = useState({
     name: "Sabbir Ahmed",
@@ -55,6 +83,8 @@ function ProfileHeader({ setCoverPhoto }) {
   const { data, isLoading } = useGetMyprofileQuery();
   const [updateMyprofile, { isLoading: isUpdating }] =
     useUpdateMyprofileMutation();
+  const [updateSocialLink, { isLoading: isDeletingSocialLink }] =
+    useUpdateSocialLinkMutation();
   const {
     data: categoryData,
     isLoading: categoryLoading,
@@ -1003,8 +1033,71 @@ function ProfileHeader({ setCoverPhoto }) {
               Day Rate ${data?.data?.dailyRate || profileData.dailyRate}
             </span>
           </div>
+          {/* Social Links Display */}
+          <div className="flex items-center gap-2">
+            {/* Existing Social Links */}
+            {data?.data?.freelancerId?.socialLinks &&
+              data.data.freelancerId.socialLinks.length > 0 && (
+                <div className="flex flex-wrap gap-2 items-center ">
+                  {data.data.freelancerId.socialLinks.map(
+                    (socialLink, index) => {
+                      const platformIcon = getPlatformIcon(socialLink.name);
+                      return (
+                        <div
+                          key={socialLink._id || index}
+                          className="relative group"
+                        >
+                          <Link
+                            href={socialLink.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 rounded-lg transition-colors"
+                          >
+                            {platformIcon && (
+                              <Image
+                                src={platformIcon}
+                                alt={socialLink.name}
+                                width={32}
+                                height={32}
+                                className="w-8 h-8 rounded-full object-fill"
+                              />
+                            )}
+                          </Link>
+
+                          {/* Delete Button - Shows on Hover */}
+                          <button
+                            onClick={() =>
+                              handleDeleteSocialLink(socialLink._id)
+                            }
+                            disabled={isDeletingSocialLink}
+                            className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
+              )}
+
+            {/* Add Social Link Button */}
+            <Button
+              variant="outline"
+              className="w-8 h-8 rounded-full border-dashed flex items-center justify-center"
+              onClick={() => setIsSocialLinkDialogOpen(true)}
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Social Link Add Dialog */}
+      <SocialLinkAddDialog
+        isOpen={isSocialLinkDialogOpen}
+        onClose={() => setIsSocialLinkDialogOpen(false)}
+      />
     </div>
   );
 }
