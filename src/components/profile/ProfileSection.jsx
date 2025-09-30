@@ -13,13 +13,14 @@ import {
   Eye,
   MessageCircle,
   Plus,
+  Star,
   Trash2,
   UserPlus,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { FaPlus } from "react-icons/fa6";
+import { FaPlus, FaRegFaceSmile } from "react-icons/fa6";
 import {
   useGetMyprofileQuery,
   useUpdateProfileInfoMutation,
@@ -27,6 +28,7 @@ import {
 import AddNewProjectDialog from "./AddNewProjectDialog";
 import EducationDialogAddEdit from "./EducationDialogAddEdit";
 import { useRouter } from "next/navigation";
+import { IoHappy } from "react-icons/io5";
 function ProfileSections() {
   const [isAddProjectDialogOpen, setIsAddProjectDialogOpen] = useState(false);
   const [isAddEducationDialogOpen, setIsAddEducationDialogOpen] =
@@ -41,6 +43,8 @@ function ProfileSections() {
 
   const educationCertifications =
     data?.data?.freelancerId?.educationCertifications || [];
+
+  const followers = data?.data?.followers;
 
   const formatDateRange = (startDate, endDate) => {
     const startYear = new Date(startDate).getFullYear();
@@ -255,8 +259,8 @@ function ProfileSections() {
           <CardContent>
             <div className="space-y-3 flex flex-col items-center">
               <Button className="w-full md:w-40 button-gradient ">
-                <UserPlus className="w-4 h-4 mr-2" />
-                Follow
+                <FaRegFaceSmile className="w-4 h-4 mr-2 animate-bounce" />
+                Followers ({followers})
               </Button>
               <Link href="https://calendly.com/" target="_blank">
                 <Button className="w-full md:w-40 button-gradient ">

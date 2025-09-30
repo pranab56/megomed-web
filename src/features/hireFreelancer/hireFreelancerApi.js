@@ -9,8 +9,17 @@ export const hireFreelancerApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["hireFreelancer"],
     }),
+    followFreelancer: builder.mutation({
+      query: (data) => ({
+        url: `/follow/create-follow`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["hireFreelancer"],
+    }),
   }),
 });
 
 // Export hooks
-export const { useHireFreelancerMutation } = hireFreelancerApi;
+export const { useHireFreelancerMutation, useFollowFreelancerMutation } =
+  hireFreelancerApi;

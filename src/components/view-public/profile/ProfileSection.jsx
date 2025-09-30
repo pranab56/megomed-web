@@ -8,11 +8,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useGetFreelancerPublicProfileQuery } from "@/features/clientProfile/ClientProfile";
+import { useFollowFreelancerMutation } from "@/features/hireFreelancer/hireFreelancerApi";
 
 import { Calendar, Eye, MessageCircle, UserPlus } from "lucide-react";
 import Link from "next/link";
 
 import { useParams, useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 function ProfileSections() {
   const router = useRouter();
   // const { id } = useParams();
@@ -25,6 +27,9 @@ function ProfileSections() {
   const { data, isLoading, error } = useGetFreelancerPublicProfileQuery(id, {
     skip: !id, // Skip the query if no ID is available
   });
+
+  const [followFreelancer, { isLoading: isFollowing }] =
+    useFollowFreelancerMutation();
 
   console.log("Freelancer ID from params:", id);
   console.log("API Response data:", data);
@@ -116,6 +121,18 @@ function ProfileSections() {
     );
   }
 
+  const handleFollow = async () => {
+    try {
+      const response = await followFreelancer({
+        freelancerUserId: id,
+      }).unwrap();
+      toast.success(response?.message || "Freelancer followed successfully!");
+    } catch (error) {
+      console.error("Failed to follow freelancer:", error);
+      toast.error("Failed to follow freelancer. Please try again.");
+    }
+  };
+
   return (
     <div className="w-full ">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -192,7 +209,10 @@ function ProfileSections() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3 flex flex-col items-center">
-              <Button className="w-full md:w-40 button-gradient ">
+              <Button
+                className="w-full md:w-40 button-gradient"
+                onClick={handleFollow}
+              >
                 <UserPlus className="w-4 h-4 mr-2" />
                 Follow
               </Button>
