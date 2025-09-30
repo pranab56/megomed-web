@@ -2,8 +2,11 @@
 import useToast from "@/hooks/showToast/ShowToast";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import toast from 'react-hot-toast';
-import { useRespondMutation } from "../../features/tender/tenderApi";
+import toast from "react-hot-toast";
+import {
+  useRespondMutation,
+  useApplyTenderMutation,
+} from "../../features/tender/tenderApi";
 import { baseURL } from "../../utils/BaseURL";
 import { Card, CardContent, CardFooter } from "../ui/card";
 
@@ -40,26 +43,31 @@ function JobTenderCard({ type = "tender", data }) {
     );
   };
 
-  const handleApplyJob = async (e) => {
-    e.preventDefault();
+  // const handleApplyJob = async (e) => {
+  //   e.preventDefault();
 
-    if (type === "tender") {
-      // Handle tender application
-      try {
-        const result = await respond(cardData._id).unwrap();
-        if (result.success) {
-          router.push(`/chat`);
-          toast.success(result.message || "Tender applied successfully!");
-        }
-      } catch (error) {
-        console.error("Error applying to tender:", error);
-        showToast.error("Failed to apply for tender. Please try again.");
-      }
-    } else {
-      // Handle job application (redirect to job details)
-      console.log("Apply for job:", cardData._id);
-      router.push(`/job-details/${cardData._id}`);
-    }
+  //   if (type === "tender") {
+  //     // Handle tender application
+  //     try {
+  //       const result = await respond(cardData._id).unwrap();
+  //       if (result.success) {
+  //         router.push(`/chat`);
+  //         toast.success(result.message || "Tender applied successfully!");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error applying to tender:", error);
+  //       showToast.error("Failed to apply for tender. Please try again.");
+  //     }
+  //   } else {
+  //     // Handle job application (redirect to job details)
+  //     console.log("Apply for job:", cardData._id);
+  //     router.push(`/job-details/${cardData._id}`);
+  //   }
+  // };
+
+  const handleRespondToJob = () => {
+    // Redirect to the website directly
+    window.open(data.websiteLink, "_blank");
   };
 
   return (
@@ -84,15 +92,15 @@ function JobTenderCard({ type = "tender", data }) {
               </button>
               {userType === "freelancer" && (
                 <button
-                  onClick={handleApplyJob}
+                  onClick={handleRespondToJob}
                   disabled={respondLoading}
                   className="px-4 py-2 bg-white text-black rounded-lg cursor-pointer font-medium hover:bg-gray-100 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {respondLoading
                     ? "Applying..."
                     : type === "job"
-                      ? "Apply Job"
-                      : "Respond"}
+                    ? "Apply Job"
+                    : "Respond"}
                 </button>
               )}
             </div>
