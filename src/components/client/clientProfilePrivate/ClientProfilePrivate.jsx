@@ -6,11 +6,12 @@ import { useState } from "react";
 import { useGetMyprofileQuery } from "../../../features/clientProfile/ClientProfile";
 import EditProfileDialog from "./EditProfileDialog";
 import { getImageUrl } from "@/utils/getImageUrl";
+import { useIsFollowedQuery } from "@/features/hireFreelancer/hireFreelancerApi";
+import { FaRegFaceSmile } from "react-icons/fa6";
 
 function ClientProfilePrivate({ translations }) {
   const [isEditProfileDialogOpen, setIsEditProfileDialogOpen] = useState(false);
   const { data, error, isLoading, refetch } = useGetMyprofileQuery();
-
   // Use API data or fallback to empty values
   const clientInfo = data?.data || {
     fullName: "",
@@ -22,6 +23,7 @@ function ClientProfilePrivate({ translations }) {
     isVarified: false,
     language: [],
     companyName: "",
+    followers: "",
   };
 
   const handleEditProfileClose = () => {
@@ -89,6 +91,11 @@ function ClientProfilePrivate({ translations }) {
             </div>
           )}
         </div>
+
+        <Button className="button-gradient">
+          <FaRegFaceSmile className="w-4 h-4 mr-2 animate-bounce" />
+          Followers ({clientInfo?.followers || 0})
+        </Button>
       </div>
       <div className="space-y-2">
         <h1 className="h2-gradient-text text-2xl font-bold text-justify">

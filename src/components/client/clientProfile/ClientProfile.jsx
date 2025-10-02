@@ -6,12 +6,25 @@ import { useParams } from "next/navigation";
 import React from "react";
 import { useGetClientPublicProfileQuery } from "@/features/clientProfile/ClientProfile";
 import { getImageUrl } from "@/utils/getImageUrl";
+import {
+  useFollowFreelancerMutation,
+  useIsFollowedQuery,
+} from "@/features/hireFreelancer/hireFreelancerApi";
+import toast from "react-hot-toast";
 function ClientProfile() {
   const params = useParams();
   const id = params.id;
   const { data, isLoading, error } = useGetClientPublicProfileQuery(id, {
     skip: !id, // Skip the query if no ID is available
   });
+
+  const [followClient, { isLoading: isFollowing }] =
+    useFollowFreelancerMutation();
+  const { data: isFollowed, isLoading: isFollowedLoading } =
+    useIsFollowedQuery(id);
+
+  const followed = isFollowed?.data;
+
   const clientInfo = {
     name: data?.data?.fullName,
     companyName: data?.data?.companyName,
@@ -29,6 +42,19 @@ function ClientProfile() {
     followers: data?.data?.followers,
     isAvailable: data?.data?.isAvailable,
   };
+
+  const handleFollow = async () => {
+    try {
+      const response = await followClient({
+        followerUserId: id,
+      }).unwrap();
+      toast.success(response?.data || "Client followed successfully!");
+    } catch (error) {
+      console.error("Failed to follow client:", error);
+      toast.error("Failed to follow client. Please try again.");
+    }
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -54,8 +80,9 @@ function ClientProfile() {
   return (
     <div className="space-y-4 w-full max-w-7xl mx-auto py-6 px-4 md:px-6 2xl:px-0">
       <div className="flex gap-2 justify-center md:justify-end ">
-        <Button className="button-gradient">
-          Follow {provideIcon({ name: "user_plus" })}
+        <Button className="button-gradient" onClick={handleFollow}>
+          {provideIcon({ name: "user_plus" })}
+          {followed === "true" ? "Unfollow" : "Follow"}{" "}
         </Button>
         <Button className="button-gradient">
           Share {provideIcon({ name: "user_user" })}
