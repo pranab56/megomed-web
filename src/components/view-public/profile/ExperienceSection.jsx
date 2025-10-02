@@ -15,6 +15,15 @@ function ExperienceSection() {
     skip: !id, // Skip the query if no ID is available
   });
 
+  const translations = useMemo(
+    () => ({
+      title: "Experience",
+      addButton: "Add Experience",
+      editButton: "Edit",
+    }),
+    []
+  );
+
   if (error) {
     return (
       <div className="w-full">
@@ -26,15 +35,6 @@ function ExperienceSection() {
       </div>
     );
   }
-
-  const translations = useMemo(
-    () => ({
-      title: "Experience",
-      addButton: "Add Experience",
-      editButton: "Edit",
-    }),
-    []
-  );
 
   // Get experience data from API response
   const apiExperiences = data?.data?.freelancerId?.experience || [];

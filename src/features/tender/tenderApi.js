@@ -65,6 +65,33 @@ export const tenderApi = baseApi.injectEndpoints({
       providesTags: ["tender"],
     }),
 
+    getAllPostByClientPublic: builder.query({
+      query: ({ categoryName, serviceTypeName, searchTerm, id } = {}) => {
+        let url = `/post/me/public/${id}`;
+        const params = [];
+
+        if (categoryName && categoryName.trim()) {
+          params.push(`categoryName=${encodeURIComponent(categoryName)}`);
+        }
+        if (serviceTypeName && serviceTypeName.trim()) {
+          params.push(`serviceTypeName=${encodeURIComponent(serviceTypeName)}`);
+        }
+        if (searchTerm && searchTerm.trim()) {
+          params.push(`searchTerm=${encodeURIComponent(searchTerm)}`);
+        }
+
+        if (params.length > 0) {
+          url += `?${params.join("&")}`;
+        }
+
+        return {
+          url: url,
+          method: "GET",
+        };
+      },
+      providesTags: ["tender"],
+    }),
+
     getAllTender: builder.query({
       query: ({ categoryName, serviceTypeName, searchTerm } = {}) => {
         let url = `/tender`;
@@ -136,4 +163,5 @@ export const {
   useRespondMutation,
   useRunningTenderByClientIdQuery,
   useApplyTenderMutation,
+  useGetAllPostByClientPublicQuery,
 } = tenderApi;

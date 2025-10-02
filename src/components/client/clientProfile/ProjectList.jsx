@@ -11,10 +11,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FiEdit } from "react-icons/fi";
-import { useAllPostQuery } from "../../../features/post/postApi";
-
 import { getImageUrl } from "@/utils/getImageUrl";
-import { useGetAllTenderByClientPublicQuery } from "@/features/tender/tenderApi";
+import {
+  useGetAllTenderByClientPublicQuery,
+  useGetAllPostByClientPublicQuery,
+} from "@/features/tender/tenderApi";
 import { useParams } from "next/navigation";
 function ProjectListPrivate({ translations }) {
   const params = useParams();
@@ -22,14 +23,15 @@ function ProjectListPrivate({ translations }) {
   const [isCompanyLifeDialogOpen, setIsCompanyLifeDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null); // Add state for selected post
-  const { data: apiResponse } = useAllPostQuery();
   const { data: tenderResponse, isLoading: tenderLoading } =
     useGetAllTenderByClientPublicQuery({ id: id }, { skip: !id });
   const router = useRouter();
 
+  const { data: postResponse, isLoading: postLoading } =
+    useGetAllPostByClientPublicQuery({ id: id }, { skip: !id });
   // Extract posts data from API response
-  const posts = apiResponse?.data || [];
-  const meta = apiResponse?.meta || {};
+  const posts = postResponse?.data || [];
+  const meta = postResponse?.meta || {};
 
   const handleAddPost = () => {
     setIsEditing(false);
@@ -238,7 +240,7 @@ function ServiceCard({
           onClick={() => router.push(`postDetails/${post._id}`)}
           className="button-gradient"
         >
-          {translations.viewPosts}
+          View Post
         </Button>
       </CardFooter>
     </Card>
