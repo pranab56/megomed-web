@@ -42,5 +42,6 @@ export const baseApi = createApi({
     "chat",
     "hireFreelancer",
     "message",
+    "policy",
   ], // useful for cache invalidationdfsdf
 });
