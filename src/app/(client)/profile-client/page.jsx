@@ -1,4 +1,4 @@
-import ClientProfilePrivateLayout from '../../../components/client/clientProfilePrivate/ClientProfilePrivateLayout';
+import ClientProfilePrivateLayout from "../../../components/client/clientProfilePrivate/ClientProfilePrivateLayout";
 
 function page() {
   return <ClientProfilePrivateLayout />;

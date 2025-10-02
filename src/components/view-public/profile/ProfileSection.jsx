@@ -136,7 +136,7 @@ function ProfileSections() {
   const handleFollow = async () => {
     try {
       const response = await followFreelancer({
-        freelancerUserId: id,
+        followerUserId: id,
       }).unwrap();
       toast.success(response?.data || "Freelancer followed successfully!");
     } catch (error) {

@@ -12,29 +12,30 @@ import { Textarea } from "@/components/ui/textarea";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useUpdateMyprofileMutation } from '../../../features/clientProfile/ClientProfile';
+import { useUpdateMyprofileMutation } from "../../../features/clientProfile/ClientProfile";
+import { getImageUrl } from "@/utils/getImageUrl";
 
 function EditProfileDialog({ isOpen, onClose, profileData }) {
   const [updateProfile, { isLoading }] = useUpdateMyprofileMutation();
 
-  const [profileImage, setProfileImage] = useState("/client/profile/client.png");
+  const [profileImage, setProfileImage] = useState(
+    "/client/profile/client.png"
+  );
   const [selectedFile, setSelectedFile] = useState(null);
 
   const fileInputRef = useRef(null);
-
-
-  console.log
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
   } = useForm({
     defaultValues: {
       fullName: "",
       companyName: "",
       aboutCompany: "",
+      location: "",
     },
   });
 
@@ -45,6 +46,7 @@ function EditProfileDialog({ isOpen, onClose, profileData }) {
         fullName: profileData.fullName || "",
         companyName: profileData.companyName || "",
         aboutCompany: profileData.aboutCompany || "",
+        location: profileData.location || "",
       });
       setProfileImage(profileData.profile || "/client/profile/client.png");
       setSelectedFile(null);
@@ -77,7 +79,7 @@ function EditProfileDialog({ isOpen, onClose, profileData }) {
       payload.append("fullName", formData.fullName);
       payload.append("companyName", formData.companyName);
       payload.append("aboutCompany", formData.aboutCompany);
-
+      payload.append("location", formData.location);
       // Only append file if a new one was selected
       if (selectedFile) {
         payload.append("profile", selectedFile);
@@ -87,7 +89,8 @@ function EditProfileDialog({ isOpen, onClose, profileData }) {
         fullName: formData.fullName,
         companyName: formData.companyName,
         aboutCompany: formData.aboutCompany,
-        hasFile: !!selectedFile
+        hasFile: !!selectedFile,
+        location: formData.location,
       });
 
       const response = await updateProfile(payload).unwrap();
@@ -115,7 +118,7 @@ function EditProfileDialog({ isOpen, onClose, profileData }) {
                 onClick={handleImageClick}
               >
                 <Image
-                  src={profileImage}
+                  src={getImageUrl(profileImage)}
                   alt="Profile"
                   fill
                   className="object-cover transition-opacity group-hover:opacity-75"
@@ -133,7 +136,11 @@ function EditProfileDialog({ isOpen, onClose, profileData }) {
                 accept="image/*"
                 className="hidden"
               />
-              <Button type="button" className="button-gradient" onClick={handleImageClick}>
+              <Button
+                type="button"
+                className="button-gradient"
+                onClick={handleImageClick}
+              >
                 Edit Image
               </Button>
             </div>
@@ -197,6 +204,34 @@ function EditProfileDialog({ isOpen, onClose, profileData }) {
               </div>
 
               <div className="space-y-1">
+                <Label htmlFor="companyName">Location</Label>
+                <Controller
+                  name="location"
+                  control={control}
+                  rules={{
+                    required: "Location is required",
+                    minLength: {
+                      value: 2,
+                      message: "Location must be at least 2 characters",
+                    },
+                  }}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      id="location"
+                      placeholder="Location"
+                      disabled={isLoading}
+                    />
+                  )}
+                />
+                {errors.location && (
+                  <span className="text-sm text-red-500">
+                    {errors.location.message}
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-1">
                 <Label htmlFor="aboutCompany">About Your Company</Label>
                 <Controller
                   name="aboutCompany"
@@ -219,16 +254,27 @@ function EditProfileDialog({ isOpen, onClose, profileData }) {
                   )}
                 />
                 {errors.aboutCompany && (
-                  <span className="text-sm text-red-500">{errors.aboutCompany.message}</span>
+                  <span className="text-sm text-red-500">
+                    {errors.aboutCompany.message}
+                  </span>
                 )}
               </div>
             </div>
           </div>
           <DialogFooter className="gap-2 ">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isLoading}
+            >
               Cancel
             </Button>
-            <Button type="submit" className="button-gradient" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="button-gradient"
+              disabled={isLoading}
+            >
               {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>

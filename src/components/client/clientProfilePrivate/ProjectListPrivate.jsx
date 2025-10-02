@@ -8,18 +8,21 @@ import {
 } from "@/components/ui/card";
 import { LucideCirclePlus } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FiEdit } from "react-icons/fi";
-import { useAllPostQuery } from '../../../features/post/postApi';
+import { useAllPostQuery } from "../../../features/post/postApi";
 import CompanyLifeAddEditDialog from "./CompanyLifeAddEditDialog";
+import { getImageUrl } from "@/utils/getImageUrl";
+import { useGetAllTenderByClientQuery } from "@/features/tender/tenderApi";
 
 function ProjectListPrivate({ translations }) {
   const [isCompanyLifeDialogOpen, setIsCompanyLifeDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null); // Add state for selected post
   const { data: apiResponse } = useAllPostQuery();
-
+  const { data: tenderResponse, isLoading: tenderLoading } =
+    useGetAllTenderByClientQuery();
   const router = useRouter();
 
   // Extract posts data from API response
@@ -32,7 +35,8 @@ function ProjectListPrivate({ translations }) {
     setIsCompanyLifeDialogOpen(true);
   };
 
-  const handleEditPost = (post) => { // Accept post parameter
+  const handleEditPost = (post) => {
+    // Accept post parameter
     setIsEditing(true);
     setSelectedPost(post); // Set the selected post
     setIsCompanyLifeDialogOpen(true);
@@ -41,42 +45,22 @@ function ProjectListPrivate({ translations }) {
   // Format date function
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
-  // Get image URL - you might need to adjust this based on your backend URL structure
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return "/services/card.png";
+  // Extract tender data from API response
+  const tenders = tenderResponse?.data || [];
 
-    // If it's already a full URL, return as is
-    if (imagePath.startsWith('http')) return imagePath;
-
-    // Otherwise, construct the full URL
-    // You might need to adjust this based on your backend configuration
-    return `http://10.10.7.107:5006/${imagePath.replace(/\\/g, '/')}`;
-  };
-
-  const projects = [
-    {
-      id: 1,
-      name: "CRMS Alignment",
-      role: "Business Analyst",
-    },
-    {
-      id: 2,
-      name: "Datahub Creation",
-      role: "Project Manager",
-    },
-    {
-      id: 3,
-      name: "Refining Data Models1",
-      role: "Data Engineer",
-    },
-  ];
+  // Debug logging
+  console.log("🔍 ProjectListPrivate Debug:");
+  console.log("tenderResponse:", tenderResponse);
+  console.log("tenderLoading:", tenderLoading);
+  console.log("tenders:", tenders);
+  console.log("tenders.length:", tenders.length);
 
   return (
     <>
@@ -85,22 +69,47 @@ function ProjectListPrivate({ translations }) {
           <h1 className="h2-gradient-text text-2xl font-bold text-justify">
             {translations.ongoingTenders}
           </h1>
-          {projects.map((project) => (
-            <div key={project.id} className=" flex justify-between">
-              <div className="space-y-1">
-                {" "}
-                <h1 className="text-lg font-bold">
-                  {translations.project} {project.id}: {project.name}
-                </h1>
-                <p>
-                  {translations.role}: {project.role}
-                </p>
-              </div>
-              <Button className="button-gradient">
-                {translations.viewTender}
-              </Button>
+          {tenderLoading ? (
+            // Loading state
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
-          ))}
+          ) : tenders.length > 0 ? (
+            tenders.map((tender) => (
+              <div key={tender._id} className="flex justify-between">
+                <div className="space-y-1">
+                  <h1 className="text-lg font-bold">{tender.title}</h1>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Category:</span>{" "}
+                    {tender.categoryName}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Service Type:</span>{" "}
+                    {tender.serviceTypeName}
+                  </p>
+                </div>
+                <Button
+                  className="button-gradient"
+                  onClick={() => router.push(`/tenders-details/${tender._id}`)}
+                >
+                  {translations.viewTender}
+                </Button>
+              </div>
+            ))
+          ) : (
+            // Empty state with debug info
+            <div className="text-center py-8">
+              <p className="text-gray-500">No tenders found</p>
+              <div className="mt-4 p-4 bg-gray-100 rounded text-left text-xs">
+                <p>
+                  <strong>Debug Info:</strong>
+                </p>
+                <p>Loading: {tenderLoading ? "true" : "false"}</p>
+                <p>Response: {JSON.stringify(tenderResponse, null, 2)}</p>
+                <p>Tenders: {JSON.stringify(tenders, null, 2)}</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -128,27 +137,25 @@ function ProjectListPrivate({ translations }) {
         </div>
 
         <div className="max-w-7xl mx-auto py-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {posts.length > 0 ? (
-            posts.map((post) => (
-              <ServiceCard
-                key={post._id}
-                post={post}
-                translations={translations}
-                formatDate={formatDate}
-                getImageUrl={getImageUrl}
-                onEdit={() => handleEditPost(post)} // Pass edit handler
-              />
-            ))
-          ) : (
-            // Show empty state or loading skeletons
-            Array.from({ length: 4 }).map((_, index) => (
-              <ServiceCard
-                key={index}
-                translations={translations}
-                isLoading={true}
-              />
-            ))
-          )}
+          {posts.length > 0
+            ? posts.map((post) => (
+                <ServiceCard
+                  key={post._id}
+                  post={post}
+                  translations={translations}
+                  formatDate={formatDate}
+                  getImageUrl={getImageUrl}
+                  onEdit={() => handleEditPost(post)} // Pass edit handler
+                />
+              ))
+            : // Show empty state or loading skeletons
+              Array.from({ length: 4 }).map((_, index) => (
+                <ServiceCard
+                  key={index}
+                  translations={translations}
+                  isLoading={true}
+                />
+              ))}
         </div>
       </div>
 
@@ -165,7 +172,13 @@ function ProjectListPrivate({ translations }) {
 
 export default ProjectListPrivate;
 
-function ServiceCard({ post, translations, formatDate, getImageUrl, isLoading = false, onEdit }) {
+function ServiceCard({
+  post,
+  translations,
+  formatDate,
+  isLoading = false,
+  onEdit,
+}) {
   const router = useRouter();
   if (isLoading) {
     return (
@@ -197,9 +210,6 @@ function ServiceCard({ post, translations, formatDate, getImageUrl, isLoading = 
           width={400}
           height={400}
           className="w-full h-48 object-cover rounded"
-          onError={(e) => {
-            e.target.src = "/services/card.png";
-          }}
         />
       </CardHeader>
 
@@ -231,7 +241,12 @@ function ServiceCard({ post, translations, formatDate, getImageUrl, isLoading = 
           <FiEdit className="text-blue-500" />
           Edit
         </Button>
-        <Button onClick={() => router.push(`postDetails/${post._id}`)} className="button-gradient">{translations.viewPosts}</Button>
+        <Button
+          onClick={() => router.push(`postDetails/${post._id}`)}
+          className="button-gradient"
+        >
+          {translations.viewPosts}
+        </Button>
       </CardFooter>
     </Card>
   );

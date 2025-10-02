@@ -3,13 +3,15 @@ import { Button } from "@/components/ui/button";
 import provideIcon from "@/utils/IconProvider/provideIcon";
 import Image from "next/image";
 import { useState } from "react";
-import { useGetMyprofileQuery } from '../../../features/clientProfile/ClientProfile';
+import { useGetMyprofileQuery } from "../../../features/clientProfile/ClientProfile";
 import EditProfileDialog from "./EditProfileDialog";
+import { getImageUrl } from "@/utils/getImageUrl";
+import { useIsFollowedQuery } from "@/features/hireFreelancer/hireFreelancerApi";
+import { FaRegFaceSmile } from "react-icons/fa6";
 
 function ClientProfilePrivate({ translations }) {
   const [isEditProfileDialogOpen, setIsEditProfileDialogOpen] = useState(false);
   const { data, error, isLoading, refetch } = useGetMyprofileQuery();
-
   // Use API data or fallback to empty values
   const clientInfo = data?.data || {
     fullName: "",
@@ -20,7 +22,8 @@ function ClientProfilePrivate({ translations }) {
     email: "",
     isVarified: false,
     language: [],
-    companyName: ""
+    companyName: "",
+    followers: "",
   };
 
   const handleEditProfileClose = () => {
@@ -61,7 +64,7 @@ function ClientProfilePrivate({ translations }) {
       </div>
       <div className="flex gap-10 items-start py-2">
         <Image
-          src={clientInfo.profile || "/client/profile/client.png"}
+          src={getImageUrl(clientInfo.profile) || "/client/profile/client.png"}
           alt="client-profile"
           width={150}
           height={150}
@@ -69,9 +72,6 @@ function ClientProfilePrivate({ translations }) {
         <div className="space-y-1">
           <h1 className="text-2xl font-bold">{clientInfo.fullName}</h1>
           <p className="">Company Name : {clientInfo.companyName}</p>
-          <p>
-            {translations.department}: {clientInfo.designation || "Not specified"}
-          </p>
           <p>
             {translations.location}: {clientInfo.location || "Not specified"}
           </p>
@@ -81,9 +81,7 @@ function ClientProfilePrivate({ translations }) {
 
           {/* Display languages */}
           {clientInfo.language && clientInfo.language.length > 0 && (
-            <p>
-              Languages: {clientInfo.language.join(", ")}
-            </p>
+            <p>Languages: {clientInfo.language.join(", ")}</p>
           )}
 
           {clientInfo.isVarified && (
@@ -93,6 +91,11 @@ function ClientProfilePrivate({ translations }) {
             </div>
           )}
         </div>
+
+        <Button className="button-gradient">
+          <FaRegFaceSmile className="w-4 h-4 mr-2 animate-bounce" />
+          Followers ({clientInfo?.followers || 0})
+        </Button>
       </div>
       <div className="space-y-2">
         <h1 className="h2-gradient-text text-2xl font-bold text-justify">

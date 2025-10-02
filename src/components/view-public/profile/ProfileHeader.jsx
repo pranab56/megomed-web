@@ -5,7 +5,8 @@ import { getImageUrl } from "@/utils/getImageUrl";
 import { DollarSign, Shield } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-
+import ReactCountryFlag from "react-country-flag";
+import { languageToCountryCode } from "@/utils/flag";
 import Link from "next/link";
 import { socialPlatforms } from "@/components/profile/socialPlatforms";
 import { useGetFreelancerPublicProfileQuery } from "@/features/clientProfile/ClientProfile";
@@ -19,6 +20,11 @@ function ProfileHeader({ setCoverPhoto }) {
   const getPlatformIcon = (platformName) => {
     const platform = socialPlatforms.find((p) => p.value === platformName);
     return platform?.icon || null;
+  };
+
+  // Helper function to get country code for language
+  const getLanguageCountryCode = (language) => {
+    return languageToCountryCode[language] || null;
   };
 
   const [profileData, setProfileData] = useState({
@@ -119,29 +125,53 @@ function ProfileHeader({ setCoverPhoto }) {
               <p>{data?.data?.location || profileData.location}</p>
             </div>
 
-            {/* Country Flags */}
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-              <div className="w-5 h-5 rounded-full overflow-hidden">
-                <div className="w-full h-1/3 bg-blue-600"></div>
-                <div className="w-full h-1/3 bg-white"></div>
-                <div className="w-full h-1/3 bg-red-600"></div>
+            {/* Languages Display with Flag Icons */}
+            {data?.data?.language && (
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <span className="text-sm text-gray-500">Languages:</span>
+                {Array.isArray(data.data.language) ? (
+                  data.data.language.map((lang, index) => {
+                    const countryCode = getLanguageCountryCode(lang);
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs"
+                      >
+                        {countryCode && (
+                          <ReactCountryFlag
+                            countryCode={countryCode}
+                            svg
+                            style={{
+                              width: "16px",
+                              height: "12px",
+                              borderRadius: "2px",
+                            }}
+                            title={lang}
+                          />
+                        )}
+                        <span>{lang}</span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                    {getLanguageCountryCode(data.data.language) && (
+                      <ReactCountryFlag
+                        countryCode={getLanguageCountryCode(data.data.language)}
+                        svg
+                        style={{
+                          width: "16px",
+                          height: "12px",
+                          borderRadius: "2px",
+                        }}
+                        title={data.data.language}
+                      />
+                    )}
+                    <span>{data.data.language}</span>
+                  </div>
+                )}
               </div>
-              <div className="w-5 h-5 rounded-full overflow-hidden bg-red-600 flex items-center justify-center">
-                <div className="w-3 h-2 bg-white flex items-center justify-center">
-                  <div className="w-1 h-1 bg-red-600"></div>
-                </div>
-              </div>
-              <div className="w-5 h-5 rounded-full overflow-hidden">
-                <div className="w-full h-1/3 bg-black"></div>
-                <div className="w-full h-1/3 bg-red-600"></div>
-                <div className="w-full h-1/3 bg-yellow-400"></div>
-              </div>
-              <div className="w-5 h-5 rounded-full overflow-hidden">
-                <div className="w-full h-1/3 bg-red-600"></div>
-                <div className="w-full h-1/3 bg-white"></div>
-                <div className="w-full h-1/3 bg-red-600"></div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
