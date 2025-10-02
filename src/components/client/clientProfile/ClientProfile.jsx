@@ -37,7 +37,6 @@ function ClientProfile() {
         <div className="space-y-1">
           <h1 className="text-2xl font-bold">{clientInfo.name}</h1>
           <p>{clientInfo.bio}</p>
-          <p>Department: {clientInfo.department}</p>
           <p>Location: {clientInfo.location}</p>
           <p>Email: {clientInfo.email}</p>
           <p>{clientInfo.phone}</p>

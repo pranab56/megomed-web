@@ -14,13 +14,15 @@ import { FiEdit } from "react-icons/fi";
 import { useAllPostQuery } from "../../../features/post/postApi";
 import CompanyLifeAddEditDialog from "./CompanyLifeAddEditDialog";
 import { getImageUrl } from "@/utils/getImageUrl";
+import { useGetAllTenderByClientQuery } from "@/features/tender/tenderApi";
 
 function ProjectListPrivate({ translations }) {
   const [isCompanyLifeDialogOpen, setIsCompanyLifeDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null); // Add state for selected post
   const { data: apiResponse } = useAllPostQuery();
-
+  const { data: tenderResponse, isLoading: tenderLoading } =
+    useGetAllTenderByClientQuery();
   const router = useRouter();
 
   // Extract posts data from API response
@@ -50,23 +52,15 @@ function ProjectListPrivate({ translations }) {
     });
   };
 
-  const projects = [
-    {
-      id: 1,
-      name: "CRMS Alignment",
-      role: "Business Analyst",
-    },
-    {
-      id: 2,
-      name: "Datahub Creation",
-      role: "Project Manager",
-    },
-    {
-      id: 3,
-      name: "Refining Data Models1",
-      role: "Data Engineer",
-    },
-  ];
+  // Extract tender data from API response
+  const tenders = tenderResponse?.data || [];
+
+  // Debug logging
+  console.log("🔍 ProjectListPrivate Debug:");
+  console.log("tenderResponse:", tenderResponse);
+  console.log("tenderLoading:", tenderLoading);
+  console.log("tenders:", tenders);
+  console.log("tenders.length:", tenders.length);
 
   return (
     <>
@@ -75,22 +69,47 @@ function ProjectListPrivate({ translations }) {
           <h1 className="h2-gradient-text text-2xl font-bold text-justify">
             {translations.ongoingTenders}
           </h1>
-          {projects.map((project) => (
-            <div key={project.id} className=" flex justify-between">
-              <div className="space-y-1">
-                {" "}
-                <h1 className="text-lg font-bold">
-                  {translations.project} {project.id}: {project.name}
-                </h1>
-                <p>
-                  {translations.role}: {project.role}
-                </p>
-              </div>
-              <Button className="button-gradient">
-                {translations.viewTender}
-              </Button>
+          {tenderLoading ? (
+            // Loading state
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
-          ))}
+          ) : tenders.length > 0 ? (
+            tenders.map((tender) => (
+              <div key={tender._id} className="flex justify-between">
+                <div className="space-y-1">
+                  <h1 className="text-lg font-bold">{tender.title}</h1>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Category:</span>{" "}
+                    {tender.categoryName}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Service Type:</span>{" "}
+                    {tender.serviceTypeName}
+                  </p>
+                </div>
+                <Button
+                  className="button-gradient"
+                  onClick={() => router.push(`/tenders-details/${tender._id}`)}
+                >
+                  {translations.viewTender}
+                </Button>
+              </div>
+            ))
+          ) : (
+            // Empty state with debug info
+            <div className="text-center py-8">
+              <p className="text-gray-500">No tenders found</p>
+              <div className="mt-4 p-4 bg-gray-100 rounded text-left text-xs">
+                <p>
+                  <strong>Debug Info:</strong>
+                </p>
+                <p>Loading: {tenderLoading ? "true" : "false"}</p>
+                <p>Response: {JSON.stringify(tenderResponse, null, 2)}</p>
+                <p>Tenders: {JSON.stringify(tenders, null, 2)}</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -191,9 +210,6 @@ function ServiceCard({
           width={400}
           height={400}
           className="w-full h-48 object-cover rounded"
-          onError={(e) => {
-            e.target.src = "/services/card.png";
-          }}
         />
       </CardHeader>
 

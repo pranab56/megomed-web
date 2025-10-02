@@ -12,7 +12,7 @@ export const tenderApi = baseApi.injectEndpoints({
     }),
 
     getAllTenderByClient: builder.query({
-      query: ({ categoryName, serviceTypeName, searchTerm }) => {
+      query: ({ categoryName, serviceTypeName, searchTerm } = {}) => {
         let url = `/tender/me`;
         const params = [];
 
@@ -39,7 +39,7 @@ export const tenderApi = baseApi.injectEndpoints({
     }),
 
     getAllTender: builder.query({
-      query: ({ categoryName, serviceTypeName, searchTerm }) => {
+      query: ({ categoryName, serviceTypeName, searchTerm } = {}) => {
         let url = `/tender`;
         const params = [];
 

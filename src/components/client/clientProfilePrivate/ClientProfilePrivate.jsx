@@ -71,10 +71,6 @@ function ClientProfilePrivate({ translations }) {
           <h1 className="text-2xl font-bold">{clientInfo.fullName}</h1>
           <p className="">Company Name : {clientInfo.companyName}</p>
           <p>
-            {translations.department}:{" "}
-            {clientInfo.designation || "Not specified"}
-          </p>
-          <p>
             {translations.location}: {clientInfo.location || "Not specified"}
           </p>
           <p>
