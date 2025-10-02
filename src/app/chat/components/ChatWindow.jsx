@@ -46,6 +46,7 @@ const ChatWindow = ({ clientId, chatId }) => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [loginUserId, setLoginUserId] = useState(null);
+  const [currentUserRole, setCurrentUserRole] = useState(null);
   const [reportReason, setReportReason] = useState("");
   const [reportMessage, setReportMessage] = useState("");
   const [realTimeMessages, setRealTimeMessages] = useState([]);
@@ -80,13 +81,25 @@ const ChatWindow = ({ clientId, chatId }) => {
 
   const [report, { isLoading: reportLoading }] = useReportMutation();
 
-  // Handle view freelancer profile
+  // Handle view profile based on current user role
   const handleViewProfile = () => {
     if (!clientId) {
-      toast.error("Freelancer ID not found");
+      toast.error("User ID not found");
       return;
     }
-    router.push(`/profile/view-public/${clientId}`);
+
+    // If current user is freelancer, show client profile
+    if (currentUserRole === "freelancer") {
+      router.push(`/client-profile/${clientId}`);
+    }
+    // If current user is client, show freelancer profile
+    else if (currentUserRole === "client") {
+      router.push(`/profile/view-public/${clientId}`);
+    }
+    // Fallback for unknown role
+    else {
+      router.push(`/profile/view-public/${clientId}`);
+    }
   };
 
   const findChatById = (chatId) => {
@@ -127,8 +140,11 @@ const ChatWindow = ({ clientId, chatId }) => {
 
   useEffect(() => {
     const user = localStorage.getItem("user");
+    const role = localStorage.getItem("role");
     console.log("🔍 ChatWindow: Setting login user ID:", user);
+    console.log("🔍 ChatWindow: Setting user role:", role);
     setLoginUserId(user);
+    setCurrentUserRole(role);
   }, []);
 
   // Socket connection for real-time messages
@@ -606,7 +622,9 @@ const ChatWindow = ({ clientId, chatId }) => {
             <div className="flex items-center space-x-4">
               <div className="flex space-x-2">
                 <Button variant="outline" size="sm" onClick={handleViewProfile}>
-                  View Freelancer Profile
+                  {currentUserRole === "freelancer"
+                    ? "View Client Profile"
+                    : "View Freelancer Profile"}
                 </Button>
                 <Button
                   variant="outline"

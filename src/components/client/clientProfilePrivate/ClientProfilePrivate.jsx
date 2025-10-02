@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import provideIcon from "@/utils/IconProvider/provideIcon";
 import Image from "next/image";
 import { useState } from "react";
-import { useGetMyprofileQuery } from '../../../features/clientProfile/ClientProfile';
+import { useGetMyprofileQuery } from "../../../features/clientProfile/ClientProfile";
 import EditProfileDialog from "./EditProfileDialog";
+import { getImageUrl } from "@/utils/getImageUrl";
 
 function ClientProfilePrivate({ translations }) {
   const [isEditProfileDialogOpen, setIsEditProfileDialogOpen] = useState(false);
@@ -20,7 +21,7 @@ function ClientProfilePrivate({ translations }) {
     email: "",
     isVarified: false,
     language: [],
-    companyName: ""
+    companyName: "",
   };
 
   const handleEditProfileClose = () => {
@@ -61,7 +62,7 @@ function ClientProfilePrivate({ translations }) {
       </div>
       <div className="flex gap-10 items-start py-2">
         <Image
-          src={clientInfo.profile || "/client/profile/client.png"}
+          src={getImageUrl(clientInfo.profile) || "/client/profile/client.png"}
           alt="client-profile"
           width={150}
           height={150}
@@ -70,7 +71,8 @@ function ClientProfilePrivate({ translations }) {
           <h1 className="text-2xl font-bold">{clientInfo.fullName}</h1>
           <p className="">Company Name : {clientInfo.companyName}</p>
           <p>
-            {translations.department}: {clientInfo.designation || "Not specified"}
+            {translations.department}:{" "}
+            {clientInfo.designation || "Not specified"}
           </p>
           <p>
             {translations.location}: {clientInfo.location || "Not specified"}
@@ -81,9 +83,7 @@ function ClientProfilePrivate({ translations }) {
 
           {/* Display languages */}
           {clientInfo.language && clientInfo.language.length > 0 && (
-            <p>
-              Languages: {clientInfo.language.join(", ")}
-            </p>
+            <p>Languages: {clientInfo.language.join(", ")}</p>
           )}
 
           {clientInfo.isVarified && (

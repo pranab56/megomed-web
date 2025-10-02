@@ -8,11 +8,12 @@ import {
 } from "@/components/ui/card";
 import { LucideCirclePlus } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FiEdit } from "react-icons/fi";
-import { useAllPostQuery } from '../../../features/post/postApi';
+import { useAllPostQuery } from "../../../features/post/postApi";
 import CompanyLifeAddEditDialog from "./CompanyLifeAddEditDialog";
+import { getImageUrl } from "@/utils/getImageUrl";
 
 function ProjectListPrivate({ translations }) {
   const [isCompanyLifeDialogOpen, setIsCompanyLifeDialogOpen] = useState(false);
@@ -32,7 +33,8 @@ function ProjectListPrivate({ translations }) {
     setIsCompanyLifeDialogOpen(true);
   };
 
-  const handleEditPost = (post) => { // Accept post parameter
+  const handleEditPost = (post) => {
+    // Accept post parameter
     setIsEditing(true);
     setSelectedPost(post); // Set the selected post
     setIsCompanyLifeDialogOpen(true);
@@ -41,23 +43,11 @@ function ProjectListPrivate({ translations }) {
   // Format date function
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
-  };
-
-  // Get image URL - you might need to adjust this based on your backend URL structure
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return "/services/card.png";
-
-    // If it's already a full URL, return as is
-    if (imagePath.startsWith('http')) return imagePath;
-
-    // Otherwise, construct the full URL
-    // You might need to adjust this based on your backend configuration
-    return `http://10.10.7.107:5006/${imagePath.replace(/\\/g, '/')}`;
   };
 
   const projects = [
@@ -128,27 +118,25 @@ function ProjectListPrivate({ translations }) {
         </div>
 
         <div className="max-w-7xl mx-auto py-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {posts.length > 0 ? (
-            posts.map((post) => (
-              <ServiceCard
-                key={post._id}
-                post={post}
-                translations={translations}
-                formatDate={formatDate}
-                getImageUrl={getImageUrl}
-                onEdit={() => handleEditPost(post)} // Pass edit handler
-              />
-            ))
-          ) : (
-            // Show empty state or loading skeletons
-            Array.from({ length: 4 }).map((_, index) => (
-              <ServiceCard
-                key={index}
-                translations={translations}
-                isLoading={true}
-              />
-            ))
-          )}
+          {posts.length > 0
+            ? posts.map((post) => (
+                <ServiceCard
+                  key={post._id}
+                  post={post}
+                  translations={translations}
+                  formatDate={formatDate}
+                  getImageUrl={getImageUrl}
+                  onEdit={() => handleEditPost(post)} // Pass edit handler
+                />
+              ))
+            : // Show empty state or loading skeletons
+              Array.from({ length: 4 }).map((_, index) => (
+                <ServiceCard
+                  key={index}
+                  translations={translations}
+                  isLoading={true}
+                />
+              ))}
         </div>
       </div>
 
@@ -165,7 +153,13 @@ function ProjectListPrivate({ translations }) {
 
 export default ProjectListPrivate;
 
-function ServiceCard({ post, translations, formatDate, getImageUrl, isLoading = false, onEdit }) {
+function ServiceCard({
+  post,
+  translations,
+  formatDate,
+  isLoading = false,
+  onEdit,
+}) {
   const router = useRouter();
   if (isLoading) {
     return (
@@ -231,7 +225,12 @@ function ServiceCard({ post, translations, formatDate, getImageUrl, isLoading = 
           <FiEdit className="text-blue-500" />
           Edit
         </Button>
-        <Button onClick={() => router.push(`postDetails/${post._id}`)} className="button-gradient">{translations.viewPosts}</Button>
+        <Button
+          onClick={() => router.push(`postDetails/${post._id}`)}
+          className="button-gradient"
+        >
+          {translations.viewPosts}
+        </Button>
       </CardFooter>
     </Card>
   );
