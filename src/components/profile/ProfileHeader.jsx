@@ -23,6 +23,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import ReactCountryFlag from "react-country-flag";
 import { useGetAllCategoryQuery } from "../../features/category/categoryApi";
 import {
   useGetMyprofileQuery,
@@ -33,7 +34,7 @@ import { useGetAllServicesQuery } from "../../features/services/servicesApi";
 import SocialLinkAddDialog from "./SocialLinkAddDialog";
 import { socialPlatforms } from "./socialPlatforms";
 import Link from "next/link";
-
+import { languageToCountryCode } from "@/utils/flag";
 function ProfileHeader({ setCoverPhoto }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSocialLinkDialogOpen, setIsSocialLinkDialogOpen] = useState(false);
@@ -52,6 +53,11 @@ function ProfileHeader({ setCoverPhoto }) {
   const getPlatformIcon = (platformName) => {
     const platform = socialPlatforms.find((p) => p.value === platformName);
     return platform?.icon || null;
+  };
+
+  // Helper function to get country code for language
+  const getLanguageCountryCode = (language) => {
+    return languageToCountryCode[language] || null;
   };
 
   // Function to delete social link
@@ -77,7 +83,7 @@ function ProfileHeader({ setCoverPhoto }) {
     serviceType: "",
     categoryType: "",
     location: "Bangladesh",
-    language: "Bengali",
+    language: ["Bengali"], // Changed to array for multiple languages
     designation: "",
     yearsOfExperience: "",
   });
@@ -214,7 +220,11 @@ function ProfileHeader({ setCoverPhoto }) {
           ? findCategoryId(data.data.categoryType[0])
           : findCategoryId(data.data.categoryType),
         location: String(data.data.location || "Bangladesh"),
-        language: String(data.data.language || "Bengali"),
+        language: Array.isArray(data.data.language)
+          ? data.data.language
+          : data.data.language
+          ? [data.data.language]
+          : ["Bengali"],
         designation: String(data.data.designation || ""),
         yearsOfExperience: String(data.data.yearsOfExperience || ""),
       };
@@ -357,7 +367,15 @@ function ProfileHeader({ setCoverPhoto }) {
       submitData.append("serviceType", serviceName);
       submitData.append("categoryType", categoryName);
       submitData.append("location", formData.location);
-      submitData.append("language", formData.language);
+
+      // Handle multiple languages - send as array
+      if (Array.isArray(formData.language)) {
+        formData.language.forEach((lang, index) => {
+          submitData.append(`language[${index}]`, lang);
+        });
+      } else {
+        submitData.append("language", formData.language);
+      }
 
       // Add designation if available
       if (formData.designation) {
@@ -892,37 +910,99 @@ function ProfileHeader({ setCoverPhoto }) {
                       />
                     </div>
 
-                    {/* Language */}
+                    {/* Language - Multiple Selection */}
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">
-                        Language <span className="text-red-500">*</span>
+                        Languages <span className="text-red-500">*</span>
                       </Label>
                       <Controller
                         name="language"
                         control={control}
-                        rules={{ required: "Language is required" }}
+                        rules={{
+                          required: "At least one language is required",
+                        }}
                         render={({ field }) => (
-                          <Select
-                            value={String(field.value || "")}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger
-                              className={`w-full ${
-                                errors.language ? "border-red-500" : ""
-                              }`}
+                          <div className="space-y-2">
+                            <Select
+                              value=""
+                              onValueChange={(value) => {
+                                if (value && !field.value.includes(value)) {
+                                  field.onChange([...field.value, value]);
+                                }
+                              }}
                             >
-                              <SelectValue placeholder="Select language" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Bengali">Bengali</SelectItem>
-                              <SelectItem value="English">English</SelectItem>
-                              <SelectItem value="Hindi">Hindi</SelectItem>
-                              <SelectItem value="Urdu">Urdu</SelectItem>
-                              <SelectItem value="Arabic">Arabic</SelectItem>
-                              <SelectItem value="Spanish">Spanish</SelectItem>
-                              <SelectItem value="French">French</SelectItem>
-                            </SelectContent>
-                          </Select>
+                              <SelectTrigger
+                                className={`w-full ${
+                                  errors.language ? "border-red-500" : ""
+                                }`}
+                              >
+                                <SelectValue placeholder="Add a language" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Bengali">Bengali</SelectItem>
+                                <SelectItem value="English">English</SelectItem>
+                                <SelectItem value="Hindi">Hindi</SelectItem>
+                                <SelectItem value="Urdu">Urdu</SelectItem>
+                                <SelectItem value="Arabic">Arabic</SelectItem>
+                                <SelectItem value="Spanish">Spanish</SelectItem>
+                                <SelectItem value="French">French</SelectItem>
+                                <SelectItem value="German">German</SelectItem>
+                                <SelectItem value="Italian">Italian</SelectItem>
+                                <SelectItem value="Portuguese">
+                                  Portuguese
+                                </SelectItem>
+                                <SelectItem value="Chinese">Chinese</SelectItem>
+                                <SelectItem value="Japanese">
+                                  Japanese
+                                </SelectItem>
+                                <SelectItem value="Korean">Korean</SelectItem>
+                                <SelectItem value="Russian">Russian</SelectItem>
+                              </SelectContent>
+                            </Select>
+
+                            {/* Selected Languages Display with Flag Icons */}
+                            {field.value && field.value.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {field.value.map((lang, index) => {
+                                  const countryCode =
+                                    getLanguageCountryCode(lang);
+                                  return (
+                                    <div
+                                      key={index}
+                                      className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                                    >
+                                      {countryCode && (
+                                        <ReactCountryFlag
+                                          countryCode={countryCode}
+                                          svg
+                                          style={{
+                                            width: "18px",
+                                            height: "14px",
+                                            borderRadius: "2px",
+                                          }}
+                                          title={lang}
+                                        />
+                                      )}
+                                      <span>{lang}</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const newLanguages =
+                                            field.value.filter(
+                                              (_, i) => i !== index
+                                            );
+                                          field.onChange(newLanguages);
+                                        }}
+                                        className="ml-1 hover:bg-blue-200 rounded-full p-0.5"
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
                         )}
                       />
                       {errors.language && (
@@ -999,29 +1079,53 @@ function ProfileHeader({ setCoverPhoto }) {
               <p>{data?.data?.location || profileData.location}</p>
             </div>
 
-            {/* Country Flags */}
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-              <div className="w-5 h-5 rounded-full overflow-hidden">
-                <div className="w-full h-1/3 bg-blue-600"></div>
-                <div className="w-full h-1/3 bg-white"></div>
-                <div className="w-full h-1/3 bg-red-600"></div>
+            {/* Languages Display with Flag Icons */}
+            {data?.data?.language && (
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <span className="text-sm text-gray-500">Languages:</span>
+                {Array.isArray(data.data.language) ? (
+                  data.data.language.map((lang, index) => {
+                    const countryCode = getLanguageCountryCode(lang);
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs"
+                      >
+                        {countryCode && (
+                          <ReactCountryFlag
+                            countryCode={countryCode}
+                            svg
+                            style={{
+                              width: "16px",
+                              height: "12px",
+                              borderRadius: "2px",
+                            }}
+                            title={lang}
+                          />
+                        )}
+                        <span>{lang}</span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                    {getLanguageCountryCode(data.data.language) && (
+                      <ReactCountryFlag
+                        countryCode={getLanguageCountryCode(data.data.language)}
+                        svg
+                        style={{
+                          width: "16px",
+                          height: "12px",
+                          borderRadius: "2px",
+                        }}
+                        title={data.data.language}
+                      />
+                    )}
+                    <span>{data.data.language}</span>
+                  </div>
+                )}
               </div>
-              <div className="w-5 h-5 rounded-full overflow-hidden bg-red-600 flex items-center justify-center">
-                <div className="w-3 h-2 bg-white flex items-center justify-center">
-                  <div className="w-1 h-1 bg-red-600"></div>
-                </div>
-              </div>
-              <div className="w-5 h-5 rounded-full overflow-hidden">
-                <div className="w-full h-1/3 bg-black"></div>
-                <div className="w-full h-1/3 bg-red-600"></div>
-                <div className="w-full h-1/3 bg-yellow-400"></div>
-              </div>
-              <div className="w-5 h-5 rounded-full overflow-hidden">
-                <div className="w-full h-1/3 bg-red-600"></div>
-                <div className="w-full h-1/3 bg-white"></div>
-                <div className="w-full h-1/3 bg-red-600"></div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
