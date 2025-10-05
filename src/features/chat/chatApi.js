@@ -50,6 +50,17 @@ export const chatApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["chat"],
     }),
+
+    createSupportChat: builder.mutation({
+      query: (data) => ({
+        url: `/support-message/send-messages`,
+        method: "POST",
+        body: data,
+        // Don't set headers - let apiBaseQuery handle authentication
+        // Don't set Content-Type for FormData - let browser handle it
+      }),
+      invalidatesTags: ["chat"],
+    }),
   }),
 });
 
@@ -61,4 +72,5 @@ export const {
   useSingleChatQuery,
   useMyChatListQuery,
   useDeleteChatMutation,
+  useCreateSupportChatMutation,
 } = chatApi;

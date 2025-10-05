@@ -9,6 +9,7 @@ import { getImageUrl } from "@/utils/getImageUrl";
 
 function PopularServices() {
   const [isClient, setIsClient] = useState(false);
+  const [showAllServices, setShowAllServices] = useState(false);
   const pathname = usePathname();
   const messages = "Hello world";
 
@@ -100,35 +101,42 @@ function PopularServices() {
       {data?.data && data.data.length > 0 ? (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-8 my-12">
-            {data?.data?.map((service, index) => (
-              <Card
-                className="h-[12rem] sm:h-[10rem] relative overflow-hidden border-none cursor-pointer group transition-transform duration-300 hover:scale-105"
-                key={service._id}
-              >
-                {/* Background Image */}
-                <div className="absolute inset-0">
-                  <Image
-                    src={getImageUrl(service.image)}
-                    alt={service.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
+            {(showAllServices ? data?.data : data?.data?.slice(0, 4))?.map(
+              (service, index) => (
+                <Card
+                  className="h-[12rem] sm:h-[10rem] relative overflow-hidden border-none cursor-pointer group transition-transform duration-300 hover:scale-105"
+                  key={service._id}
+                >
+                  {/* Background Image */}
+                  <div className="absolute inset-0">
+                    <Image
+                      src={getImageUrl(service.image)}
+                      alt={service.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
 
-                {/* Dark Overlay */}
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-300"></div>
+                  {/* Dark Overlay */}
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-300"></div>
 
-                {/* Content */}
-                <div className="relative z-10 h-full flex items-center justify-center p-4">
-                  <h3 className="text-white font-semibold text-center text-sm md:text-base lg:text-lg group-hover:text-white/90 transition-colors duration-300">
-                    {service.name}
-                  </h3>
-                </div>
-              </Card>
-            ))}
+                  {/* Content */}
+                  <div className="relative z-10 h-full flex items-center justify-center p-4">
+                    <h3 className="text-white font-semibold text-center text-sm md:text-base lg:text-lg group-hover:text-white/90 transition-colors duration-300">
+                      {service.name}
+                    </h3>
+                  </div>
+                </Card>
+              )
+            )}
           </div>
-          <Button className="w-60 button-gradient mx-auto">
-            {popularServicesTranslations.seeAllCategories}
+          <Button
+            className="w-60 button-gradient mx-auto"
+            onClick={() => setShowAllServices(!showAllServices)}
+          >
+            {showAllServices
+              ? "Show Less"
+              : popularServicesTranslations.seeAllCategories}
           </Button>
         </>
       ) : (
