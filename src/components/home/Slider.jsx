@@ -9,15 +9,20 @@ import { useGetAllCategoryQuery } from '../../features/category/categoryApi';
 
 function TalentCategories() {
   const { data, isLoading, isError, isFetching } = useGetAllCategoryQuery(null);
+  console.log("category data", data?.data);
+
   const swiperRef = useRef(null);
   const messages = true;
 
   // Get slider translations from Redux state with fallbacks
   const sliderTranslations = messages?.home?.slider || {};
 
+  // Filter active categories
+  const activeCategories = data?.data?.filter(category => category.isActive === true) || [];
+
   useEffect(() => {
-    // Only initialize Swiper if we have data and not loading
-    if (!data?.data || data.data.length === 0 || isLoading) return;
+    // Only initialize Swiper if we have active categories and not loading
+    if (activeCategories.length === 0 || isLoading) return;
 
     // Dynamically import Swiper
     const loadSwiper = async () => {
@@ -71,7 +76,7 @@ function TalentCategories() {
     };
 
     loadSwiper();
-  }, [data, isLoading]);
+  }, [activeCategories, isLoading]);
 
   // Show loading state
   if (isLoading || isFetching) {
@@ -139,12 +144,12 @@ function TalentCategories() {
           </Button>
         </div>
 
-        {/* Categories Slider - Only show if we have data */}
-        {data?.data && data.data.length > 0 ? (
+        {/* Categories Slider - Only show if we have active categories */}
+        {activeCategories.length > 0 ? (
           <div className="relative">
             <div ref={swiperRef} className="swiper">
               <div className="swiper-wrapper">
-                {data.data.map((category) => (
+                {activeCategories.map((category) => (
                   <div key={category._id} className="swiper-slide">
                     <Card className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-white border border-gray-200">
                       <CardContent className="p-8 text-center">
@@ -173,7 +178,7 @@ function TalentCategories() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p>Aucune catégorie disponible</p>
+            <p>Aucune catégorie active disponible</p>
           </div>
         )}
 
