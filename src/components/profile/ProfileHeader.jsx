@@ -742,7 +742,7 @@ function ProfileHeader({ setCoverPhoto }) {
                                   </SelectItem>
                                 ))
                               ) : (
-                                <SelectItem value="" disabled>
+                                <SelectItem value="no-services" disabled>
                                   No services available
                                 </SelectItem>
                               )}
@@ -802,7 +802,7 @@ function ProfileHeader({ setCoverPhoto }) {
                                   </SelectItem>
                                 ))
                               ) : (
-                                <SelectItem value="" disabled>
+                                <SelectItem value="no-categories" disabled>
                                   No categories available
                                 </SelectItem>
                               )}
