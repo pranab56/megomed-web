@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   Sheet,
   SheetContent,
@@ -20,10 +20,17 @@ import {
   Bot,
   Loader2,
 } from "lucide-react";
-import { useCreateSupportChatMutation } from "@/features/chat/chatApi";
+import {
+  useCreateSupportChatMutation,
+  useGetSupportChatQuery,
+  useGetSupportChatByIdQuery,
+} from "@/features/chat/chatApi";
 import toast from "react-hot-toast";
+import { getImageUrl } from "@/utils/getImageUrl";
+import { connectSocket, getSocket } from "@/utils/socket";
 
 function HelpsAndSupport({ isOpen, onOpenChange }) {
+  const [chatId, setChatId] = useState(null);
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -36,13 +43,28 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
   const [newMessage, setNewMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [chatId, setChatId] = useState(null);
+  const [realTimeMessages, setRealTimeMessages] = useState([]);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  // API mutation hook
+  // API hooks
   const [createSupportChat, { isLoading: isSendingMessage }] =
     useCreateSupportChatMutation();
+
+  // First, get the chat ID from the user's support chat list
+  const {
+    data: supportChatByIdData,
+    isLoading: isLoadingChatById,
+    error: chatByIdError,
+  } = useGetSupportChatByIdQuery();
+
+  // Then, get the actual chat messages using the chat ID
+  const {
+    data: supportChatData,
+    isLoading: isLoadingChat,
+    error: chatError,
+    refetch: refetchChat,
+  } = useGetSupportChatQuery(chatId, { skip: !chatId });
 
   const handleOpenChange = (open) => {
     onOpenChange(open);
@@ -52,9 +74,343 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Combine API messages with real-time messages
+  const combinedMessages = useMemo(() => {
+    // Get all API messages except the welcome message
+    const apiMessages = messages.filter((msg) => msg.id !== 1);
+
+    console.log("🔍 API Messages Debug:", {
+      totalMessages: messages.length,
+      apiMessagesCount: apiMessages.length,
+      realTimeMessagesCount: realTimeMessages.length,
+    });
+
+    // Convert real-time messages to the same format
+    const realTimeFormatted = realTimeMessages.map((msg) => {
+      const currentUserId = getCurrentUserId();
+
+      // Handle both string and object sender formats
+      const senderId =
+        typeof msg.sender === "string" ? msg.sender : msg.sender?._id;
+
+      console.log("🔄 Processing real-time message:", {
+        messageId: msg._id,
+        messageText: msg.message,
+        sender: msg.sender,
+        senderId: senderId,
+        currentUserId: currentUserId,
+        isUser: senderId === currentUserId,
+      });
+
+      return {
+        id: msg._id,
+        text: msg.message || "",
+        sender: senderId === currentUserId ? "user" : "support",
+        timestamp: new Date(msg.createdAt),
+        type: msg.image ? "image" : "text",
+        image: msg.image ? getImageUrl(msg.image) : null,
+      };
+    });
+
+    // Combine and sort all messages
+    const allMessages = [...apiMessages, ...realTimeFormatted];
+    const sortedMessages = allMessages.sort(
+      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+    );
+
+    // Remove duplicates based on message ID
+    const uniqueMessages = sortedMessages.filter(
+      (msg, index, self) => index === self.findIndex((m) => m.id === msg.id)
+    );
+
+    console.log("📊 Combined Messages Debug:", {
+      apiMessagesCount: apiMessages.length,
+      realTimeMessagesCount: realTimeMessages.length,
+      realTimeFormattedCount: realTimeFormatted.length,
+      allMessagesCount: allMessages.length,
+      uniqueMessagesCount: uniqueMessages.length,
+      finalMessagesCount: uniqueMessages.length + 1,
+    });
+
+    return [
+      {
+        id: 1,
+        text: "Hello! How can I help you today?",
+        sender: "support",
+        timestamp: new Date(),
+        type: "text",
+      },
+      ...uniqueMessages,
+    ];
+  }, [messages, realTimeMessages]);
+
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [combinedMessages]);
+
+  // Auto-scroll when real-time messages are added
+  useEffect(() => {
+    if (realTimeMessages.length > 0) {
+      console.log(
+        "📜 Help & Support: Auto-scrolling for new real-time message"
+      );
+      scrollToBottom();
+    }
+  }, [realTimeMessages]);
+
+  // Socket connection for real-time messages
+  useEffect(() => {
+    if (!chatId) return;
+
+    console.log("🔌 Help & Support: Setting up socket connection");
+    console.log("💬 Chat ID:", chatId);
+
+    // Use existing socket connection instead of creating new one
+    let socket = getSocket();
+    if (!socket || !socket.connected) {
+      console.log(
+        "❌ Help & Support: No socket found or not connected, creating new connection"
+      );
+      const currentUserId =
+        localStorage.getItem("user") || localStorage.getItem("userId");
+      socket = connectSocket(currentUserId);
+    } else {
+      console.log("✅ Help & Support: Using existing socket connection");
+      console.log("🔌 Socket Connected:", socket.connected);
+      console.log("🆔 Socket ID:", socket.id);
+    }
+
+    // Listen for new messages in this specific chat
+    const handleNewMessage = (messageData) => {
+      console.log("📨 Help & Support: New message received:", messageData);
+
+      // Only process messages for this chat
+      if (messageData.chatId === chatId) {
+        console.log(
+          "✅ Help & Support: Message is for this chat, adding to real-time messages"
+        );
+
+        setRealTimeMessages((prevMessages) => {
+          // Check if message already exists to avoid duplicates
+          const exists = prevMessages.some(
+            (msg) => msg._id === messageData._id
+          );
+          if (exists) {
+            console.log("⚠️ Help & Support: Message already exists, skipping");
+            return prevMessages;
+          }
+
+          console.log(
+            "➕ Help & Support: Adding new message to real-time messages"
+          );
+          const newMessage = {
+            _id: messageData._id,
+            message: messageData.message,
+            image: messageData.image,
+            sender: messageData.sender,
+            createdAt: messageData.createdAt,
+            seen: messageData.seen,
+            replyTo: messageData.replyTo,
+            isPinned: messageData.isPinned,
+            reactionUsers: messageData.reactionUsers || [],
+          };
+
+          // Show toast notification for new message
+          toast.success("New message received!");
+
+          const updatedMessages = [...prevMessages, newMessage];
+          console.log("📝 Help & Support: Real-time messages updated:", {
+            previousCount: prevMessages.length,
+            newCount: updatedMessages.length,
+            newMessage: newMessage,
+          });
+
+          // Trigger chat refetch after a short delay to get the latest messages
+          setTimeout(() => {
+            if (chatId) {
+              console.log(
+                "🔄 Help & Support: Refetching chat after real-time message"
+              );
+              refetchChat();
+            }
+          }, 500);
+
+          return updatedMessages;
+        });
+      } else {
+        console.log(
+          "❌ Help & Support: Message is for different chat, ignoring"
+        );
+      }
+    };
+
+    // Listen for support chat specific events
+    const supportChatEvent = `support-message::${chatId}`;
+    const generalSupportEvent = "support-message";
+    const newSupportMessageEvent = `new-support-message::${chatId}`;
+    const generalNewSupportEvent = "new-support-message";
+
+    console.log("👂 Help & Support: Setting up listeners for:");
+    console.log("  - Specific chat:", supportChatEvent);
+    console.log("  - General support:", generalSupportEvent);
+    console.log("  - New support specific:", newSupportMessageEvent);
+    console.log("  - New support general:", generalNewSupportEvent);
+
+    // Listen for specific support chat messages
+    socket.on(supportChatEvent, handleNewMessage);
+
+    // Listen for general support messages (fallback)
+    socket.on(generalSupportEvent, handleNewMessage);
+
+    // Listen for new-support-message events (the actual event being received)
+    socket.on(newSupportMessageEvent, handleNewMessage);
+    socket.on(generalNewSupportEvent, handleNewMessage);
+
+    // Listen for new-message events (general chat events)
+    socket.on("new-message", handleNewMessage);
+
+    // Listen for any support-related events
+    socket.onAny((eventName, ...args) => {
+      console.log("📡 Help & Support: Received Socket Event:", eventName, args);
+
+      // Check for support-specific events
+      if (
+        eventName.startsWith("support-message::") &&
+        eventName.includes(chatId)
+      ) {
+        console.log(
+          "🎯 Help & Support: Matched support-message:: pattern for this chat:",
+          eventName
+        );
+        handleNewMessage(args[0]);
+      }
+
+      // Check for general new-message events for this chat
+      if (eventName.startsWith("new-message::") && eventName.includes(chatId)) {
+        console.log(
+          "🎯 Help & Support: Matched new-message:: pattern for this chat:",
+          eventName
+        );
+        handleNewMessage(args[0]);
+      }
+    });
+
+    // Test socket connection by emitting a test event
+    console.log("🧪 Help & Support: Testing socket connection...");
+    socket.emit("test-support-chat", {
+      message: "Help & Support test",
+      chatId: chatId,
+      userId: localStorage.getItem("user"),
+    });
+
+    // Cleanup on unmount or chat change
+    return () => {
+      console.log("🧹 Help & Support: Cleaning up socket listeners");
+      socket.off("new-message", handleNewMessage);
+      socket.off(supportChatEvent, handleNewMessage);
+      socket.off(generalSupportEvent, handleNewMessage);
+      socket.off(newSupportMessageEvent, handleNewMessage);
+      socket.off(generalNewSupportEvent, handleNewMessage);
+    };
+  }, [chatId]);
+
+  // Set chatId when we get the support chat data (only if admin is participant)
+  useEffect(() => {
+    if (supportChatByIdData?.data?._id && !chatId) {
+      const chatData = supportChatByIdData.data;
+      const hasAdmin = chatData.participants?.some(
+        (participant) => participant.role === "admin"
+      );
+
+      if (hasAdmin) {
+        console.log(
+          "📥 Setting chatId from support chat data (admin found):",
+          chatData._id
+        );
+        console.log("📥 Participants:", chatData.participants);
+        setChatId(chatData._id);
+      } else {
+        console.log("📥 No admin found in participants, skipping chat");
+      }
+    }
+  }, [supportChatByIdData, chatId]);
+
+  // Get current user ID from localStorage
+  const getCurrentUserId = () => {
+    try {
+      const token = localStorage.getItem("loginToken");
+      if (token) {
+        // You might need to decode the JWT token to get user ID
+        // For now, we'll use a placeholder - adjust based on your auth system
+        return "68e1e75ac082eb0c840ce0b1"; // Replace with actual user ID logic
+      }
+    } catch (error) {
+      console.error("Error getting user ID:", error);
+    }
+    return null;
+  };
+
+  // Get support user ID (admin from the chat participants)
+  const getSupportUserId = () => {
+    if (supportChatByIdData?.data?.participants) {
+      const adminParticipant = supportChatByIdData.data.participants.find(
+        (participant) => participant.role === "admin"
+      );
+      return adminParticipant?._id;
+    }
+    return null;
+  };
+
+  // Load existing chat messages when chatId is available
+  useEffect(() => {
+    if (
+      supportChatData?.data?.resultAll &&
+      Array.isArray(supportChatData.data.resultAll)
+    ) {
+      const currentUserId = getCurrentUserId();
+      const supportUserId = getSupportUserId();
+      const formattedMessages = supportChatData.data.resultAll.map(
+        (msg, index) => ({
+          id: msg._id || `msg-${index}`,
+          text: msg.message || "",
+          sender: msg.sender === currentUserId ? "user" : "support",
+          timestamp: new Date(msg.createdAt),
+          type: msg.image ? "image" : "text",
+          image: msg.image ? getImageUrl(msg.image) : null,
+        })
+      );
+
+      console.log("📥 Current User ID:", currentUserId);
+      console.log("📥 Support User ID (Admin):", supportUserId);
+
+      console.log("📥 Loading chat messages:", supportChatData.data.resultAll);
+      console.log("📥 Formatted messages:", formattedMessages);
+
+      // Sort messages by timestamp (oldest first - 4PM at top, 5PM at bottom)
+      const sortedMessages = formattedMessages.sort(
+        (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+      );
+
+      console.log("📥 Sorted messages by time (4PM → 5PM):");
+      sortedMessages.forEach((msg, index) => {
+        console.log(
+          `  ${index + 1}. ${msg.timestamp.toLocaleTimeString()} - ${msg.text}`
+        );
+      });
+
+      // Replace messages with loaded chat history
+      setMessages([
+        {
+          id: 1,
+          text: "Hello! How can I help you today?",
+          sender: "support",
+          timestamp: new Date(),
+          type: "text",
+        },
+        ...sortedMessages,
+      ]);
+    }
+  }, [supportChatData]);
 
   const handleImageSelect = (event) => {
     const file = event.target.files[0];
@@ -148,19 +504,42 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
         // Update chatId if this is a new conversation
         if (response.data.chatId && !chatId) {
           setChatId(response.data.chatId);
+        } else if (response.data.chatId && chatId) {
+          // For existing conversations, we need to refetch to get the latest messages
+          // Add a small delay to ensure the query is ready
+          setTimeout(() => {
+            if (chatId) {
+              refetchChat();
+            }
+          }, 100);
         }
+      }
 
-        // Add support response if provided
-        if (response.data.message) {
-          const supportResponse = {
-            id: Date.now() + 1,
-            text: response.data.message,
-            sender: "support",
-            timestamp: new Date(),
-            type: "text",
-          };
-          setMessages((prev) => [...prev, supportResponse]);
-        }
+      // Emit socket event for real-time updates
+      const socket = getSocket();
+      if (socket && socket.connected) {
+        console.log(
+          "📡 Help & Support: Emitting support-message event for real-time updates"
+        );
+
+        const messageData = {
+          _id: response.data._id,
+          message: newMessage,
+          image: selectedImage ? response.data.image : null,
+          sender: getCurrentUserId(), // Send as string ID to match server format
+          chatId: chatId,
+          createdAt: response.data.createdAt,
+          seen: false,
+        };
+
+        // Emit support-specific events
+        socket.emit("support-message", messageData);
+        socket.emit(`support-message::${chatId}`, messageData);
+        socket.emit("new-support-message", messageData);
+        socket.emit(`new-support-message::${chatId}`, messageData);
+
+        // Also emit general new-message for compatibility
+        socket.emit("new-message", messageData);
       }
 
       toast.success("Message sent successfully!");
@@ -208,7 +587,65 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
-          {messages.map((message) => (
+          {isLoadingChatById && (
+            <div className="flex justify-center items-center py-4">
+              <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+              <span className="ml-2 text-sm text-gray-500">
+                Loading chat info...
+              </span>
+            </div>
+          )}
+
+          {isLoadingChat && (
+            <div className="flex justify-center items-center py-4">
+              <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+              <span className="ml-2 text-sm text-gray-500">
+                Loading messages...
+              </span>
+            </div>
+          )}
+
+          {chatByIdError && (
+            <div className="flex justify-center items-center py-4">
+              <span className="text-sm text-red-500">
+                Failed to load chat info
+              </span>
+            </div>
+          )}
+
+          {chatError && (
+            <div className="flex justify-center items-center py-4">
+              <span className="text-sm text-red-500">
+                Failed to load chat messages
+              </span>
+            </div>
+          )}
+
+          {!isLoadingChatById &&
+            !isLoadingChat &&
+            !chatByIdError &&
+            !chatError &&
+            !chatId && (
+              <div className="flex justify-center items-center py-4">
+                <div className="text-center">
+                  <span className="text-sm text-gray-500">
+                    No support chat found with admin
+                  </span>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Please contact support to start a conversation
+                  </p>
+                </div>
+              </div>
+            )}
+
+          {/* Debug: Show real-time messages count */}
+          {realTimeMessages.length > 0 && (
+            <div className="bg-blue-100 p-2 rounded text-sm text-blue-800 mb-2">
+              Debug: {realTimeMessages.length} real-time messages received
+            </div>
+          )}
+
+          {combinedMessages.map((message) => (
             <div
               key={message.id}
               className={`flex ${
