@@ -2,16 +2,18 @@
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useGetAllServicesQuery } from '../../features/services/servicesApi';
+import { useGetAllServicesQuery } from "../../features/services/servicesApi";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
+import { getImageUrl } from "@/utils/getImageUrl";
 
 function PopularServices() {
   const [isClient, setIsClient] = useState(false);
   const pathname = usePathname();
   const messages = "Hello world";
 
-  const { data, isLoading, isError, isFetching, refetch } = useGetAllServicesQuery();
+  const { data, isLoading, isError, isFetching, refetch } =
+    useGetAllServicesQuery();
 
   // Only render on client side to prevent hydration issues
   useEffect(() => {
@@ -30,7 +32,7 @@ function PopularServices() {
       "Graphic Design": "/popular_categories/graphics_design.png",
       "Web Development": "/popular_categories/article.png",
       "Cartoon Animation": "/popular_categories/cartoon_animation.png",
-      "Illustration": "/popular_categories/illustration.png",
+      Illustration: "/popular_categories/illustration.png",
       "Flyers & Vouchers": "/popular_categories/flyers.png",
       "Logo Design": "/popular_categories/logo_design.png",
       "Social Graphics": "/popular_categories/social.png",
@@ -98,7 +100,7 @@ function PopularServices() {
       {data?.data && data.data.length > 0 ? (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-8 my-12">
-            {data.data.map((service, index) => (
+            {data?.data?.map((service, index) => (
               <Card
                 className="h-[12rem] sm:h-[10rem] relative overflow-hidden border-none cursor-pointer group transition-transform duration-300 hover:scale-105"
                 key={service._id}
@@ -106,7 +108,7 @@ function PopularServices() {
                 {/* Background Image */}
                 <div className="absolute inset-0">
                   <Image
-                    src={getImageSource(service.name)}
+                    src={getImageUrl(service.image)}
                     alt={service.name}
                     fill
                     className="object-cover"
