@@ -103,7 +103,7 @@ function ServiceCard({ data, freelancer }) {
 
           <div>
             <h4 className="text-sm font-medium h2-gradient-text">{title}</h4>
-            <p className="text-lg text-black font-semibold">Project Showcase</p>
+            <p className="text-lg text-black font-semibold">{description}</p>
           </div>
         </CardContent>
 
