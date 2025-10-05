@@ -175,7 +175,7 @@ function FreelancerNavBar() {
                   View Profile
                 </Link>
               </DropdownMenuItem>
-              {userData?.data?.stripeConnected === true ? (
+              {userData?.data?.isStripeConnectedAccount === true ? (
                 <DropdownMenuItem className="w-full cursor-pointer">
                   Connect Stripe{" "}
                   <span className="text-green-500">Connected</span>
