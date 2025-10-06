@@ -19,7 +19,7 @@ import provideIcon from "@/utils/IconProvider/provideIcon";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 // English translations
@@ -44,7 +44,6 @@ function ClientNavBar() {
   const [mounted, setMounted] = useState(false);
   const [currentUser, setCurrentUser] = useState({ type: "client" });
   const pathname = usePathname();
-  const router = useRouter();
 
   // Navigation items - only client specific pages
   const navItems = [
@@ -78,7 +77,7 @@ function ClientNavBar() {
 
   const handleSignOut = () => {
     localStorage.clear();
-    router.push("/auth/login");
+    window.location.href = "/";
   };
 
   useEffect(() => {

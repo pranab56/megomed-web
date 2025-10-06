@@ -115,7 +115,7 @@ function FreelancerNavBar() {
 
   const handleSignOut = () => {
     localStorage.clear();
-    router.push("/auth/login");
+    window.location.href = "/";
   };
 
   const handleHelpSheetClose = (open) => {
