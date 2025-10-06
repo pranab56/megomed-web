@@ -74,6 +74,21 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Get current user ID from localStorage
+  const getCurrentUserId = () => {
+    try {
+      const token = localStorage.getItem("loginToken");
+      if (token) {
+        // You might need to decode the JWT token to get user ID
+        // For now, we'll use a placeholder - adjust based on your auth system
+        return "68e1e75ac082eb0c840ce0b1"; // Replace with actual user ID logic
+      }
+    } catch (error) {
+      console.error("Error getting user ID:", error);
+    }
+    return null;
+  };
+
   // Combine API messages with real-time messages
   const combinedMessages = useMemo(() => {
     // Get all API messages except the welcome message
@@ -215,9 +230,6 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
             reactionUsers: messageData.reactionUsers || [],
           };
 
-          // Show toast notification for new message
-          toast.success("New message received!");
-
           const updatedMessages = [...prevMessages, newMessage];
           console.log("📝 Help & Support: Real-time messages updated:", {
             previousCount: prevMessages.length,
@@ -225,18 +237,21 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
             newMessage: newMessage,
           });
 
-          // Trigger chat refetch after a short delay to get the latest messages
-          setTimeout(() => {
-            if (chatId) {
-              console.log(
-                "🔄 Help & Support: Refetching chat after real-time message"
-              );
-              refetchChat();
-            }
-          }, 500);
-
           return updatedMessages;
         });
+
+        // Show toast notification for new message (outside of state setter)
+        toast.success("New message received!");
+
+        // Trigger chat refetch after a short delay to get the latest messages
+        setTimeout(() => {
+          if (chatId) {
+            console.log(
+              "🔄 Help & Support: Refetching chat after real-time message"
+            );
+            refetchChat();
+          }
+        }, 500);
       } else {
         console.log(
           "❌ Help & Support: Message is for different chat, ignoring"
@@ -334,21 +349,6 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
       }
     }
   }, [supportChatByIdData, chatId]);
-
-  // Get current user ID from localStorage
-  const getCurrentUserId = () => {
-    try {
-      const token = localStorage.getItem("loginToken");
-      if (token) {
-        // You might need to decode the JWT token to get user ID
-        // For now, we'll use a placeholder - adjust based on your auth system
-        return "68e1e75ac082eb0c840ce0b1"; // Replace with actual user ID logic
-      }
-    } catch (error) {
-      console.error("Error getting user ID:", error);
-    }
-    return null;
-  };
 
   // Get support user ID (admin from the chat participants)
   const getSupportUserId = () => {
