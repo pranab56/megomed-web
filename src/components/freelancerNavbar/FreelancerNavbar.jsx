@@ -27,19 +27,28 @@ import { useConnectStripeMutation } from "@/features/plan/planApi";
 import toast from "react-hot-toast";
 import { useGetMyprofileQuery } from "@/features/clientProfile/ClientProfile";
 import { getImageUrl } from "@/utils/getImageUrl";
+import HelpsAndSupport from "@/components/common/helpsAndSupport/helpsAndSupport";
 
 function FreelancerNavBar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isHelpSheetOpen, setIsHelpSheetOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { data: userData } = useGetMyprofileQuery();
 
-  console.log("userData //////////////////////////", userData);
+  // console.log("userData //////////////////////////", userData);
   const [connectStripe, { isLoading: isConnectStripeLoading }] =
     useConnectStripeMutation();
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Cleanup effect to ensure modal state is reset
+  useEffect(() => {
+    return () => {
+      setIsHelpSheetOpen(false);
+    };
   }, []);
 
   // Navigation items in English
@@ -106,7 +115,11 @@ function FreelancerNavBar() {
 
   const handleSignOut = () => {
     localStorage.clear();
-    router.push("/auth/login");
+    window.location.href = "/";
+  };
+
+  const handleHelpSheetClose = (open) => {
+    setIsHelpSheetOpen(open);
   };
 
   if (!mounted) {
@@ -195,10 +208,11 @@ function FreelancerNavBar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator /> */}
-              <DropdownMenuItem asChild>
-                <Link href={`/help`} className="w-full cursor-pointer">
-                  Help & Support
-                </Link>
+              <DropdownMenuItem
+                className="w-full cursor-pointer"
+                onClick={() => setIsHelpSheetOpen(true)}
+              >
+                Help & Support
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -292,9 +306,9 @@ function FreelancerNavBar() {
                   <Button
                     variant="ghost"
                     className="w-full justify-start"
-                    asChild
+                    onClick={() => setIsHelpSheetOpen(true)}
                   >
-                    <Link href="/help">Help & Support</Link>
+                    Help & Support
                   </Button>
                   <Button
                     variant="ghost"
@@ -309,6 +323,12 @@ function FreelancerNavBar() {
           </Drawer>
         </div>
       </div>
+
+      {/* Help & Support Sheet */}
+      <HelpsAndSupport
+        isOpen={isHelpSheetOpen}
+        onOpenChange={handleHelpSheetClose}
+      />
     </nav>
   );
 }

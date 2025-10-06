@@ -121,7 +121,10 @@
     @apply bg-background text-foreground;
   }
 }
-
+body {
+  @apply bg-background text-foreground;
+  pointer-events: auto !important;
+}
 .h2-gradient-text {
   @apply text-transparent bg-clip-text bg-gradient-to-r from-[#002282] to-[#0170DA];
 }
@@ -157,8 +160,6 @@
 .animate-fade-in-up {
   animation: fade-in-up 0.6s ease-out forwards;
 }
-
-
 
 .toaster {
   z-index: 9999 !important;

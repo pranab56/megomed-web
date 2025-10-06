@@ -9,6 +9,7 @@ import { getImageUrl } from "@/utils/getImageUrl";
 
 function PopularServices() {
   const [isClient, setIsClient] = useState(false);
+  const [showAllServices, setShowAllServices] = useState(false);
   const pathname = usePathname();
   const messages = "Hello world";
 
@@ -24,23 +25,6 @@ function PopularServices() {
     title: "Our Popular Services",
     exploreMoreTitle: "Explore More Services",
     seeAllCategories: "See All Categories",
-  };
-
-  // Function to get image source based on service name
-  const getImageSource = (serviceName) => {
-    const serviceImages = {
-      "Graphic Design": "/popular_categories/graphics_design.png",
-      "Web Development": "/popular_categories/article.png",
-      "Cartoon Animation": "/popular_categories/cartoon_animation.png",
-      Illustration: "/popular_categories/illustration.png",
-      "Flyers & Vouchers": "/popular_categories/flyers.png",
-      "Logo Design": "/popular_categories/logo_design.png",
-      "Social Graphics": "/popular_categories/social.png",
-      "Article Writing": "/popular_categories/article.png",
-      "Video Editing": "/popular_categories/video_editing.png",
-    };
-
-    return serviceImages[serviceName] || "/popular_categories/default.png";
   };
 
   // Show loading state on server, content on client
@@ -97,10 +81,16 @@ function PopularServices() {
           : popularServicesTranslations.title}
       </h2>
 
-      {data?.data && data.data.length > 0 ? (
+      {data?.data &&
+      data.data.filter((service) => service.isActive === true).length > 0 ? (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-8 my-12">
-            {data?.data?.map((service, index) => (
+            {(showAllServices
+              ? data?.data?.filter((service) => service.isActive === true)
+              : data?.data
+                  ?.filter((service) => service.isActive === true)
+                  .slice(0, 4)
+            )?.map((service, index) => (
               <Card
                 className="h-[12rem] sm:h-[10rem] relative overflow-hidden border-none cursor-pointer group transition-transform duration-300 hover:scale-105"
                 key={service._id}
@@ -127,9 +117,17 @@ function PopularServices() {
               </Card>
             ))}
           </div>
-          <Button className="w-60 button-gradient mx-auto">
-            {popularServicesTranslations.seeAllCategories}
-          </Button>
+          {data?.data?.filter((service) => service.isActive === true).length >
+            4 && (
+            <Button
+              className="w-60 button-gradient mx-auto"
+              onClick={() => setShowAllServices(!showAllServices)}
+            >
+              {showAllServices
+                ? "Show Less"
+                : popularServicesTranslations.seeAllCategories}
+            </Button>
+          )}
         </>
       ) : (
         <div className="text-center my-12">

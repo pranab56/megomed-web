@@ -1,10 +1,9 @@
-
 import { createSlice } from "@reduxjs/toolkit";
 import { removeToken, saveToken } from "./authService";
 
-
 const initialState = {
-  token: "jllkjfsdf",
+  token: null,
+  isInitialized: false,
 };
 
 const authSlice = createSlice({
@@ -15,12 +14,16 @@ const authSlice = createSlice({
       state.token = action.payload;
       saveToken(action.payload);
     },
+    setInitialized: (state, action) => {
+      state.isInitialized = action.payload;
+    },
     logout: (state) => {
       state.token = null;
+      state.isInitialized = true;
       removeToken();
     },
   },
 });
 
-export const { setToken, logout } = authSlice.actions;
+export const { setToken, setInitialized, logout } = authSlice.actions;
 export default authSlice.reducer;

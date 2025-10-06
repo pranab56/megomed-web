@@ -50,6 +50,29 @@ export const chatApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["chat"],
     }),
+
+    createSupportChat: builder.mutation({
+      query: (data) => ({
+        url: `/support-message/send-messages`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["chat"],
+    }),
+    getSupportChat: builder.query({
+      query: (chatId) => ({
+        url: `/support-message/my-messages/${chatId}`,
+        method: "GET",
+      }),
+      providesTags: ["chat"],
+    }),
+    getSupportChatById: builder.query({
+      query: () => ({
+        url: `/support-message/my-chat-list-by-user`,
+        method: "GET",
+      }),
+      providesTags: ["chat"],
+    }),
   }),
 });
 
@@ -61,4 +84,7 @@ export const {
   useSingleChatQuery,
   useMyChatListQuery,
   useDeleteChatMutation,
+  useCreateSupportChatMutation,
+  useGetSupportChatQuery,
+  useGetSupportChatByIdQuery,
 } = chatApi;

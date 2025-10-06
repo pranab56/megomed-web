@@ -1,13 +1,4 @@
 "use client";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,14 +12,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateShowCaseProjectMutation } from "@/features/showcaseProject/showCaseProjectApi";
 import useToast from "@/hooks/showToast/ShowToast";
-import { Calendar, Edit2, ImageIcon, Upload, X } from "lucide-react";
+import { Calendar, Edit2, ImageIcon, X } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function AddNewProjectDialog({ isOpen, onClose }) {
   const [thumbnailImage, setThumbnailImage] = useState(null);
-  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
   const showToast = useToast();
   const [createShowCaseProject, { isLoading: isCreatingShowCaseProject }] =
@@ -83,8 +74,22 @@ export default function AddNewProjectDialog({ isOpen, onClose }) {
       formData.append("description", data.description);
 
       // Add image file if selected
-      if (thumbnailImage && fileInputRef.current?.files?.[0]) {
-        formData.append("image", fileInputRef.current.files[0]);
+      if (selectedFile) {
+        formData.append("image", selectedFile);
+        console.log(
+          "📤 Added image to FormData:",
+          selectedFile.name,
+          selectedFile.size,
+          "bytes"
+        );
+      } else {
+        console.log("📤 No image selected");
+      }
+
+      // Debug FormData contents
+      console.log("📤 FormData contents:");
+      for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}:`, value);
       }
 
       console.log("Submitting project data:", {
@@ -92,7 +97,8 @@ export default function AddNewProjectDialog({ isOpen, onClose }) {
         title: data.title,
         completedDate: data.completeDate,
         description: data.description,
-        hasImage: !!thumbnailImage,
+        hasImage: !!selectedFile,
+        imageFile: selectedFile?.name,
       });
 
       // Call the API
@@ -102,6 +108,7 @@ export default function AddNewProjectDialog({ isOpen, onClose }) {
       onClose?.();
       reset();
       setThumbnailImage(null);
+      setSelectedFile(null);
     } catch (error) {
       console.error("Error creating project:", error);
       showToast.error("Failed to create project. Please try again.");
@@ -111,32 +118,34 @@ export default function AddNewProjectDialog({ isOpen, onClose }) {
   const onCancel = () => {
     reset();
     setThumbnailImage(null);
+    setSelectedFile(null);
     onClose?.();
   };
 
   const handleEditThumbnail = () => {
-    setShowUploadDialog(true);
-  };
-
-  const handleFileSelect = () => {
     fileInputRef.current?.click();
-    setShowUploadDialog(false);
   };
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
+      // Store the actual file object
+      setSelectedFile(file);
+
+      // Create preview URL for display
       const reader = new FileReader();
       reader.onload = (e) => {
         setThumbnailImage(e.target?.result);
       };
       reader.readAsDataURL(file);
+
+      // File selected successfully
     }
   };
 
   const handleRemoveImage = () => {
     setThumbnailImage(null);
-    setShowUploadDialog(false);
+    setSelectedFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -158,19 +167,32 @@ export default function AddNewProjectDialog({ isOpen, onClose }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column - Thumbnail */}
               <div className="space-y-1 md:space-y-4">
-                <div className="relative  rounded-lg px-6 py-4 text-white min-h-42 border-2 border-gray-300 flex flex-col justify-between items-center overflow-hidden">
+                <div className="relative rounded-lg px-6 py-4 text-white min-h-42 border-2 border-gray-300 flex flex-col justify-between items-center overflow-hidden">
                   {thumbnailImage ? (
-                    <div className="absolute inset-0">
-                      <Image
-                        src={thumbnailImage}
-                        alt="Project thumbnail"
-                        width={250}
-                        height={150}
-                        className="w-full h-42 object-cover rounded-lg"
-                      />
-                    </div>
+                    <>
+                      <div className="absolute inset-0">
+                        <Image
+                          src={thumbnailImage}
+                          alt="Project thumbnail"
+                          width={250}
+                          height={150}
+                          className="w-full h-42 object-cover rounded-lg"
+                        />
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2 h-6 w-6 p-0 z-10"
+                        onClick={handleRemoveImage}
+                      >
+                        <X size={12} />
+                      </Button>
+                    </>
                   ) : (
-                    <></>
+                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                      <ImageIcon size={48} />
+                      <span className="text-sm mt-2">No image selected</span>
+                    </div>
                   )}
                 </div>
 
@@ -302,44 +324,6 @@ export default function AddNewProjectDialog({ isOpen, onClose }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Image Upload Dialog */}
-      <AlertDialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
-        <AlertDialogContent className="sm:max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <ImageIcon size={20} />
-              {translations.updateThumbnail}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {translations.updateThumbnailDescription}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="grid gap-3 py-4">
-            <Button
-              onClick={handleFileSelect}
-              className="flex items-center gap-2 justify-start h-12"
-              variant="outline"
-            >
-              <Upload size={18} />
-              {translations.uploadNewImage}
-            </Button>
-            {thumbnailImage && (
-              <Button
-                onClick={handleRemoveImage}
-                className="flex items-center gap-2 justify-start h-12"
-                variant="outline"
-              >
-                <X size={18} />
-                {translations.removeCurrentImage}
-              </Button>
-            )}
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{translations.cancel}</AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Hidden File Input */}
       <input

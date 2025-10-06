@@ -54,10 +54,7 @@ export default function EducationDialogAddEdit({
     bachelorsDegree: "Bachelor's Degree",
     mastersDegree: "Master's Degree",
     doctorate: "Doctorate (PhD)",
-    professionalDegree: "Professional Degree",
     certificate: "Certificate",
-    diploma: "Diploma",
-    highSchoolDiploma: "High School Diploma",
     other: "Other",
   };
 
@@ -74,8 +71,12 @@ export default function EducationDialogAddEdit({
       school: "",
       startYear: "",
       endYear: "",
+      otherDegreeName: "",
     },
   });
+
+  // Watch the degree field to show/hide other degree input
+  const selectedDegree = watch("degree");
 
   const [updateEducation, { isLoading }] = useUpdateProfileInfoMutation();
 
@@ -89,6 +90,11 @@ export default function EducationDialogAddEdit({
         new Date(education.startDate).getFullYear().toString()
       );
       setValue("endYear", new Date(education.endDate).getFullYear().toString());
+      // If the degree is not in the predefined list, set it as "Other" and put the degree in otherDegreeName
+      if (!degrees.includes(education.degree)) {
+        setValue("degree", translations.other);
+        setValue("otherDegreeName", education.degree);
+      }
     } else {
       // Reset form when adding new
       reset();
@@ -101,7 +107,8 @@ export default function EducationDialogAddEdit({
 
     const educationData = {
       type: "education",
-      degree: data.degree,
+      degree:
+        data.degree === translations.other ? data.otherDegreeName : data.degree,
       institution: data.school,
       startDate: formatDateFromYear(data.startYear),
       endDate: formatDateFromYear(data.endYear),
@@ -154,10 +161,7 @@ export default function EducationDialogAddEdit({
     translations.bachelorsDegree,
     translations.mastersDegree,
     translations.doctorate,
-    translations.professionalDegree,
     translations.certificate,
-    translations.diploma,
-    translations.highSchoolDiploma,
     translations.other,
   ];
 
@@ -192,8 +196,11 @@ export default function EducationDialogAddEdit({
                   <SelectValue placeholder={translations.degreePlaceholder} />
                 </SelectTrigger>
                 <SelectContent>
-                  {degrees.map((degree) => (
-                    <SelectItem key={degree} value={degree}>
+                  {degrees.map((degree, index) => (
+                    <SelectItem
+                      key={`degree-${index}-${degree}`}
+                      value={degree}
+                    >
                       {degree}
                     </SelectItem>
                   ))}
@@ -203,6 +210,30 @@ export default function EducationDialogAddEdit({
                 <p className="text-sm text-red-600">{errors.degree.message}</p>
               )}
             </div>
+
+            {/* Other Degree Name Field - Only show when "Other" is selected */}
+            {selectedDegree === translations.other && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-900">
+                  Other Degree Name *
+                </Label>
+                <Input
+                  {...register("otherDegreeName", {
+                    required:
+                      selectedDegree === translations.other
+                        ? "Other degree name is required"
+                        : false,
+                  })}
+                  placeholder="Enter your degree name"
+                  className="w-full border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                />
+                {errors.otherDegreeName && (
+                  <p className="text-sm text-red-600">
+                    {errors.otherDegreeName.message}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* School/University Field */}
             <div className="space-y-2">
@@ -244,8 +275,11 @@ export default function EducationDialogAddEdit({
                     <SelectValue placeholder={translations.yearPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
-                    {years.map((year) => (
-                      <SelectItem key={year} value={year.toString()}>
+                    {years.map((year, index) => (
+                      <SelectItem
+                        key={`start-year-${index}-${year}`}
+                        value={year.toString()}
+                      >
                         {year}
                       </SelectItem>
                     ))}
@@ -282,8 +316,11 @@ export default function EducationDialogAddEdit({
                     <SelectValue placeholder={translations.yearPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
-                    {years.map((year) => (
-                      <SelectItem key={year} value={year.toString()}>
+                    {years.map((year, index) => (
+                      <SelectItem
+                        key={`end-year-${index}-${year}`}
+                        value={year.toString()}
+                      >
                         {year}
                       </SelectItem>
                     ))}

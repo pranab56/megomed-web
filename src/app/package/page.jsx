@@ -8,12 +8,10 @@ import { Card } from "../../components/ui/card";
 import { useGetAllPlanQuery } from "../../features/plan/planApi";
 import { useCreateSubcriptionMutation } from "../../features/subcription/subcriptionApi";
 
-
 const SubscriptionPlanContent = dynamic(
   () =>
     Promise.resolve(({ userType, messages }) => {
       const subscriptionPlanTranslations = messages?.subscriptionPlan || {};
-
 
       // Add state to track which plan is loading
       const [loadingPlanId, setLoadingPlanId] = useState(null);
@@ -26,7 +24,6 @@ const SubscriptionPlanContent = dynamic(
       const [createSubscription, { isLoading: createSubcLoading }] =
         useCreateSubcriptionMutation();
 
-
       if (isLoading) {
         return (
           <div className="w-full bg-white py-4 md:py-6 max-w-7xl mx-auto px-4 md:px-6 2xl:px-0">
@@ -36,7 +33,6 @@ const SubscriptionPlanContent = dynamic(
           </div>
         );
       }
-
 
       if (isError || !apiResponse?.success) {
         return (
@@ -50,14 +46,12 @@ const SubscriptionPlanContent = dynamic(
         );
       }
 
-
       // Sort plans: monthly first, then yearly
       const sortedPlans = [...(apiResponse?.data || [])].sort((a, b) => {
         if (a.type === "monthly" && b.type === "yearly") return -1;
         if (a.type === "yearly" && b.type === "monthly") return 1;
         return 0;
       });
-
 
       const getPlanIcon = (title) => {
         if (
@@ -69,7 +63,6 @@ const SubscriptionPlanContent = dynamic(
         return "👤";
       };
 
-
       const getCurrencySymbol = (title) => {
         if (
           title?.toLowerCase().includes("pro") ||
@@ -80,7 +73,6 @@ const SubscriptionPlanContent = dynamic(
         return "€";
       };
 
-
       const formatTenderCount = (tenderCount) => {
         if (tenderCount === "unlimited" || tenderCount === "Unlimited") {
           return subscriptionPlanTranslations.unlimited || "Unlimited";
@@ -88,14 +80,12 @@ const SubscriptionPlanContent = dynamic(
         return tenderCount;
       };
 
-
       const getDurationText = (type) => {
         if (type === "yearly") {
           return subscriptionPlanTranslations.duration?.year || "year";
         }
         return subscriptionPlanTranslations.duration?.month || "mo";
       };
-
 
       const handleCreateSubscription = async (planId) => {
         console.log("Selected Plan ID:", planId);
@@ -117,7 +107,6 @@ const SubscriptionPlanContent = dynamic(
         }
       };
 
-
       return (
         <div className="w-full bg-white py-4 md:py-6 max-w-7xl mx-auto px-4 md:px-6 2xl:px-0 ">
           <div className="container mx-auto px-4 max-w-7xl">
@@ -136,13 +125,11 @@ const SubscriptionPlanContent = dynamic(
                 </p>
               </div>
 
-
               {/* Plans Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-center">
                 {sortedPlans.map((plan) => {
                   // Check if this specific plan is loading
                   const isCurrentPlanLoading = loadingPlanId === plan._id;
-
 
                   return (
                     <Card
@@ -159,7 +146,6 @@ const SubscriptionPlanContent = dynamic(
                             </Badge>
                           </div>
                         )}
-
 
                         {/* Plan Icon and Title */}
                         <div className="text-center mb-6">
@@ -179,7 +165,6 @@ const SubscriptionPlanContent = dynamic(
                           )}
                         </div>
 
-
                         {/* Price */}
                         <div className="mb-6">
                           <div className="flex items-baseline justify-center">
@@ -194,12 +179,11 @@ const SubscriptionPlanContent = dynamic(
                           <p className="text-center text-sm text-gray-500 mt-2">
                             {plan.type === "yearly"
                               ? subscriptionPlanTranslations.billedYearly ||
-                              "Billed yearly"
+                                "Billed yearly"
                               : subscriptionPlanTranslations.billedMonthly ||
-                              "Billed monthly"}
+                                "Billed monthly"}
                           </p>
                         </div>
-
 
                         {/* Tender Count */}
                         <div className="mb-4 text-center">
@@ -208,7 +192,6 @@ const SubscriptionPlanContent = dynamic(
                             {subscriptionPlanTranslations.tenders || "tenders"}
                           </span>
                         </div>
-
 
                         {/* Features/Benefits */}
                         <div className="flex-1 space-y-3 mb-6">
@@ -223,7 +206,6 @@ const SubscriptionPlanContent = dynamic(
                             </div>
                           ))}
                         </div>
-
 
                         {/* Button with Individual Loading State */}
                         <Button
@@ -247,7 +229,6 @@ const SubscriptionPlanContent = dynamic(
                   );
                 })}
 
-
                 {/* Fallback if no plans found */}
                 {sortedPlans.length === 0 && (
                   <div className="col-span-full text-center py-8">
@@ -266,13 +247,8 @@ const SubscriptionPlanContent = dynamic(
   { ssr: false }
 );
 
-
 function PackagePlan({ userType = "freelancer", messages = "EN" }) {
   return <SubscriptionPlanContent userType={userType} messages={messages} />;
 }
 
-
 export default PackagePlan;
-
-
-
