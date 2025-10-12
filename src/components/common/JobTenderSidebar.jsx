@@ -12,6 +12,7 @@ import { baseURL } from "../../utils/BaseURL";
 import { DialogDescription } from "../ui/dialog";
 import ShowLoginDialog from "./showLoginDialog/ShowLoginDialog";
 import { useApplyTenderMutation } from "../../features/tender/tenderApi";
+import ProposalModalJobTender from "./ProposalModalJobTender";
 
 function JobTenderSidebar({ jobData }) {
   const [isClient, setIsClient] = useState(false);
@@ -24,6 +25,10 @@ function JobTenderSidebar({ jobData }) {
   const router = useRouter();
   const [respondedToTender, setRespondedToTender] = useState(false);
   const [respondedToJob, setRespondedToJob] = useState(false);
+  const [openProposalModal, setOpenProposalModal] = useState(false);
+
+  // Debug modal state
+  console.log("JobTenderSidebar - openProposalModal:", openProposalModal);
   const showToast = useToast();
 
   // Tender mutation hook
@@ -124,71 +129,36 @@ function JobTenderSidebar({ jobData }) {
       };
 
   const handleApplyForThisPosition = () => {
-    if (!isLoggedIn) {
+    console.log("handleApplyForThisPosition called, isLoggedIn:", isLoggedIn);
+    if (isLoggedIn) {
+      console.log("Setting openProposalModal to true");
+      setOpenProposalModal(true);
+      console.log("Modal state should be true now");
+    } else {
       setOpenLoginDialog(true);
     }
   };
 
-  const handleRespondToTender = async () => {
-    // console.log("handleRespondToTender called");
-    // console.log("jobData:", jobData);
-    // console.log("respondedToTender:", respondedToTender);
-
-    if (respondedToTender) {
-      console.log("Already responded, showing error");
-      showToast.error(
-        jobTenderSidebarTranslations.alreadyRespondedToTenderError ||
-          "You have already responded to this tender"
-      );
-      return;
-    }
-
-    // Check if jobData exists and has _id
-    if (!jobData || !jobData._id) {
-      console.log("No jobData or _id found");
-      showToast.error(
-        jobTenderSidebarTranslations.tenderDataError ||
-          "Tender data is not available. Please refresh the page."
-      );
-      return;
-    }
-
-    console.log("Calling API with tender ID:", jobData._id);
-
-    try {
-      // Call the API to apply for tender
-      const result = await applyTender(jobData._id).unwrap();
-      console.log("API call successful:", result);
-
-      // Update local state
-      setRespondedToTender(true);
-
-      router.push(`/chat`);
-
-      // Show success message
-      showToast.success(
-        jobTenderSidebarTranslations.tenderRespondedSuccess ||
-          "Tender responded successfully",
-        {
-          description:
-            jobTenderSidebarTranslations.tenderRespondedSuccessDescription ||
-            "You can now view your response in the tender page",
-        }
-      );
-    } catch (error) {
-      console.log("API call failed:", error);
-      // Show error message
-      showToast.error(
-        jobTenderSidebarTranslations.tenderRespondError ||
-          "Failed to respond to tender. Please try again."
-      );
-      console.error("Error applying to tender:", error);
+  const handleRespondToTender = () => {
+    console.log("handleRespondToTender called, isLoggedIn:", isLoggedIn);
+    if (isLoggedIn) {
+      console.log("Setting openProposalModal to true");
+      setOpenProposalModal(true);
+      console.log("Modal state should be true now");
+    } else {
+      setOpenLoginDialog(true);
     }
   };
 
   const handleRespondToJob = () => {
-    // Redirect to the website directly
-    window.open(job.company.website, "_blank");
+    console.log("handleRespondToJob called, isLoggedIn:", isLoggedIn);
+    if (isLoggedIn) {
+      console.log("Setting openProposalModal to true");
+      setOpenProposalModal(true);
+      console.log("Modal state should be true now");
+    } else {
+      setOpenLoginDialog(true);
+    }
   };
 
   // Show loading state on server, content on client
@@ -281,16 +251,21 @@ function JobTenderSidebar({ jobData }) {
               isJobClosed(jobData?.endDate) ||
               (isTenderPage && (respondedToTender || isApplyingTender))
             }
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+
               // Don't allow any action if job is closed
               if (isJobClosed(jobData?.endDate)) {
                 return;
               }
 
-              console.log("Button clicked!");
-              console.log("isLoggedIn:", isLoggedIn);
-              console.log("isTenderPage:", isTenderPage);
-              console.log("role:", role);
+              console.log(
+                "Button clicked! isLoggedIn:",
+                isLoggedIn,
+                "isTenderPage:",
+                isTenderPage
+              );
 
               if (isLoggedIn) {
                 if (isTenderPage) {
@@ -423,6 +398,12 @@ function JobTenderSidebar({ jobData }) {
           </Button>
         </div>
       </ShowLoginDialog>
+      <ProposalModalJobTender
+        open={openProposalModal}
+        onOpenChange={setOpenProposalModal}
+        jobData={jobData}
+        type={isTenderPage ? "tender" : "job"}
+      />
     </Card>
   );
 }

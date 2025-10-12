@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { DialogDescription, DialogTitle } from "../ui/dialog";
 import ShowLoginDialog from "./showLoginDialog/ShowLoginDialog";
+import ProposalModalJobTender from "./ProposalModalJobTender";
 
 function JobTenderDetails({ jobData }) {
   const [isClient, setIsClient] = useState(false);
@@ -14,6 +15,7 @@ function JobTenderDetails({ jobData }) {
   const isTenderPage = pathname.includes("tenders-details");
   const isLoggedIn = true;
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
+  const [openProposalModal, setOpenProposalModal] = useState(false);
   const router = useRouter();
 
   console.log("job data", jobData);
@@ -32,6 +34,19 @@ function JobTenderDetails({ jobData }) {
       month: "short",
       day: "numeric",
     });
+  };
+
+  // Check if job end date is today
+  const isJobClosed = (endDateString) => {
+    if (!endDateString) return false;
+    const endDate = new Date(endDateString);
+    const today = new Date();
+
+    // Reset time to compare only dates
+    endDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return endDate <= today;
   };
 
   // Get translations
@@ -225,6 +240,40 @@ function JobTenderDetails({ jobData }) {
         </CardContent>
       </Card>
 
+      {/* Apply Button Section */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex justify-center">
+            <Button
+              className={`max-w-60 mx-auto text-white font-medium ${
+                isJobClosed(jobData?.endDate)
+                  ? "bg-red-500 cursor-not-allowed hover:bg-red-500"
+                  : "button-gradient hover:bg-gray-400"
+              }`}
+              disabled={isJobClosed(jobData?.endDate)}
+              onClick={() => {
+                // Don't allow any action if job is closed
+                if (isJobClosed(jobData?.endDate)) {
+                  return;
+                }
+
+                if (isLoggedIn) {
+                  setOpenProposalModal(true);
+                } else {
+                  setOpenLoginDialog(true);
+                }
+              }}
+            >
+              {isJobClosed(jobData?.endDate)
+                ? "Job Closed"
+                : isTenderPage
+                ? "Respond to Tender"
+                : "Apply for this Job"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       <ShowLoginDialog open={openLoginDialog} onOpenChange={setOpenLoginDialog}>
         <DialogTitle className="text-2xl font-bold">
           {jobDetailsTranslations.loginDialogTitle ||
@@ -243,6 +292,14 @@ function JobTenderDetails({ jobData }) {
           </Button>
         </div>
       </ShowLoginDialog>
+
+      {/* Proposal Modal */}
+      <ProposalModalJobTender
+        open={openProposalModal}
+        onOpenChange={setOpenProposalModal}
+        jobData={jobData}
+        type={isTenderPage ? "tender" : "job"}
+      />
     </div>
   );
 }

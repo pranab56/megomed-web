@@ -2,6 +2,7 @@
 import useToast from "@/hooks/showToast/ShowToast";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import {
   useRespondMutation,
@@ -9,11 +10,13 @@ import {
 } from "../../features/tender/tenderApi";
 import { baseURL } from "../../utils/BaseURL";
 import { Card, CardContent, CardFooter } from "../ui/card";
+import ProposalModalJobTender from "./ProposalModalJobTender";
 
 function JobTenderCard({ type = "tender", data }) {
   const router = useRouter();
   const showToast = useToast();
   const [respond, { isLoading: respondLoading }] = useRespondMutation();
+  const [openProposalModal, setOpenProposalModal] = useState(false);
 
   const currentUser = localStorage.getItem("role");
   const userType = currentUser;
@@ -34,6 +37,19 @@ function JobTenderCard({ type = "tender", data }) {
 
   const cardData =
     data || (type === "job" ? defaultJobData : defaultTenderData);
+
+  // Check if job end date is today
+  const isJobClosed = (endDateString) => {
+    if (!endDateString) return false;
+    const endDate = new Date(endDateString);
+    const today = new Date();
+
+    // Reset time to compare only dates
+    endDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return endDate <= today;
+  };
 
   const handleViewJob = (e) => {
     e.preventDefault();
@@ -65,9 +81,17 @@ function JobTenderCard({ type = "tender", data }) {
   //   }
   // };
 
-  const handleRespondToJob = () => {
-    // Redirect to the website directly
-    window.open(data.websiteLink, "_blank");
+  const handleRespondToJob = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Don't allow any action if job is closed
+    if (isJobClosed(data?.endDate)) {
+      return;
+    }
+
+    console.log("JobTenderCard - Opening proposal modal");
+    setOpenProposalModal(true);
   };
 
   return (
@@ -93,10 +117,16 @@ function JobTenderCard({ type = "tender", data }) {
               {userType === "freelancer" && (
                 <button
                   onClick={handleRespondToJob}
-                  disabled={respondLoading}
-                  className="px-4 py-2 bg-white text-black rounded-lg cursor-pointer font-medium hover:bg-gray-100 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={respondLoading || isJobClosed(data?.endDate)}
+                  className={`px-4 py-2 rounded-lg cursor-pointer font-medium transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isJobClosed(data?.endDate)
+                      ? "bg-red-500 text-white cursor-not-allowed"
+                      : "bg-white text-black hover:bg-gray-100"
+                  }`}
                 >
-                  {respondLoading
+                  {isJobClosed(data?.endDate)
+                    ? "Job Closed"
+                    : respondLoading
                     ? "Applying..."
                     : type === "job"
                     ? "Apply Job"
@@ -118,6 +148,14 @@ function JobTenderCard({ type = "tender", data }) {
           </div>
         </CardFooter>
       </Card>
+
+      {/* Proposal Modal */}
+      <ProposalModalJobTender
+        open={openProposalModal}
+        onOpenChange={setOpenProposalModal}
+        jobData={data}
+        type={type}
+      />
     </div>
   );
 }
