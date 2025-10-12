@@ -22,6 +22,7 @@ function ProposalModalJobTender({ open, onOpenChange, jobData, type }) {
     introduction: "",
     proposal: "",
     estimatedTime: "",
+    timeUnit: "weeks", // Default to weeks
     priceQuote: "",
     documents: [],
   });
@@ -30,6 +31,13 @@ function ProposalModalJobTender({ open, onOpenChange, jobData, type }) {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  const handleTimeUnitChange = (unit) => {
+    setFormData((prev) => ({
+      ...prev,
+      timeUnit: unit,
     }));
   };
 
@@ -226,13 +234,52 @@ function ProposalModalJobTender({ open, onOpenChange, jobData, type }) {
             <Card>
               <CardContent>
                 <h3 className="font-semibold text-lg mb-4">Estimated Time</h3>
-                <Input
-                  placeholder="4 weeks"
-                  value={formData.estimatedTime}
-                  onChange={(e) =>
-                    handleInputChange("estimatedTime", e.target.value)
-                  }
-                />
+                <div className="space-y-3">
+                  <Input
+                    placeholder="4"
+                    value={formData.estimatedTime}
+                    onChange={(e) =>
+                      handleInputChange("estimatedTime", e.target.value)
+                    }
+                    type="number"
+                    min="1"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleTimeUnitChange("days")}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+                        formData.timeUnit === "days"
+                          ? "gradient text-primary-foreground"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      Days
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleTimeUnitChange("weeks")}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+                        formData.timeUnit === "weeks"
+                          ? "gradient text-primary-foreground"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      Weeks
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleTimeUnitChange("months")}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+                        formData.timeUnit === "months"
+                          ? "gradient text-primary-foreground"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      Months
+                    </button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 

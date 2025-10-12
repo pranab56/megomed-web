@@ -34,6 +34,7 @@ const translations = {
   viewProfile: "View Profile",
   accountSettings: "Account Settings",
   billingPlans: "Billing & Plans",
+  dashboard: "Dashboard",
   helpSupport: "Help & Support",
   signOut: "Sign Out",
   client: "Client",
@@ -158,7 +159,20 @@ function ClientNavBar() {
                   {translations.billingPlans}
                 </Link>
               </DropdownMenuItem> */}
+              <DropdownMenuItem asChild>
+                <Link href={`/help`} className="w-full cursor-pointer">
+                  {translations.helpSupport}
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link
+                  href={`/client-dashboard`}
+                  className="w-full cursor-pointer"
+                >
+                  {translations.dashboard}
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href={`/help`} className="w-full cursor-pointer">
                   {translations.helpSupport}

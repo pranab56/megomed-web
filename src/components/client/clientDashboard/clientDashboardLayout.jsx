@@ -11,9 +11,9 @@ function ClientDashboardLayout() {
   const [selectedCategory, setSelectedCategory] = useState("jobs");
   const [selectedTab, setSelectedTab] = useState("applied");
 
-  //   if (userType !== "client") {
-  //     return <div>You are not authorized to access this page</div>;
-  //   }
+  if (userType !== "client") {
+    return <div>You are not authorized to access this page</div>;
+  }
   return (
     <div className="max-w-7xl mx-auto py-6 ">
       <div className="animate-fade-in-up flex flex-col gap-y-6 md:flex-row gap-x-6 mx-4 md:mx-0">
