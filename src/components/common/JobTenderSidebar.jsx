@@ -62,6 +62,19 @@ function JobTenderSidebar({ jobData }) {
     });
   };
 
+  // Check if job end date is today
+  const isJobClosed = (endDateString) => {
+    if (!endDateString) return false;
+    const endDate = new Date(endDateString);
+    const today = new Date();
+
+    // Reset time to compare only dates
+    endDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return endDate <= today;
+  };
+
   // Get translations
   const messages = "EN";
   const jobTenderSidebarTranslations = messages?.jobTenderSidebar || {};
@@ -253,17 +266,27 @@ function JobTenderSidebar({ jobData }) {
         {/* Fixed conditional rendering for buttons */}
         {role !== "client" && (
           <Button
-            className={`max-w-60 mx-auto hover:bg-gray-400 text-white font-medium ${
-              isTenderPage
+            className={`max-w-60 mx-auto text-white font-medium ${
+              isJobClosed(jobData?.endDate)
+                ? "bg-red-500 cursor-not-allowed hover:bg-red-500"
+                : isTenderPage
                 ? respondedToTender
-                  ? "bg-gray-500 cursor-not-allowed"
-                  : "button-gradient"
+                  ? "bg-gray-500 cursor-not-allowed hover:bg-gray-500"
+                  : "button-gradient hover:bg-gray-400"
                 : respondedToJob
-                ? "bg-gray-500 cursor-not-allowed"
-                : "button-gradient"
+                ? "bg-gray-500 cursor-not-allowed hover:bg-gray-500"
+                : "button-gradient hover:bg-gray-400"
             }`}
-            disabled={isTenderPage && (respondedToTender || isApplyingTender)}
+            disabled={
+              isJobClosed(jobData?.endDate) ||
+              (isTenderPage && (respondedToTender || isApplyingTender))
+            }
             onClick={() => {
+              // Don't allow any action if job is closed
+              if (isJobClosed(jobData?.endDate)) {
+                return;
+              }
+
               console.log("Button clicked!");
               console.log("isLoggedIn:", isLoggedIn);
               console.log("isTenderPage:", isTenderPage);
@@ -283,7 +306,9 @@ function JobTenderSidebar({ jobData }) {
               }
             }}
           >
-            {isTenderPage
+            {isJobClosed(jobData?.endDate)
+              ? "Job Closed"
+              : isTenderPage
               ? isApplyingTender
                 ? "Responding..."
                 : respondedToTender
