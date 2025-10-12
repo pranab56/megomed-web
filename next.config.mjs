@@ -16,7 +16,7 @@ const nextConfig = {
       },
       {
         protocol: "http", // ← changed from https to http
-        hostname: "10.10.7.107", // ← internal IP
+        hostname: "10.10.7.65", // ← internal IP
         port: "5006", // ← must match the port in the URL
         pathname: "/**",
       },

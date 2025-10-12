@@ -210,6 +210,12 @@ function FreelancerNavBar() {
               <DropdownMenuSeparator /> */}
               <DropdownMenuItem
                 className="w-full cursor-pointer"
+                onClick={() => router.push("/freelancer-dashboard")}
+              >
+                Dashboard
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="w-full cursor-pointer"
                 onClick={() => setIsHelpSheetOpen(true)}
               >
                 Help & Support
