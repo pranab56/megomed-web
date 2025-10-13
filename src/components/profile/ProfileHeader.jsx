@@ -1132,22 +1132,19 @@ function ProfileHeader({ setCoverPhoto }) {
         {/* Status & Info */}
         <div className="flex flex-col sm:flex-row lg:flex-col items-center sm:items-center lg:items-end gap-3 w-full lg:w-auto">
           {/* Available Badge */}
-          <Badge className="bg-none flex items-center">
+          {/* <Badge className="bg-none flex items-center">
             <div className="w-2.5 h-2.5 bg-green-500 rounded-full mr-2"></div>
             Available
-          </Badge>
+          </Badge> */}
 
           {/* Verified Freelancer */}
-          {data?.data?.isVarified === true ? (
+          {data?.data?.isVarified !== true ? (
             <div className="flex items-center gap-2 text-sm text-gray-700 bg-green-100 rounded-full px-2 py-1">
               <Shield className="w-4 h-4 text-green-600" />
               <span>Verified Freelancer</span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-sm text-gray-700 bg-red-100 rounded-full px-2 py-1">
-              <Shield className="w-4 h-4 text-red-600" />
-              <span>Profile Not Verified</span>
-            </div>
+            <Button className="button-gradient">Get Verified</Button>
           )}
           {/* Day Rate */}
           <div className="flex items-center gap-2 text-sm">
