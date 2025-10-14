@@ -177,14 +177,17 @@ function CompanyNavbar() {
                     {userData?.data?.fullName || "User"}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {userData?.data?.designation || "Freelancer"}
+                    {userData?.data?.designation || "Company"}
                   </p>
                 </div>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-60">
               <DropdownMenuItem asChild>
-                <Link href={`/profile`} className="w-full cursor-pointer">
+                <Link
+                  href={`/company-profile/private`}
+                  className="w-full cursor-pointer"
+                >
                   View Profile
                 </Link>
               </DropdownMenuItem>

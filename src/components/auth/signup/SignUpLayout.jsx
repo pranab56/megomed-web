@@ -207,7 +207,9 @@ const SignUpPage = () => {
     const passwordsMatch = formData.password === formData.confirmPassword;
 
     // Check if account type is selected
-    const hasAccountType = type && (type === "client" || type === "freelancer");
+    const hasAccountType =
+      type &&
+      (type === "client" || type === "freelancer" || type === "company");
 
     // Check if there are any validation errors
     const hasErrors = Object.values(validationErrors).some(
@@ -239,7 +241,13 @@ const SignUpPage = () => {
             {type && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
                 <p className="text-blue-700 text-sm text-center font-medium">
-                  Creating {type === "client" ? "Client" : "Freelancer"} Account
+                  Creating{" "}
+                  {type === "client"
+                    ? "Client"
+                    : type === "freelancer"
+                    ? "Freelancer"
+                    : "Company"}{" "}
+                  Account
                 </p>
               </div>
             )}

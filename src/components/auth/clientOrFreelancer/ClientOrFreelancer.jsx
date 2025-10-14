@@ -8,7 +8,8 @@ import {
 import { Star, User, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
+import { PiBuildingApartment } from "react-icons/pi";
+import { RiUser2Line } from "react-icons/ri";
 const AccountTypeDialog = () => {
   const [selectedType, setSelectedType] = useState("");
   const [isOpen, setIsOpen] = useState(true);
@@ -43,7 +44,7 @@ const AccountTypeDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[480px] p-0 bg-white rounded-3xl border-0 shadow-2xl">
+      <DialogContent className="min-w-3xl p-0 bg-white rounded-3xl border-0 shadow-2xl">
         <div className="px-8 py-8">
           {/* Header with Avatar Icon */}
           <DialogHeader className="text-center space-y-4 mb-8">
@@ -62,7 +63,7 @@ const AccountTypeDialog = () => {
           </DialogHeader>
 
           {/* Account Type Options */}
-          <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-3 gap-4 mb-8 max-w-5xl">
             {/* Freelancer Option */}
             <div
               onClick={() => handleAccountTypeSelect("freelancer")}
@@ -107,13 +108,39 @@ const AccountTypeDialog = () => {
             >
               <div className="text-center space-y-3">
                 <div className="mx-auto w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center">
-                  <Users className="w-6 h-6 text-gray-600" />
+                  <RiUser2Line className="w-6 h-6 text-gray-600" />
                 </div>
 
                 <div className="space-y-1">
-                  <h3 className="font-semibold text-gray-900">
-                    Client (Company)
-                  </h3>
+                  <h3 className="font-semibold text-gray-900">Client</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Post jobs, tenders and hire freelancers.
+                  </p>
+                </div>
+              </div>
+
+              {/* Selection Indicator */}
+              {selectedType === "client" && (
+                <div className="absolute top-3 right-3 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                </div>
+              )}
+            </div>
+            <div
+              onClick={() => handleAccountTypeSelect("company")}
+              className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${
+                selectedType === "company"
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
+            >
+              <div className="text-center space-y-3">
+                <div className="mx-auto w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                  <PiBuildingApartment className="w-6 h-6 text-gray-600" />
+                </div>
+
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-gray-900">Company</h3>
                   <p className="text-sm text-gray-600 leading-relaxed">
                     Post jobs and hire freelancers.
                   </p>
@@ -121,7 +148,7 @@ const AccountTypeDialog = () => {
               </div>
 
               {/* Selection Indicator */}
-              {selectedType === "client" && (
+              {selectedType === "company" && (
                 <div className="absolute top-3 right-3 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
                   <div className="w-2 h-2 bg-white rounded-full"></div>
                 </div>
