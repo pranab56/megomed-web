@@ -11,18 +11,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RiUploadCloudLine } from "react-icons/ri";
+import { useUpdateCompanyInfoMutation } from "@/features/company/companyApi";
+import { toast } from "react-hot-toast";
 function CompanyInfoModal({ isOpen, onClose, clientInfo }) {
   const [documents, setDocuments] = useState({
-    kbis: null,
-    rcPro: null,
-    vatCertificate: null,
+    companyKbis: null,
+    companyRcPro: null,
+    companyVatCertificate: null,
   });
 
   const documentInputRefs = {
-    kbis: useRef(null),
-    rcPro: useRef(null),
-    vatCertificate: useRef(null),
+    companyKbis: useRef(null),
+    companyRcPro: useRef(null),
+    companyVatCertificate: useRef(null),
   };
+
+  const [updateCompanyInfo, { isLoading }] = useUpdateCompanyInfoMutation();
 
   const {
     control,
@@ -31,12 +35,15 @@ function CompanyInfoModal({ isOpen, onClose, clientInfo }) {
     reset,
   } = useForm({
     defaultValues: {
-      siren: "",
-      siret: "",
-      vatId: "",
-      kbis: null,
-      rcPro: null,
-      vatCertificate: null,
+      companySiren: "",
+      companySiret: "",
+      companyVatId: "",
+      companyKbis: null,
+      companyRcPro: null,
+      companyVatCertificate: null,
+      companyName: "",
+      companySize: "",
+      companyEmail: "",
     },
   });
 
@@ -44,17 +51,20 @@ function CompanyInfoModal({ isOpen, onClose, clientInfo }) {
   useEffect(() => {
     if (isOpen && clientInfo) {
       reset({
-        siren: clientInfo.siren || "",
-        siret: clientInfo.siret || "",
-        vatId: clientInfo.vatId || "",
-        kbis: null,
-        rcPro: null,
-        vatCertificate: null,
+        companySiren: clientInfo.siren || "",
+        companySiret: clientInfo.siret || "",
+        companyVatId: clientInfo.vatId || "",
+        companyKbis: null,
+        companyRcPro: null,
+        companyVatCertificate: null,
+        companyName: "",
+        companySize: "",
+        companyEmail: "",
       });
       setDocuments({
-        kbis: null,
-        rcPro: null,
-        vatCertificate: null,
+        companyKbis: null,
+        companyRcPro: null,
+        companyVatCertificate: null,
       });
     }
   }, [isOpen, clientInfo, reset]);
@@ -100,37 +110,46 @@ function CompanyInfoModal({ isOpen, onClose, clientInfo }) {
       const payload = new FormData();
 
       // Append form fields
-      payload.append("siren", formData.siren);
-      payload.append("siret", formData.siret);
-      payload.append("vatId", formData.vatId);
+      payload.append("registrationNumber", formData.companySiren);
+      payload.append("establishmentNumber", formData.companySiret);
+      payload.append("companyVatNumber", formData.companyVatId);
+
+      payload.append("companyName", formData.companyName);
+      payload.append("companySize", formData.companySize);
+      payload.append("companyEmail", formData.companyEmail);
 
       // Append document files
-      if (formData.kbis) {
-        payload.append("kbis", formData.kbis);
+      if (formData.companyKbis) {
+        payload.append("companyKBISFile", formData.companyKbis);
       }
-      if (formData.rcPro) {
-        payload.append("rcPro", formData.rcPro);
+      if (formData.companyRcPro) {
+        payload.append("companyRCFile", formData.companyRcPro);
       }
-      if (formData.vatCertificate) {
-        payload.append("vatCertificate", formData.vatCertificate);
+      if (formData.companyVatCertificate) {
+        payload.append(
+          "companyCertificateFile",
+          formData.companyVatCertificate
+        );
       }
 
       console.log("Sending client info payload:", {
-        siren: formData.siren,
-        siret: formData.siret,
-        vatId: formData.vatId,
-        hasKbis: !!formData.kbis,
-        hasRcPro: !!formData.rcPro,
-        hasVatCertificate: !!formData.vatCertificate,
+        companySiren: formData.companySiren,
+        companySiret: formData.companySiret,
+        companyVatId: formData.companyVatId,
+        hasKbis: !!formData.companyKbis,
+        hasRcPro: !!formData.companyRcPro,
+        hasVatCertificate: !!formData.companyVatCertificate,
       });
 
-      // TODO: Replace with actual API call
-      // const response = await updateClientInfo(payload).unwrap();
-      // console.log("Client info updated successfully:", response);
+      // Use the actual API call
+      const response = await updateCompanyInfo(payload).unwrap();
+      console.log("Company info updated successfully:", response);
+      toast.success("Company information updated successfully!");
 
       onClose();
     } catch (error) {
-      console.error("Error updating client info:", error);
+      console.error("Error updating company info:", error);
+      toast.error("Error updating company information. Please try again.");
     }
   };
 
@@ -142,7 +161,7 @@ function CompanyInfoModal({ isOpen, onClose, clientInfo }) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
             {/* Company Information */}
             <div className="space-y-4">
               <div className="space-y-1">
@@ -540,8 +559,12 @@ function CompanyInfoModal({ isOpen, onClose, clientInfo }) {
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" className="button-gradient">
-              Save Changes
+            <Button
+              type="submit"
+              className="button-gradient"
+              disabled={isLoading}
+            >
+              {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </form>

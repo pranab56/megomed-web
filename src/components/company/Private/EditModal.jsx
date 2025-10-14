@@ -12,6 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Image from "next/image";
+import { useUpdateCompanyProfileMutation } from "@/features/company/companyApi";
+import { toast } from "react-hot-toast";
+import { getImageUrl } from "@/utils/getImageUrl";
 
 function EditModal({ isOpen, onClose, companyData }) {
   const [profileImage, setProfileImage] = useState("/card_image.png");
@@ -21,6 +24,9 @@ function EditModal({ isOpen, onClose, companyData }) {
 
   const profileInputRef = useRef(null);
   const coverInputRef = useRef(null);
+
+  const [updateCompanyProfile, { isLoading }] =
+    useUpdateCompanyProfileMutation();
 
   const {
     control,
@@ -38,13 +44,27 @@ function EditModal({ isOpen, onClose, companyData }) {
   // Reset form when dialog opens
   useEffect(() => {
     if (isOpen && companyData) {
+      console.log("EditModal - companyData:", companyData);
+      console.log("EditModal - profile:", companyData.profile);
+      console.log("EditModal - coverPhoto:", companyData.coverPhoto);
+
       reset({
         companyName: companyData.companyName || "",
         location: companyData.location || "",
         aboutCompany: companyData.aboutCompany || "",
       });
-      setProfileImage(companyData.profileImage || "/card_image.png");
-      setCoverPhoto(companyData.coverPhoto || "/card_image.png");
+
+      // Use getImageUrl to properly format the image URLs
+      const profileImageUrl =
+        getImageUrl(companyData.profile) || "/card_image.png";
+      const coverPhotoUrl =
+        getImageUrl(companyData.coverPhoto) || "/card_image.png";
+
+      console.log("EditModal - profileImageUrl:", profileImageUrl);
+      console.log("EditModal - coverPhotoUrl:", coverPhotoUrl);
+
+      setProfileImage(profileImageUrl);
+      setCoverPhoto(coverPhotoUrl);
       setSelectedProfileFile(null);
       setSelectedCoverFile(null);
     }
@@ -95,7 +115,7 @@ function EditModal({ isOpen, onClose, companyData }) {
 
       // Append files if selected
       if (selectedProfileFile) {
-        payload.append("profileImage", selectedProfileFile);
+        payload.append("profile", selectedProfileFile);
       }
       if (selectedCoverFile) {
         payload.append("coverPhoto", selectedCoverFile);
@@ -109,13 +129,15 @@ function EditModal({ isOpen, onClose, companyData }) {
         hasCoverPhoto: !!selectedCoverFile,
       });
 
-      // TODO: Replace with actual API call
-      // const response = await updateCompany(payload).unwrap();
-      // console.log("Company updated successfully:", response);
+      // Use the actual API call
+      const response = await updateCompanyProfile(payload).unwrap();
+      console.log("Company updated successfully:", response);
+      toast.success("Company updated successfully!");
 
       onClose();
     } catch (error) {
       console.error("Error updating company:", error);
+      toast.error("Error updating company. Please try again.");
     }
   };
 
@@ -140,7 +162,11 @@ function EditModal({ isOpen, onClose, companyData }) {
                   onClick={handleProfileImageClick}
                 >
                   <Image
-                    src={profileImage}
+                    src={
+                      profileImage.startsWith("data:")
+                        ? profileImage
+                        : getImageUrl(profileImage)
+                    }
                     alt="Profile"
                     fill
                     className="object-cover transition-opacity group-hover:opacity-75"
@@ -177,7 +203,11 @@ function EditModal({ isOpen, onClose, companyData }) {
                   onClick={handleCoverPhotoClick}
                 >
                   <Image
-                    src={coverPhoto}
+                    src={
+                      coverPhoto.startsWith("data:")
+                        ? coverPhoto
+                        : getImageUrl(coverPhoto)
+                    }
                     alt="Cover"
                     fill
                     className="object-cover transition-opacity group-hover:opacity-75"
@@ -306,8 +336,12 @@ function EditModal({ isOpen, onClose, companyData }) {
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" className="button-gradient">
-              Save Changes
+            <Button
+              type="submit"
+              className="button-gradient"
+              disabled={isLoading}
+            >
+              {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </form>
