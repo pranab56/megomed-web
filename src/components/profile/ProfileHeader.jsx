@@ -1138,10 +1138,20 @@ function ProfileHeader({ setCoverPhoto }) {
           </Badge> */}
 
           {/* Verified Freelancer */}
-          {data?.data?.isVarified !== true ? (
+          {data?.data?.isVarified === "varified" ? (
             <div className="flex items-center gap-2 text-sm text-gray-700 bg-green-100 rounded-full px-2 py-1">
               <Shield className="w-4 h-4 text-green-600" />
               <span>Verified Freelancer</span>
+            </div>
+          ) : data?.data?.isVarified === "verified_request" ? (
+            <div className="flex items-center gap-2 text-sm text-gray-700 bg-yellow-100 rounded-full px-2 py-1">
+              <Shield className="w-4 h-4 text-yellow-600" />
+              <span>Pending Verification</span>
+            </div>
+          ) : data?.data?.isVarified === "revision" ? (
+            <div className="flex items-center gap-2 text-sm text-gray-700 bg-red-100 rounded-full px-2 py-1">
+              <Shield className="w-4 h-4 text-red-600" />
+              <span>Revision</span>
             </div>
           ) : (
             <Button className="button-gradient">Get Verified</Button>
