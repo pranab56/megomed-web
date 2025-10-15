@@ -7,6 +7,31 @@ import CommentSection from "./CommentSection";
 import FreeLancerInfoEditModal from "./FreeLancerInfoEditModal";
 import { Edit } from "lucide-react";
 import { FileText } from "lucide-react";
+import CertificationSection from "./certificationSection/CertificationSection";
+import { useGetMyprofileQuery } from "../../features/clientProfile/ClientProfile";
+
+// Helper function to handle file viewing based on file type
+const handleFileView = (filePath) => {
+  const fileUrl = getImageUrl(filePath);
+  const fileExtension = filePath.split(".").pop().toLowerCase();
+
+  // For images, use direct link
+  if (
+    ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"].includes(fileExtension)
+  ) {
+    window.open(fileUrl, "_blank");
+  } else {
+    // For documents (PDF, DOC, etc.), create a link that forces new tab
+    const link = document.createElement("a");
+    link.href = fileUrl;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+};
 
 // Dynamic imports with ssr: false
 
@@ -54,6 +79,8 @@ function MyProfileLayoutContent({
   isFreelancerInfoModalOpen,
   setIsFreelancerInfoModalOpen,
   freelancerInfo,
+  profileData,
+  isLoading,
 }) {
   return (
     <div className="w-full">
@@ -71,12 +98,19 @@ function MyProfileLayoutContent({
         <ProfileHeader setCoverPhoto={setCoverPhoto} />
         <FreelancerInformationSection
           onEditClick={() => setIsFreelancerInfoModalOpen(true)}
+          freelancerData={profileData?.freelancerId}
         />
-        <ProfileSections />
-        <SkillsSection />
-        <CommentSection />
+        <ProfileSections profileData={profileData} />
+        <SkillsSection freelancerInfo={freelancerInfo} />
+        <CertificationSection
+          certificationData={
+            profileData?.freelancerId?.academicCertificateFiles
+          }
+          isLoading={isLoading}
+        />
+        <CommentSection freelancerInfo={freelancerInfo} />
       </div>
-      <ExperienceSection />
+      <ExperienceSection freelancerInfo={freelancerInfo} />
       <FreeLancerInfoEditModal
         isOpen={isFreelancerInfoModalOpen}
         onClose={() => setIsFreelancerInfoModalOpen(false)}
@@ -93,8 +127,12 @@ function MyProfileLayout() {
   const [isFreelancerInfoModalOpen, setIsFreelancerInfoModalOpen] =
     useState(false);
 
-  // Mock freelancer info data - replace with actual API data
-  const freelancerInfo = {
+  // Fetch profile data using the API
+  const { data: profileResponse, isLoading, error } = useGetMyprofileQuery();
+  const profileData = profileResponse?.data;
+
+  // Extract freelancer info from API response
+  const freelancerInfo = profileData?.freelancerId || {
     siren: "",
     siret: "",
     vatId: "",
@@ -115,8 +153,8 @@ function MyProfileLayout() {
     setIsClient(true);
   }, []);
 
-  // Show loading state until client-side hydration is complete
-  if (!isClient) {
+  // Show loading state until client-side hydration is complete or data is loading
+  if (!isClient || isLoading) {
     return (
       <div className="w-full">
         <div className="relative w-full h-48 sm:h-64 md:h-80 lg:h-96">
@@ -150,6 +188,8 @@ function MyProfileLayout() {
         isFreelancerInfoModalOpen={isFreelancerInfoModalOpen}
         setIsFreelancerInfoModalOpen={setIsFreelancerInfoModalOpen}
         freelancerInfo={freelancerInfo}
+        profileData={profileData}
+        isLoading={isLoading}
       />
     </div>
   );
@@ -157,7 +197,7 @@ function MyProfileLayout() {
 
 export default MyProfileLayout;
 
-const FreelancerInformationSection = ({ onEditClick }) => {
+const FreelancerInformationSection = ({ onEditClick, freelancerData }) => {
   return (
     <div className="mb-10">
       <h1 className="h2-gradient-text text-2xl font-bold text-justify flex items-center gap-2">
@@ -172,21 +212,27 @@ const FreelancerInformationSection = ({ onEditClick }) => {
           <p className="text-sm text-gray-600 font-medium">
             Freelancer SIREN ( Registration Number)
           </p>
-          <p className="text-base font-semibold mt-1">XXX XXX XXX</p>
+          <p className="text-base font-semibold mt-1">
+            {freelancerData?.registrationNumber || "Not provided"}
+          </p>
         </div>
 
         <div>
           <p className="text-sm text-gray-600 font-medium">
             Freelancer SIRET (Establishment Number)
           </p>
-          <p className="text-base font-semibold mt-1">XXX XXX XXX XXXXX</p>
+          <p className="text-base font-semibold mt-1">
+            {freelancerData?.establishmentNumber || "Not provided"}
+          </p>
         </div>
 
         <div>
           <p className="text-sm text-gray-600 font-medium">
             Freelancer Numéro de TVA (VAT ID)
           </p>
-          <p className="text-base font-semibold mt-1">FR XX XXXXXXXXX</p>
+          <p className="text-base font-semibold mt-1">
+            {freelancerData?.freelancerVatNumber || "Not provided"}
+          </p>
         </div>
       </div>
 
@@ -205,9 +251,22 @@ const FreelancerInformationSection = ({ onEditClick }) => {
                 </p>
               </div>
             </div>
-            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-              View
-            </button>
+            {freelancerData?.freelancerKBISFile ? (
+              <a
+                href={getImageUrl(freelancerData.freelancerKBISFile)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleFileView(freelancerData.freelancerKBISFile);
+                }}
+              >
+                View
+              </a>
+            ) : (
+              <span className="text-gray-400 text-sm">Not uploaded</span>
+            )}
           </div>
 
           <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
@@ -220,9 +279,22 @@ const FreelancerInformationSection = ({ onEditClick }) => {
                 </p>
               </div>
             </div>
-            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-              View
-            </button>
+            {freelancerData?.freelancerRCFile ? (
+              <a
+                href={getImageUrl(freelancerData.freelancerRCFile)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleFileView(freelancerData.freelancerRCFile);
+                }}
+              >
+                View
+              </a>
+            ) : (
+              <span className="text-gray-400 text-sm">Not uploaded</span>
+            )}
           </div>
 
           <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
@@ -235,9 +307,22 @@ const FreelancerInformationSection = ({ onEditClick }) => {
                 <p className="text-xs text-gray-500">VAT Certificate</p>
               </div>
             </div>
-            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-              View
-            </button>
+            {freelancerData?.freelancerCertificateFile ? (
+              <a
+                href={getImageUrl(freelancerData.freelancerCertificateFile)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleFileView(freelancerData.freelancerCertificateFile);
+                }}
+              >
+                View
+              </a>
+            ) : (
+              <span className="text-gray-400 text-sm">Not uploaded</span>
+            )}
           </div>
         </div>
       </div>

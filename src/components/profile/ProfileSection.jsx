@@ -22,29 +22,29 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { FaPlus, FaRegFaceSmile } from "react-icons/fa6";
 import {
-  useGetMyprofileQuery,
+  // useGetMyprofileQuery,
   useUpdateProfileInfoMutation,
 } from "../../features/clientProfile/ClientProfile";
 import AddNewProjectDialog from "./AddNewProjectDialog";
 import EducationDialogAddEdit from "./EducationDialogAddEdit";
 import { useRouter } from "next/navigation";
 import { IoHappy } from "react-icons/io5";
-function ProfileSections() {
+function ProfileSections({ profileData }) {
   const [isAddProjectDialogOpen, setIsAddProjectDialogOpen] = useState(false);
   const [isAddEducationDialogOpen, setIsAddEducationDialogOpen] =
     useState(false);
   const [editingEducation, setEditingEducation] = useState(null); // Track which education is being edited
   const router = useRouter();
-  const { data, isLoading } = useGetMyprofileQuery();
+  // const { data, isLoading } = useGetMyprofileQuery();
   const [updateProfileInfo, { isLoading: isDeleting }] =
     useUpdateProfileInfoMutation();
 
   const isFreelancerAndLoggedIn = true;
 
   const educationCertifications =
-    data?.data?.freelancerId?.educationCertifications || [];
+    profileData?.freelancerId?.educationCertifications || [];
 
-  const followers = data?.data?.followers;
+  const followers = profileData?.followers;
 
   const formatDateRange = (startDate, endDate) => {
     const startYear = new Date(startDate).getFullYear();
@@ -87,61 +87,61 @@ function ProfileSections() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="max-h-60">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-blue-600 h2-gradient-text">
-                Education & Certifications
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {[...Array(3)].map((_, index) => (
-                  <div
-                    key={index}
-                    className="h-8 w-20 bg-gray-200 rounded animate-pulse"
-                  ></div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+  // if (isLoading || isDeleting) {
+  //   return (
+  //     <div className="w-full">
+  //       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  //         <Card className="max-h-60">
+  //           <CardHeader className="pb-4">
+  //             <CardTitle className="flex items-center gap-2 text-lg font-semibold text-blue-600 h2-gradient-text">
+  //               Education & Certifications
+  //             </CardTitle>
+  //           </CardHeader>
+  //           <CardContent>
+  //             <div className="flex flex-wrap gap-2">
+  //               {[...Array(3)].map((_, index) => (
+  //                 <div
+  //                   key={index}
+  //                   className="h-8 w-20 bg-gray-200 rounded animate-pulse"
+  //                 ></div>
+  //               ))}
+  //             </div>
+  //           </CardContent>
+  //         </Card>
 
-          <Card className="max-h-auto">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold text-blue-600 h2-gradient-text">
-                Projects
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 flex flex-col items-center">
-              <div className="h-4 w-full bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-10 w-full bg-gray-200 rounded animate-pulse"></div>
-            </CardContent>
-          </Card>
+  //         <Card className="max-h-auto">
+  //           <CardHeader className="pb-4">
+  //             <CardTitle className="text-lg font-semibold text-blue-600 h2-gradient-text">
+  //               Projects
+  //             </CardTitle>
+  //           </CardHeader>
+  //           <CardContent className="space-y-3 flex flex-col items-center">
+  //             <div className="h-4 w-full bg-gray-200 rounded animate-pulse"></div>
+  //             <div className="h-10 w-full bg-gray-200 rounded animate-pulse"></div>
+  //           </CardContent>
+  //         </Card>
 
-          <Card className="max-h-60">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-blue-600 h2-gradient-text">
-                Contact
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 flex flex-col items-center">
-                {[...Array(3)].map((_, index) => (
-                  <div
-                    key={index}
-                    className="h-10 w-full bg-gray-200 rounded animate-pulse"
-                  ></div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  //         <Card className="max-h-60">
+  //           <CardHeader>
+  //             <CardTitle className="text-lg font-semibold text-blue-600 h2-gradient-text">
+  //               Contact
+  //             </CardTitle>
+  //           </CardHeader>
+  //           <CardContent>
+  //             <div className="space-y-3 flex flex-col items-center">
+  //               {[...Array(3)].map((_, index) => (
+  //                 <div
+  //                   key={index}
+  //                   className="h-10 w-full bg-gray-200 rounded animate-pulse"
+  //                 ></div>
+  //               ))}
+  //             </div>
+  //           </CardContent>
+  //         </Card>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="w-full ">

@@ -11,12 +11,51 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RiUploadCloudLine } from "react-icons/ri";
+import { useUpdateFreelancerInfoCertificateMutation } from "@/features/freelancerInfo&Certificate/freelancerInfo&CertificateApi";
+import { getImageUrl } from "@/utils/getImageUrl";
+import toast from "react-hot-toast";
+import { useGetMyprofileQuery } from "@/features/clientProfile/ClientProfile";
+
+// Helper function to handle file viewing based on file type
+const handleFileView = (filePath) => {
+  const fileUrl = getImageUrl(filePath);
+  const fileExtension = filePath.split(".").pop().toLowerCase();
+
+  // For images, use direct link
+  if (
+    ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"].includes(fileExtension)
+  ) {
+    window.open(fileUrl, "_blank");
+  } else {
+    // For documents (PDF, DOC, etc.), create a link that forces new tab
+    const link = document.createElement("a");
+    link.href = fileUrl;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+};
 function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
   const [documents, setDocuments] = useState({
     kbis: null,
     rcPro: null,
     vatCertificate: null,
   });
+
+  const [existingFiles, setExistingFiles] = useState({
+    kbis: null,
+    rcPro: null,
+    vatCertificate: null,
+  });
+
+  const [updateFreelancerInfo, { isLoading: isUpdating }] =
+    useUpdateFreelancerInfoCertificateMutation();
+
+  // Get refetch function for profile data
+  const { refetch: refetchProfile } = useGetMyprofileQuery();
 
   const documentInputRefs = {
     kbis: useRef(null),
@@ -31,12 +70,12 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
     reset,
   } = useForm({
     defaultValues: {
-      siren: "",
-      siret: "",
-      vatId: "",
-      kbis: null,
-      rcPro: null,
-      vatCertificate: null,
+      registrationNumber: "",
+      establishmentNumber: "",
+      freelancerVatNumber: "",
+      freelancerKBISFile: null,
+      freelancerRCFile: null,
+      freelancerCertificateFile: null,
     },
   });
 
@@ -44,13 +83,21 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
   useEffect(() => {
     if (isOpen && clientInfo) {
       reset({
-        siren: clientInfo.siren || "",
-        siret: clientInfo.siret || "",
-        vatId: clientInfo.vatId || "",
-        kbis: null,
-        rcPro: null,
-        vatCertificate: null,
+        registrationNumber: clientInfo.registrationNumber || "",
+        establishmentNumber: clientInfo.establishmentNumber || "",
+        freelancerVatNumber: clientInfo.freelancerVatNumber || "",
+        freelancerKBISFile: null,
+        freelancerRCFile: null,
+        freelancerCertificateFile: null,
       });
+
+      // Set existing files for display
+      setExistingFiles({
+        kbis: clientInfo.freelancerKBISFile || null,
+        rcPro: clientInfo.freelancerRCFile || null,
+        vatCertificate: clientInfo.freelancerCertificateFile || null,
+      });
+
       setDocuments({
         kbis: null,
         rcPro: null,
@@ -94,43 +141,55 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
   };
 
   const onSubmit = async (formData) => {
-    console.log("Client Info Form Data:", formData);
+    console.log("Freelancer Info Form Data:", formData);
 
     try {
       const payload = new FormData();
 
-      // Append form fields
-      payload.append("siren", formData.siren);
-      payload.append("siret", formData.siret);
-      payload.append("vatId", formData.vatId);
+      // Append form fields with correct API field names
+      payload.append("registrationNumber", formData.registrationNumber);
+      payload.append("establishmentNumber", formData.establishmentNumber);
+      payload.append("freelancerVatNumber", formData.freelancerVatNumber);
 
-      // Append document files
-      if (formData.kbis) {
-        payload.append("kbis", formData.kbis);
+      // Append document files with correct API field names
+      if (formData.freelancerKBISFile) {
+        payload.append("freelancerKBISFile", formData.freelancerKBISFile);
       }
-      if (formData.rcPro) {
-        payload.append("rcPro", formData.rcPro);
+      if (formData.freelancerRCFile) {
+        payload.append("freelancerRCFile", formData.freelancerRCFile);
       }
-      if (formData.vatCertificate) {
-        payload.append("vatCertificate", formData.vatCertificate);
+      if (formData.freelancerCertificateFile) {
+        payload.append(
+          "freelancerCertificateFile",
+          formData.freelancerCertificateFile
+        );
       }
 
-      console.log("Sending client info payload:", {
-        siren: formData.siren,
-        siret: formData.siret,
-        vatId: formData.vatId,
-        hasKbis: !!formData.kbis,
-        hasRcPro: !!formData.rcPro,
-        hasVatCertificate: !!formData.vatCertificate,
+      console.log("Sending freelancer info payload:", {
+        registrationNumber: formData.registrationNumber,
+        establishmentNumber: formData.establishmentNumber,
+        freelancerVatNumber: formData.freelancerVatNumber,
+        hasKBISFile: !!formData.freelancerKBISFile,
+        hasRCFile: !!formData.freelancerRCFile,
+        hasCertificateFile: !!formData.freelancerCertificateFile,
       });
 
-      // TODO: Replace with actual API call
-      // const response = await updateClientInfo(payload).unwrap();
-      // console.log("Client info updated successfully:", response);
+      // Call the actual API
+      const response = await updateFreelancerInfo(payload).unwrap();
+      console.log("Freelancer info updated successfully:", response);
+
+      // Show success toast
+      toast.success("Freelancer information updated successfully!");
+
+      // Refetch profile data to get updated information
+      await refetchProfile();
 
       onClose();
     } catch (error) {
-      console.error("Error updating client info:", error);
+      console.error("Error updating freelancer info:", error);
+
+      // Show error toast
+      toast.error("Failed to update freelancer information. Please try again.");
     }
   };
 
@@ -142,11 +201,11 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {/* Company Information */}
             <div className="space-y-4">
               <div className="space-y-1">
-                <Label htmlFor="siren">
+                <Label htmlFor="registrationNumber">
                   SIREN
                   <span className="text-sm text-gray-500">
                     (Freelancer registration number)
@@ -154,7 +213,7 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
                   <span className="text-red-500">*</span>
                 </Label>
                 <Controller
-                  name="siren"
+                  name="registrationNumber"
                   control={control}
                   rules={{
                     required: "Freelancer SIREN is required",
@@ -166,20 +225,20 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      id="siren"
+                      id="registrationNumber"
                       placeholder="Freelancer SIREN"
                     />
                   )}
                 />
-                {errors.siren && (
+                {errors.registrationNumber && (
                   <span className="text-sm text-red-500">
-                    {errors.siren.message}
+                    {errors.registrationNumber.message}
                   </span>
                 )}
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="siret">
+                <Label htmlFor="establishmentNumber">
                   Freelancer SIRET
                   <span className="text-sm text-gray-500">
                     (Establishment number)
@@ -187,7 +246,7 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
                   <span className="text-red-500">*</span>
                 </Label>
                 <Controller
-                  name="siret"
+                  name="establishmentNumber"
                   control={control}
                   rules={{
                     required: "Freelancer SIRET is required",
@@ -199,25 +258,25 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      id="siret"
+                      id="establishmentNumber"
                       placeholder="Freelancer SIRET"
                     />
                   )}
                 />
-                {errors.siret && (
+                {errors.establishmentNumber && (
                   <span className="text-sm text-red-500">
-                    {errors.siret.message}
+                    {errors.establishmentNumber.message}
                   </span>
                 )}
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="vatId">
+                <Label htmlFor="freelancerVatNumber">
                   Freelancer VAT ID
                   <span className="text-red-500">*</span>
                 </Label>
                 <Controller
-                  name="vatId"
+                  name="freelancerVatNumber"
                   control={control}
                   rules={{
                     required: "Freelancer VAT ID is required",
@@ -230,14 +289,14 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      id="vatId"
+                      id="freelancerVatNumber"
                       placeholder="Freelancer VAT ID"
                     />
                   )}
                 />
-                {errors.vatId && (
+                {errors.freelancerVatNumber && (
                   <span className="text-sm text-red-500">
-                    {errors.vatId.message}
+                    {errors.freelancerVatNumber.message}
                   </span>
                 )}
               </div>
@@ -250,10 +309,12 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
               {/* KBIS ou Statut (EI) */}
               <div className="bg-gray-50 rounded-lg px-2 py-1 border border-gray-200">
                 <Controller
-                  name="kbis"
+                  name="freelancerKBISFile"
                   control={control}
                   rules={{
-                    required: "Freelancer KBIS document is required",
+                    required: !existingFiles.kbis
+                      ? "Freelancer KBIS document is required"
+                      : false,
                   }}
                   render={({ field: { onChange, value } }) => (
                     <div className="flex items-center justify-between">
@@ -265,10 +326,34 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
                           </span>
                           <span className="text-red-500 ml-1">*</span>
                         </Label>
+
+                        {/* Show existing file */}
+                        {existingFiles.kbis && !value && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-xs text-blue-600">
+                              📄 Current file:{" "}
+                              {existingFiles.kbis.split("/").pop()}
+                            </span>
+                            <a
+                              href={getImageUrl(existingFiles.kbis)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:text-blue-800 underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleFileView(existingFiles.kbis);
+                              }}
+                            >
+                              View
+                            </a>
+                          </div>
+                        )}
+
+                        {/* Show new uploaded file */}
                         {value && (
                           <div className="mt-2 flex items-center gap-2">
                             <span className="text-xs text-green-600">
-                              ✓ Document uploaded
+                              ✓ New document uploaded
                             </span>
                             <Button
                               type="button"
@@ -281,9 +366,9 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
                             </Button>
                           </div>
                         )}
-                        {errors.kbis && (
+                        {errors.freelancerKBISFile && (
                           <span className="text-sm text-red-500">
-                            {errors.kbis.message}
+                            {errors.freelancerKBISFile.message}
                           </span>
                         )}
                       </div>
@@ -314,10 +399,12 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
               {/* RC Pro */}
               <div className="bg-gray-50 rounded-lg px-2 py-1 border border-gray-200">
                 <Controller
-                  name="rcPro"
+                  name="freelancerRCFile"
                   control={control}
                   rules={{
-                    required: "Freelancer RC Pro document is required",
+                    required: !existingFiles.rcPro
+                      ? "Freelancer RC Pro document is required"
+                      : false,
                   }}
                   render={({ field: { onChange, value } }) => (
                     <div className="flex items-center justify-between">
@@ -329,10 +416,34 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
                           </span>
                           <span className="text-red-500 ml-1">*</span>
                         </Label>
+
+                        {/* Show existing file */}
+                        {existingFiles.rcPro && !value && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-xs text-blue-600">
+                              📄 Current file:{" "}
+                              {existingFiles.rcPro.split("/").pop()}
+                            </span>
+                            <a
+                              href={getImageUrl(existingFiles.rcPro)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:text-blue-800 underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleFileView(existingFiles.rcPro);
+                              }}
+                            >
+                              View
+                            </a>
+                          </div>
+                        )}
+
+                        {/* Show new uploaded file */}
                         {value && (
                           <div className="mt-2 flex items-center gap-2">
                             <span className="text-xs text-green-600">
-                              ✓ Document uploaded
+                              ✓ New document uploaded
                             </span>
                             <Button
                               type="button"
@@ -345,9 +456,9 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
                             </Button>
                           </div>
                         )}
-                        {errors.rcPro && (
+                        {errors.freelancerRCFile && (
                           <span className="text-sm text-red-500">
-                            {errors.rcPro.message}
+                            {errors.freelancerRCFile.message}
                           </span>
                         )}
                       </div>
@@ -378,7 +489,7 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
               {/* Certificat de TVA */}
               <div className="bg-gray-50 rounded-lg px-2 py-1  border border-gray-200">
                 <Controller
-                  name="vatCertificate"
+                  name="freelancerCertificateFile"
                   control={control}
                   render={({ field: { onChange, value } }) => (
                     <div className="flex items-center justify-between">
@@ -389,10 +500,34 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
                             (VAT Certificate)
                           </span>
                         </Label>
+
+                        {/* Show existing file */}
+                        {existingFiles.vatCertificate && !value && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-xs text-blue-600">
+                              📄 Current file:{" "}
+                              {existingFiles.vatCertificate.split("/").pop()}
+                            </span>
+                            <a
+                              href={getImageUrl(existingFiles.vatCertificate)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:text-blue-800 underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleFileView(existingFiles.vatCertificate);
+                              }}
+                            >
+                              View
+                            </a>
+                          </div>
+                        )}
+
+                        {/* Show new uploaded file */}
                         {value && (
                           <div className="mt-2 flex items-center gap-2">
                             <span className="text-xs text-green-600">
-                              ✓ Document uploaded
+                              ✓ New document uploaded
                             </span>
                             <Button
                               type="button"
@@ -438,8 +573,12 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" className="button-gradient">
-              Save Changes
+            <Button
+              type="submit"
+              className="button-gradient"
+              disabled={isUpdating}
+            >
+              {isUpdating ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </form>

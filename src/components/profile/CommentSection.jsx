@@ -1,33 +1,28 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
-  useGetMyprofileQuery,
+  // useGetMyprofileQuery,
   useUpdateProfileInfoMutation,
 } from "../../features/clientProfile/ClientProfile";
 import { Card, CardContent } from "../ui/card";
 import { Textarea } from "../ui/textarea";
 
-
 import { Edit3, Save } from "lucide-react";
 
-
-function CommentSection() {
+function CommentSection({ freelancerInfo }) {
   const [isEditing, setIsEditing] = useState(false);
   const [comment, setComment] = useState("");
 
-
-  const { data } = useGetMyprofileQuery();
+  // const { data } = useGetMyprofileQuery();
   const [updateMyprofile, { isLoading: isUpdating }] =
     useUpdateProfileInfoMutation();
 
-
   // Load existing comment when component mounts
   useEffect(() => {
-    if (data?.data?.freelancerId?.comments) {
-      setComment(data.data.freelancerId.comments);
+    if (freelancerInfo?.comments) {
+      setComment(freelancerInfo.comments);
     }
-  }, [data]);
-
+  }, [freelancerInfo]);
 
   const handleSave = async () => {
     try {
@@ -36,7 +31,6 @@ function CommentSection() {
         operation: "update",
         comments: comment,
       };
-
 
       await updateMyprofile(updateData).unwrap();
       toast.success("Comment updated successfully!");
@@ -47,14 +41,12 @@ function CommentSection() {
     }
   };
 
-
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-2xl font-bold text-blue-600 h2-gradient-text">
-          CommentSection
+          Comment Section
         </h1>
-
 
         {isEditing ? (
           <Save
@@ -70,7 +62,6 @@ function CommentSection() {
         )}
       </div>
 
-
       {isEditing ? (
         <Textarea
           value={comment}
@@ -83,10 +74,11 @@ function CommentSection() {
         <Card className=" shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="">
             <div
-              className={`h-20 flex  text-gray-500 ${comment
-                ? "items-start justify-start"
-                : "items-center justify-center"
-                }`}
+              className={`h-20 flex  text-gray-500 ${
+                comment
+                  ? "items-start justify-start"
+                  : "items-center justify-center"
+              }`}
             >
               {comment ? (
                 <p className="text-sm leading-relaxed text-left">{comment}</p>
@@ -103,8 +95,4 @@ function CommentSection() {
   );
 }
 
-
 export default CommentSection;
-
-
-
