@@ -11,17 +11,50 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RiUploadCloudLine } from "react-icons/ri";
-function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
+import {
+  useUpdateClientInfoMutation,
+  useGetMyprofileQuery,
+} from "../../../features/clientProfile/ClientProfile";
+import toast from "react-hot-toast";
+import { getImageUrl } from "@/utils/getImageUrl";
+
+// Helper function to handle file viewing based on file type
+const handleFileView = (filePath) => {
+  const fileUrl = getImageUrl(filePath);
+  const fileExtension = filePath.split(".").pop().toLowerCase();
+
+  // For images, use direct link
+  if (
+    ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"].includes(fileExtension)
+  ) {
+    window.open(fileUrl, "_blank");
+  } else {
+    // For documents (PDF, DOC, etc.), create a link that forces new tab
+    const link = document.createElement("a");
+    link.href = fileUrl;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+};
+
+function ClientInfoEditModal({ isOpen, onClose, clientInfo, documentInfo }) {
+  const [updateClientInfo, { isLoading: isUpdating }] =
+    useUpdateClientInfoMutation();
+  const { refetch: refetchProfile } = useGetMyprofileQuery();
   const [documents, setDocuments] = useState({
-    kbis: null,
-    rcPro: null,
-    vatCertificate: null,
+    clientKBISFile: null,
+    clientRCFile: null,
+    clientCertificateFile: null,
   });
 
   const documentInputRefs = {
-    kbis: useRef(null),
-    rcPro: useRef(null),
-    vatCertificate: useRef(null),
+    clientKBISFile: useRef(null),
+    clientRCFile: useRef(null),
+    clientCertificateFile: useRef(null),
   };
 
   const {
@@ -31,12 +64,12 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
     reset,
   } = useForm({
     defaultValues: {
-      siren: "",
-      siret: "",
-      vatId: "",
-      kbis: null,
-      rcPro: null,
-      vatCertificate: null,
+      registrationNumber: "",
+      establishmentNumber: "",
+      clientVatNumber: "",
+      clientKBISFile: null,
+      clientRCFile: null,
+      clientCertificateFile: null,
     },
   });
 
@@ -44,20 +77,20 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
   useEffect(() => {
     if (isOpen && clientInfo) {
       reset({
-        siren: clientInfo.siren || "",
-        siret: clientInfo.siret || "",
-        vatId: clientInfo.vatId || "",
-        kbis: null,
-        rcPro: null,
-        vatCertificate: null,
+        registrationNumber: documentInfo.registrationNumber || "",
+        establishmentNumber: documentInfo.establishmentNumber || "",
+        clientVatNumber: documentInfo.clientVatNumber || "",
+        clientKBISFile: null,
+        clientRCFile: null,
+        clientCertificateFile: null,
       });
       setDocuments({
-        kbis: null,
-        rcPro: null,
-        vatCertificate: null,
+        clientKBISFile: documentInfo.clientKBISFile || null,
+        clientRCFile: documentInfo.clientRCFile || null,
+        clientCertificateFile: documentInfo.clientCertificateFile || null,
       });
     }
-  }, [isOpen, clientInfo, reset]);
+  }, [isOpen, clientInfo, reset, documentInfo]);
 
   const handleDocumentClick = (documentType) => {
     documentInputRefs[documentType].current?.click();
@@ -99,38 +132,41 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
     try {
       const payload = new FormData();
 
-      // Append form fields
-      payload.append("siren", formData.siren);
-      payload.append("siret", formData.siret);
-      payload.append("vatId", formData.vatId);
+      // Append form fields with correct API field names
+      payload.append("registrationNumber", formData.registrationNumber);
+      payload.append("establishmentNumber", formData.establishmentNumber);
+      payload.append("clientVatNumber", formData.clientVatNumber);
 
-      // Append document files
-      if (formData.kbis) {
-        payload.append("kbis", formData.kbis);
+      // Append document files with correct API field names
+      // Only append if a new file is uploaded (not just existing file)
+      if (formData.clientKBISFile) {
+        payload.append("clientKBISFile", formData.clientKBISFile);
       }
-      if (formData.rcPro) {
-        payload.append("rcPro", formData.rcPro);
+      if (formData.clientRCFile) {
+        payload.append("clientRCFile", formData.clientRCFile);
       }
-      if (formData.vatCertificate) {
-        payload.append("vatCertificate", formData.vatCertificate);
+      if (formData.clientCertificateFile) {
+        payload.append("clientCertificateFile", formData.clientCertificateFile);
       }
 
       console.log("Sending client info payload:", {
-        siren: formData.siren,
-        siret: formData.siret,
-        vatId: formData.vatId,
-        hasKbis: !!formData.kbis,
-        hasRcPro: !!formData.rcPro,
-        hasVatCertificate: !!formData.vatCertificate,
+        registrationNumber: formData.registrationNumber,
+        establishmentNumber: formData.establishmentNumber,
+        clientVatNumber: formData.clientVatNumber,
+        hasKBISFile: !!formData.clientKBISFile,
+        hasRCFile: !!formData.clientRCFile,
+        hasCertificateFile: !!formData.clientCertificateFile,
       });
 
-      // TODO: Replace with actual API call
-      // const response = await updateClientInfo(payload).unwrap();
-      // console.log("Client info updated successfully:", response);
+      const response = await updateClientInfo(payload).unwrap();
+      console.log("Client info updated successfully:", response);
 
+      toast.success("Client information updated successfully!");
+      refetchProfile();
       onClose();
     } catch (error) {
       console.error("Error updating client info:", error);
+      toast.error("Failed to update client information. Please try again.");
     }
   };
 
@@ -148,7 +184,7 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
               <h3 className="text-lg font-semibold">Company Information</h3>
 
               <div className="space-y-1">
-                <Label htmlFor="siren">
+                <Label htmlFor="registrationNumber">
                   SIREN
                   <span className="text-sm text-gray-500">
                     (Company registration number)
@@ -156,7 +192,7 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
                   <span className="text-red-500">*</span>
                 </Label>
                 <Controller
-                  name="siren"
+                  name="registrationNumber"
                   control={control}
                   rules={{
                     required: "SIREN is required",
@@ -166,18 +202,22 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
                     },
                   }}
                   render={({ field }) => (
-                    <Input {...field} id="siren" placeholder="SIREN" />
+                    <Input
+                      {...field}
+                      id="registrationNumber"
+                      placeholder="SIREN"
+                    />
                   )}
                 />
-                {errors.siren && (
+                {errors.registrationNumber && (
                   <span className="text-sm text-red-500">
-                    {errors.siren.message}
+                    {errors.registrationNumber.message}
                   </span>
                 )}
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="siret">
+                <Label htmlFor="establishmentNumber">
                   SIRET
                   <span className="text-sm text-gray-500">
                     (Establishment number)
@@ -185,7 +225,7 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
                   <span className="text-red-500">*</span>
                 </Label>
                 <Controller
-                  name="siret"
+                  name="establishmentNumber"
                   control={control}
                   rules={{
                     required: "SIRET is required",
@@ -195,23 +235,27 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
                     },
                   }}
                   render={({ field }) => (
-                    <Input {...field} id="siret" placeholder="SIRET" />
+                    <Input
+                      {...field}
+                      id="establishmentNumber"
+                      placeholder="SIRET"
+                    />
                   )}
                 />
-                {errors.siret && (
+                {errors.establishmentNumber && (
                   <span className="text-sm text-red-500">
-                    {errors.siret.message}
+                    {errors.establishmentNumber.message}
                   </span>
                 )}
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="vatId">
+                <Label htmlFor="clientVatNumber">
                   VAT ID
                   <span className="text-red-500">*</span>
                 </Label>
                 <Controller
-                  name="vatId"
+                  name="clientVatNumber"
                   control={control}
                   rules={{
                     required: "VAT ID is required",
@@ -221,12 +265,16 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
                     },
                   }}
                   render={({ field }) => (
-                    <Input {...field} id="vatId" placeholder="VAT ID" />
+                    <Input
+                      {...field}
+                      id="clientVatNumber"
+                      placeholder="VAT ID"
+                    />
                   )}
                 />
-                {errors.vatId && (
+                {errors.clientVatNumber && (
                   <span className="text-sm text-red-500">
-                    {errors.vatId.message}
+                    {errors.clientVatNumber.message}
                   </span>
                 )}
               </div>
@@ -239,10 +287,12 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
               {/* KBIS ou Statut (EI) */}
               <div className="bg-gray-50 rounded-lg px-2 py-1 border border-gray-200">
                 <Controller
-                  name="kbis"
+                  name="clientKBISFile"
                   control={control}
                   rules={{
-                    required: "KBIS document is required",
+                    required: !documents.clientKBISFile
+                      ? "KBIS document is required"
+                      : false,
                   }}
                   render={({ field: { onChange, value } }) => (
                     <div className="flex items-center justify-between">
@@ -254,25 +304,45 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
                           </span>
                           <span className="text-red-500 ml-1">*</span>
                         </Label>
-                        {value && (
+                        {documents.clientKBISFile && !value && (
                           <div className="mt-2 flex items-center gap-2">
-                            <span className="text-xs text-green-600">
-                              ✓ Document uploaded
+                            <span className="text-xs text-blue-600">
+                              📄 Current file available
                             </span>
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
-                              onClick={() => removeDocument("kbis", onChange)}
+                              onClick={() =>
+                                handleFileView(documents.clientKBISFile)
+                              }
+                              className="text-blue-500 hover:text-blue-700"
+                            >
+                              View
+                            </Button>
+                          </div>
+                        )}
+                        {value && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-xs text-green-600">
+                              ✓ New document uploaded
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                removeDocument("clientKBISFile", onChange)
+                              }
                               className="text-red-500 hover:text-red-700"
                             >
                               Remove
                             </Button>
                           </div>
                         )}
-                        {errors.kbis && (
+                        {errors.clientKBISFile && (
                           <span className="text-sm text-red-500">
-                            {errors.kbis.message}
+                            {errors.clientKBISFile.message}
                           </span>
                         )}
                       </div>
@@ -280,16 +350,16 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
                         <Button
                           type="button"
                           className="bg-transparent hover:bg-blue-100 text-blue-500 px-4 py-2 rounded-md border-1 border-dashed border-blue-500 flex items-center gap-2"
-                          onClick={() => handleDocumentClick("kbis")}
+                          onClick={() => handleDocumentClick("clientKBISFile")}
                         >
                           <RiUploadCloudLine />
                           Upload
                         </Button>
                         <input
                           type="file"
-                          ref={documentInputRefs.kbis}
+                          ref={documentInputRefs.clientKBISFile}
                           onChange={(e) =>
-                            handleDocumentChange(e, "kbis", onChange)
+                            handleDocumentChange(e, "clientKBISFile", onChange)
                           }
                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                           className="hidden"
@@ -303,10 +373,12 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
               {/* RC Pro */}
               <div className="bg-gray-50 rounded-lg px-2 py-1 border border-gray-200">
                 <Controller
-                  name="rcPro"
+                  name="clientRCFile"
                   control={control}
                   rules={{
-                    required: "RC Pro document is required",
+                    required: !documents.clientRCFile
+                      ? "RC Pro document is required"
+                      : false,
                   }}
                   render={({ field: { onChange, value } }) => (
                     <div className="flex items-center justify-between">
@@ -318,25 +390,45 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
                           </span>
                           <span className="text-red-500 ml-1">*</span>
                         </Label>
-                        {value && (
+                        {documents.clientRCFile && !value && (
                           <div className="mt-2 flex items-center gap-2">
-                            <span className="text-xs text-green-600">
-                              ✓ Document uploaded
+                            <span className="text-xs text-blue-600">
+                              📄 Current file available
                             </span>
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
-                              onClick={() => removeDocument("rcPro", onChange)}
+                              onClick={() =>
+                                handleFileView(documents.clientRCFile)
+                              }
+                              className="text-blue-500 hover:text-blue-700"
+                            >
+                              View
+                            </Button>
+                          </div>
+                        )}
+                        {value && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-xs text-green-600">
+                              ✓ New document uploaded
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                removeDocument("clientRCFile", onChange)
+                              }
                               className="text-red-500 hover:text-red-700"
                             >
                               Remove
                             </Button>
                           </div>
                         )}
-                        {errors.rcPro && (
+                        {errors.clientRCFile && (
                           <span className="text-sm text-red-500">
-                            {errors.rcPro.message}
+                            {errors.clientRCFile.message}
                           </span>
                         )}
                       </div>
@@ -344,16 +436,16 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
                         <Button
                           type="button"
                           className="bg-transparent hover:bg-blue-100 text-blue-500 px-4 py-2 rounded-md border-1 border-dashed border-blue-500 flex items-center gap-2"
-                          onClick={() => handleDocumentClick("rcPro")}
+                          onClick={() => handleDocumentClick("clientRCFile")}
                         >
                           <RiUploadCloudLine />
                           Upload
                         </Button>
                         <input
                           type="file"
-                          ref={documentInputRefs.rcPro}
+                          ref={documentInputRefs.clientRCFile}
                           onChange={(e) =>
-                            handleDocumentChange(e, "rcPro", onChange)
+                            handleDocumentChange(e, "clientRCFile", onChange)
                           }
                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                           className="hidden"
@@ -367,7 +459,7 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
               {/* Certificat de TVA */}
               <div className="bg-gray-50 rounded-lg px-2 py-1  border border-gray-200">
                 <Controller
-                  name="vatCertificate"
+                  name="clientCertificateFile"
                   control={control}
                   render={({ field: { onChange, value } }) => (
                     <div className="flex items-center justify-between">
@@ -378,17 +470,38 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
                             (VAT Certificate)
                           </span>
                         </Label>
-                        {value && (
+                        {documents.clientCertificateFile && !value && (
                           <div className="mt-2 flex items-center gap-2">
-                            <span className="text-xs text-green-600">
-                              ✓ Document uploaded
+                            <span className="text-xs text-blue-600">
+                              📄 Current file available
                             </span>
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                removeDocument("vatCertificate", onChange)
+                                handleFileView(documents.clientCertificateFile)
+                              }
+                              className="text-blue-500 hover:text-blue-700"
+                            >
+                              View
+                            </Button>
+                          </div>
+                        )}
+                        {value && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-xs text-green-600">
+                              ✓ New document uploaded
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                removeDocument(
+                                  "clientCertificateFile",
+                                  onChange
+                                )
                               }
                               className="text-red-500 hover:text-red-700"
                             >
@@ -401,16 +514,22 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
                         <Button
                           type="button"
                           className="bg-transparent hover:bg-blue-100 text-blue-500 px-4 py-2 rounded-md border-1 border-dashed border-blue-500 flex items-center gap-2"
-                          onClick={() => handleDocumentClick("vatCertificate")}
+                          onClick={() =>
+                            handleDocumentClick("clientCertificateFile")
+                          }
                         >
                           <RiUploadCloudLine />
                           Upload
                         </Button>
                         <input
                           type="file"
-                          ref={documentInputRefs.vatCertificate}
+                          ref={documentInputRefs.clientCertificateFile}
                           onChange={(e) =>
-                            handleDocumentChange(e, "vatCertificate", onChange)
+                            handleDocumentChange(
+                              e,
+                              "clientCertificateFile",
+                              onChange
+                            )
                           }
                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                           className="hidden"
@@ -424,11 +543,20 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo }) {
           </div>
 
           <DialogFooter className="gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isUpdating}
+            >
               Cancel
             </Button>
-            <Button type="submit" className="button-gradient">
-              Save Changes
+            <Button
+              type="submit"
+              className="button-gradient"
+              disabled={isUpdating}
+            >
+              {isUpdating ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </form>

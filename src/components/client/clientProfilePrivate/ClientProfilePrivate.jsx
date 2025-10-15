@@ -3,13 +3,17 @@ import { Button } from "@/components/ui/button";
 import provideIcon from "@/utils/IconProvider/provideIcon";
 import Image from "next/image";
 import { useState } from "react";
-import { useGetMyprofileQuery } from "../../../features/clientProfile/ClientProfile";
+import {
+  useClientVerificationRequestMutation,
+  useGetMyprofileQuery,
+} from "../../../features/clientProfile/ClientProfile";
 import EditProfileDialog from "./EditProfileDialog";
 import ClientInfoEditModal from "./ClientInfoEditModal";
 import { getImageUrl } from "@/utils/getImageUrl";
 import { FaRegFaceSmile } from "react-icons/fa6";
 import { Edit, FileText } from "lucide-react";
-
+import toast from "react-hot-toast";
+import { Shield } from "lucide-react";
 function ClientProfilePrivate({ translations }) {
   const [isEditProfileDialogOpen, setIsEditProfileDialogOpen] = useState(false);
   const [isClientInfoModalOpen, setIsClientInfoModalOpen] = useState(false);
@@ -22,12 +26,13 @@ function ClientProfilePrivate({ translations }) {
     designation: "",
     location: "",
     email: "",
-    isVarified: false,
+    isVarified: "",
     language: [],
     companyName: "",
     followers: "",
   };
 
+  const documentInfo = data?.data?.clientId;
   const handleEditProfileClose = () => {
     setIsEditProfileDialogOpen(false);
     // Refetch data after closing dialog to get updated profile
@@ -38,6 +43,27 @@ function ClientProfilePrivate({ translations }) {
     setIsClientInfoModalOpen(false);
     // Refetch data after closing dialog to get updated profile
     refetch();
+  };
+
+  const [
+    clientVerificationRequest,
+    { isLoading: isClientVerificationRequestLoading },
+  ] = useClientVerificationRequestMutation();
+  const handleGetVerified = async () => {
+    try {
+      const response = await clientVerificationRequest({
+        type: "client",
+      }).unwrap();
+      toast.success(
+        response?.data || "Client verification request sent successfully!"
+      );
+      refetch();
+    } catch (error) {
+      console.error("Failed to send client verification request:", error);
+      toast.error(
+        "Failed to send client verification request. Please try again."
+      );
+    }
   };
 
   if (isLoading) {
@@ -69,7 +95,29 @@ function ClientProfilePrivate({ translations }) {
         >
           {translations.editProfile} {provideIcon({ name: "edit" })}
         </Button>
-        <Button className="button-gradient">Get Verified</Button>
+        {clientInfo.isVarified === "verified_request" ? (
+          <div className="flex items-center gap-2 text-sm text-gray-700 bg-yellow-100 rounded-full px-2 py-1">
+            <Shield className="w-4 h-4 text-yellow-600" />
+            <span>Pending Verification</span>
+          </div>
+        ) : clientInfo.isVarified === "varified" ? (
+          <div className="flex items-center gap-2 text-sm text-gray-700 bg-green-100 rounded-full px-2 py-1">
+            <Shield className="w-4 h-4 text-green-600" />
+            <span>Verified Client</span>
+          </div>
+        ) : clientInfo.isVarified === "revision" ? (
+          <div className="flex items-center gap-2 text-sm text-gray-700 bg-red-100 rounded-full px-2 py-1">
+            <Shield className="w-4 h-4 text-red-600" />
+            <span>Revision</span>
+          </div>
+        ) : (
+          <Button
+            className="button-gradient"
+            onClick={() => handleGetVerified()}
+          >
+            {isClientVerificationRequestLoading ? "Sending..." : "Get Verified"}
+          </Button>
+        )}
       </div>
 
       <div className="flex gap-10 items-start py-2">
@@ -114,6 +162,7 @@ function ClientProfilePrivate({ translations }) {
         <p>{clientInfo.aboutCompany || translations.companyDescription}</p>
       </div>
       <ClientInformationSection
+        documentInfo={documentInfo}
         onEditClick={() => setIsClientInfoModalOpen(true)}
       />
       <EditProfileDialog
@@ -125,6 +174,7 @@ function ClientProfilePrivate({ translations }) {
         isOpen={isClientInfoModalOpen}
         onClose={handleClientInfoModalClose}
         clientInfo={clientInfo}
+        documentInfo={documentInfo}
       />
     </div>
   );
@@ -132,7 +182,7 @@ function ClientProfilePrivate({ translations }) {
 
 export default ClientProfilePrivate;
 
-const ClientInformationSection = ({ onEditClick }) => {
+const ClientInformationSection = ({ onEditClick, documentInfo }) => {
   return (
     <div>
       <h1 className="h2-gradient-text text-2xl font-bold text-justify flex items-center gap-2">
@@ -147,21 +197,27 @@ const ClientInformationSection = ({ onEditClick }) => {
           <p className="text-sm text-gray-600 font-medium">
             SIREN (Company Registration Number)
           </p>
-          <p className="text-base font-semibold mt-1">XXX XXX XXX</p>
+          <p className="text-base font-semibold mt-1">
+            {documentInfo.registrationNumber}
+          </p>
         </div>
 
         <div>
           <p className="text-sm text-gray-600 font-medium">
             SIRET (Establishment Number)
           </p>
-          <p className="text-base font-semibold mt-1">XXX XXX XXX XXXXX</p>
+          <p className="text-base font-semibold mt-1">
+            {documentInfo.establishmentNumber}
+          </p>
         </div>
 
         <div>
           <p className="text-sm text-gray-600 font-medium">
             Numéro de TVA (VAT ID)
           </p>
-          <p className="text-base font-semibold mt-1">FR XX XXXXXXXXX</p>
+          <p className="text-base font-semibold mt-1">
+            {documentInfo.clientVatNumber}
+          </p>
         </div>
       </div>
 
@@ -172,7 +228,9 @@ const ClientInformationSection = ({ onEditClick }) => {
             <div className="flex items-center gap-3">
               <FileText className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="text-sm font-medium">KBIS ou Statut (EI)</p>
+                <p className="text-sm font-medium">
+                  {documentInfo.clientKBISFile || "KBIS ou Statut (EI)"}
+                </p>
                 <p className="text-xs text-gray-500">
                   Business Registration or Articles of Association
                 </p>
@@ -187,7 +245,9 @@ const ClientInformationSection = ({ onEditClick }) => {
             <div className="flex items-center gap-3">
               <FileText className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="text-sm font-medium">RC Pro</p>
+                <p className="text-sm font-medium">
+                  {documentInfo.clientRCFile || "RC Pro"}
+                </p>
                 <p className="text-xs text-gray-500">
                   Professional Liability Insurance
                 </p>
@@ -202,7 +262,9 @@ const ClientInformationSection = ({ onEditClick }) => {
             <div className="flex items-center gap-3">
               <FileText className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="text-sm font-medium">Certificat de TVA</p>
+                <p className="text-sm font-medium">
+                  {documentInfo.clientCertificateFile || "Certificat de TVA"}
+                </p>
                 <p className="text-xs text-gray-500">VAT Certificate</p>
               </div>
             </div>

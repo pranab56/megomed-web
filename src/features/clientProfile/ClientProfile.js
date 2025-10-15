@@ -55,6 +55,21 @@ export const clientProfileApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["clientProfile"],
     }),
+    updateClientInfo: builder.mutation({
+      query: (data) => ({
+        url: "/client-info/update",
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["clientProfile"],
+    }),
+    clientVerificationRequest: builder.mutation({
+      query: () => ({
+        url: "/users/profile-verify-requiest",
+        method: "POST",
+      }),
+      invalidatesTags: ["clientProfile"],
+    }),
   }),
 });
 
@@ -66,4 +81,6 @@ export const {
   useUpdateProfileInfoMutation,
   useUpdateSocialLinkMutation,
   useGetClientPublicProfileQuery,
+  useUpdateClientInfoMutation,
+  useClientVerificationRequestMutation,
 } = clientProfileApi;
