@@ -1,21 +1,21 @@
-import { baseApi } from '../../utils/apiBaseQuery';
+import { baseApi } from "../../utils/apiBaseQuery";
 
-export const planApi = baseApi.injectEndpoints({
+export const postApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     createPost: builder.mutation({
       query: (data) => ({
         url: `/post/create-post`,
         method: "POST",
-        body: data
+        body: data,
       }),
       invalidatesTags: ["post"],
     }),
 
     updatePost: builder.mutation({
-      query: ({id , data}) => ({
+      query: ({ id, data }) => ({
         url: `/post/${id}`,
         method: "PATCH",
-        body: data
+        body: data,
       }),
       invalidatesTags: ["post"],
     }),
@@ -43,7 +43,7 @@ export const planApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["post"],
     }),
-  })
+  }),
 });
 
 // Export hooks
@@ -52,5 +52,5 @@ export const {
   useUpdatePostMutation,
   useAllPostQuery,
   useSinglePostQuery,
-  useDeletePostQuery
-} = planApi;
+  useDeletePostQuery,
+} = postApi;

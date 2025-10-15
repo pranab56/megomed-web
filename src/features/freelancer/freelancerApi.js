@@ -1,6 +1,4 @@
-import { baseApi } from '../../utils/apiBaseQuery';
-
-
+import { baseApi } from "../../utils/apiBaseQuery";
 
 export const freelancerApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -18,8 +16,6 @@ export const freelancerApi = baseApi.injectEndpoints({
       providesTags: ["freelancer"],
     }),
 
-
-
     getTopFreeLancer: builder.query({
       query: () => ({
         url: "/users/all-freelancers?freelancer=top",
@@ -27,12 +23,19 @@ export const freelancerApi = baseApi.injectEndpoints({
       }),
       providesTags: ["freelancer"],
     }),
-
-  })
+    freelancerVerificationRequest: builder.mutation({
+      query: () => ({
+        url: "/users/profile-verify-requiest",
+        method: "POST",
+      }),
+      invalidatesTags: ["freelancer"],
+    }),
+  }),
 });
 
 // Export hooks
 export const {
   useGetAllFreeLancerQuery,
-  useGetTopFreeLancerQuery
+  useGetTopFreeLancerQuery,
+  useFreelancerVerificationRequestMutation,
 } = freelancerApi;

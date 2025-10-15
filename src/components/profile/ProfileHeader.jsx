@@ -35,6 +35,7 @@ import SocialLinkAddDialog from "./SocialLinkAddDialog";
 import { socialPlatforms } from "./socialPlatforms";
 import Link from "next/link";
 import { languageToCountryCode } from "@/utils/flag";
+import { useFreelancerVerificationRequestMutation } from "@/features/freelancer/freelancerApi";
 function ProfileHeader({ setCoverPhoto }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSocialLinkDialogOpen, setIsSocialLinkDialogOpen] = useState(false);
@@ -491,6 +492,24 @@ function ProfileHeader({ setCoverPhoto }) {
       }
     }
     setIsDialogOpen(open);
+  };
+  const [
+    freelancerVerificationRequest,
+    { isLoading: isFreelancerVerificationRequestLoading },
+  ] = useFreelancerVerificationRequestMutation();
+
+  const handleGetVerified = async () => {
+    try {
+      const response = await freelancerVerificationRequest().unwrap();
+      toast.success(
+        response?.data || "Freelancer verification request sent successfully!"
+      );
+    } catch (error) {
+      console.error("Failed to send freelancer verification request:", error);
+      toast.error(
+        "Failed to send freelancer verification request. Please try again."
+      );
+    }
   };
 
   // Loading state for dropdowns
@@ -1154,7 +1173,12 @@ function ProfileHeader({ setCoverPhoto }) {
               <span>Revision</span>
             </div>
           ) : (
-            <Button className="button-gradient">Get Verified</Button>
+            <Button
+              className="button-gradient"
+              onClick={() => handleGetVerified()}
+            >
+              Get Verified
+            </Button>
           )}
           {/* Day Rate */}
           <div className="flex items-center gap-2 text-sm">

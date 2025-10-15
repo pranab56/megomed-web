@@ -105,12 +105,12 @@ function ProjectListPrivate({ translations }) {
             <div className="text-center py-8">
               <p className="text-gray-500">No tenders found</p>
               <div className="mt-4 p-4 bg-gray-100 rounded text-left text-xs">
-                <p>
+                {/* <p>
                   <strong>Debug Info:</strong>
                 </p>
                 <p>Loading: {tenderLoading ? "true" : "false"}</p>
                 <p>Response: {JSON.stringify(tenderResponse, null, 2)}</p>
-                <p>Tenders: {JSON.stringify(tenders, null, 2)}</p>
+                <p>Tenders: {JSON.stringify(tenders, null, 2)}</p> */}
               </div>
             </div>
           )}
