@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { usePathname } from "next/navigation";
 import { useFreelancerProposalMutation } from "@/features/freelancer/freelancerApi";
+import { useCreateInvoiceMutation } from "@/features/invoice/invoiceApi";
 import toast from "react-hot-toast";
 
 function ProposalModalJobTender({ open, onOpenChange, jobId, type }) {
@@ -19,6 +20,8 @@ function ProposalModalJobTender({ open, onOpenChange, jobId, type }) {
   const isTenderPage = pathname.includes("tenders-details");
   const [freelancerProposal, { isLoading: isProposing }] =
     useFreelancerProposalMutation();
+  const [createInvoice, { isLoading: isCreatingInvoice }] =
+    useCreateInvoiceMutation();
   // Determine if it's a tender based on type prop or pathname
   const isTender = type === "tender" || isTenderPage;
 
@@ -89,28 +92,50 @@ function ProposalModalJobTender({ open, onOpenChange, jobId, type }) {
   };
 
   const onSubmit = async (data) => {
-    console.log("Form submitted:", data);
+    // console.log("Form submitted:", data);
 
     try {
-      // Create FormData for file uploads
-      const formData = new FormData();
+      if (isTender) {
+        // For tenders, use createInvoice mutation
+        const formData = new FormData();
 
-      // Add text fields
-      formData.append("coverMessage", data.coverMessage);
-      formData.append("availableDate", data.estimatedTime);
-      formData.append("price", data.price);
-      formData.append("jobId", data.jobId);
+        // Add tender-specific fields
+        formData.append("invoiceType", "tender");
+        formData.append("tenderId", data.jobId);
+        formData.append("amount", data.price.replace(/[$,]/g, "")); // Remove $ and commas
+        formData.append("date", new Date().toISOString().split("T")[0]); // Today's date in YYYY-MM-DD format
+        formData.append("message", data.coverMessage);
 
-      // Add documents as array of files
-      if (data.uploadDocuments && data.uploadDocuments.length > 0) {
-        data.uploadDocuments.forEach((doc) => {
-          formData.append("uploadDocuments", doc.file);
-        });
+        // Add documents as array of files
+        if (data.uploadDocuments && data.uploadDocuments.length > 0) {
+          data.uploadDocuments.forEach((doc) => {
+            formData.append("uploadDocuments", doc.file);
+          });
+        }
+
+        const result = await createInvoice(formData).unwrap();
+        toast.success("Tender response submitted successfully!");
+      } else {
+        // For jobs, use freelancerProposal mutation
+        const formData = new FormData();
+
+        // Add job-specific fields
+        formData.append("coverMessage", data.coverMessage);
+        formData.append("availableDate", data.estimatedTime);
+        formData.append("price", data.price);
+        formData.append("jobId", data.jobId);
+
+        // Add documents as array of files
+        if (data.uploadDocuments && data.uploadDocuments.length > 0) {
+          data.uploadDocuments.forEach((doc) => {
+            formData.append("uploadDocuments", doc.file);
+          });
+        }
+
+        const result = await freelancerProposal(formData).unwrap();
+        toast.success("Job proposal submitted successfully!");
       }
 
-      const result = await freelancerProposal(formData).unwrap();
-      console.log("Result:", result);
-      toast.success("Proposal submitted successfully!");
       reset();
       setUploadDocuments([]);
       onOpenChange(false);
@@ -118,7 +143,9 @@ function ProposalModalJobTender({ open, onOpenChange, jobId, type }) {
       // console.error("Error submitting proposal:", error);
 
       // Extract error message from different possible error structures
-      let errorMessage = "Failed to submit proposal. Please try again.";
+      let errorMessage = `Failed to submit ${
+        isTender ? "tender response" : "job proposal"
+      }. Please try again.`;
 
       if (error?.data?.message) {
         errorMessage = error.data.message;
@@ -133,18 +160,18 @@ function ProposalModalJobTender({ open, onOpenChange, jobId, type }) {
   };
 
   if (!open) {
-    console.log("Modal is closed, not rendering");
+    // console.log("Modal is closed, not rendering");
     return null;
   }
 
-  console.log("Modal is open, rendering content");
+  // console.log("Modal is open, rendering content");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl md:max-w-4xl lg:min-w-4xl max-h-[90vh] overflow-y-auto bg-white">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
-            Apply to {isTender ? "Tender" : "Job"}
+            {isTender ? "Respond to Tender" : "Apply to Job"}
           </DialogTitle>
         </DialogHeader>
 
@@ -396,9 +423,15 @@ function ProposalModalJobTender({ open, onOpenChange, jobId, type }) {
             <Button
               type="submit"
               className="button-gradient px-8 py-2"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isProposing || isCreatingInvoice}
             >
-              {isSubmitting ? "Submitting..." : "Submit Proposal"}
+              {isSubmitting || isProposing || isCreatingInvoice
+                ? isTender
+                  ? "Submitting Response..."
+                  : "Submitting Proposal..."
+                : isTender
+                ? "Submit Response"
+                : "Submit Proposal"}
             </Button>
           </div>
         </form>

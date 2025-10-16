@@ -45,6 +45,13 @@ export const freelancerApi = baseApi.injectEndpoints({
       }),
       providesTags: ["freelancer"],
     }),
+    getAppliedTenders: builder.query({
+      query: () => ({
+        url: "/invoice/freelancer",
+        method: "GET",
+      }),
+      providesTags: ["freelancer"],
+    }),
   }),
 });
 
@@ -55,4 +62,5 @@ export const {
   useFreelancerVerificationRequestMutation,
   useFreelancerProposalMutation,
   useGetAppliedJobsQuery,
+  useGetAppliedTendersQuery,
 } = freelancerApi;

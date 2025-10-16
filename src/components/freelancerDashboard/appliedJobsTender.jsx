@@ -2,7 +2,10 @@ import React, { useState } from "react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import ClientJobTenderPreview from "./freelanderJobTenderPreview";
-import { useGetAppliedJobsQuery } from "@/features/freelancer/freelancerApi";
+import {
+  useGetAppliedJobsQuery,
+  useGetAppliedTendersQuery,
+} from "@/features/freelancer/freelancerApi";
 import { getImageUrl } from "@/utils/getImageUrl";
 import { Badge } from "../ui/badge";
 import { FileText, Calendar, DollarSign, MapPin, Clock } from "lucide-react";
@@ -13,9 +16,21 @@ export function AppliedJobsTender({ category = "jobs", type = "applied" }) {
 
   const {
     data: appliedJobsData,
-    isLoading,
-    isError,
+    isLoading: isLoadingJobs,
+    isError: isErrorJobs,
   } = useGetAppliedJobsQuery();
+
+  const {
+    data: appliedTendersData,
+    isLoading: isLoadingTenders,
+    isError: isErrorTenders,
+  } = useGetAppliedTendersQuery();
+
+  // Use the appropriate data based on category
+  const currentData =
+    category === "jobs" ? appliedJobsData : appliedTendersData;
+  const isLoading = category === "jobs" ? isLoadingJobs : isLoadingTenders;
+  const isError = category === "jobs" ? isErrorJobs : isErrorTenders;
 
   const handlePreviewClick = (job) => {
     setSelectedJob(job);
@@ -47,24 +62,37 @@ export function AppliedJobsTender({ category = "jobs", type = "applied" }) {
       day: "numeric",
     });
   };
-  // Filter data based on type
+  // Filter data based on category and type
   const getFilteredData = () => {
-    if (!appliedJobsData?.data) return [];
+    if (!currentData?.data) return [];
 
+    let filteredData = currentData.data;
+
+    // Filter by type (applied/shortlisted)
     if (type === "applied") {
-      return appliedJobsData.data.filter((job) => job.status === "Pending");
-    } else if (type === "shortlist") {
-      return appliedJobsData.data.filter((job) => job.status === "Shortlisted");
+      filteredData = filteredData.filter((item) => item.status === "pending");
+    } else if (type === "shortlisted") {
+      filteredData = filteredData.filter((item) => item.status === "shortlist");
     } else if (type === "approve") {
-      return appliedJobsData.data.filter((job) => job.status === "Accepted");
+      filteredData = filteredData.filter((item) => item.status === "approve");
     } else if (type === "cancel") {
-      return appliedJobsData.data.filter((job) => job.status === "Canceled");
+      filteredData = filteredData.filter((item) => item.status === "cancel");
     }
-    return appliedJobsData.data;
+
+    return filteredData;
   };
 
   const filteredData = getFilteredData();
-  const title = type === "applied" ? "Applied Jobs" : "Shortlisted Jobs";
+  const title =
+    type === "applied"
+      ? `Applied ${category === "jobs" ? "Jobs" : "Tenders"}`
+      : `Shortlisted ${category === "jobs" ? "Jobs" : "Tenders"}`;
+
+  // Debug logging
+  console.log("Category:", category);
+  console.log("Type:", type);
+  console.log("Current data:", currentData?.data);
+  console.log("Filtered data:", filteredData);
 
   if (isLoading) {
     return (
@@ -94,88 +122,113 @@ export function AppliedJobsTender({ category = "jobs", type = "applied" }) {
         </p>
       </div>
       <div className="grid grid-cols-1 gap-6 mx-auto px-4 md:px-0">
-        {filteredData.map((application) => (
-          <Card
-            key={application._id}
-            className="hover:shadow-md transition-shadow"
-          >
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="flex items-start gap-4">
-                    {application.jobId?.image && (
-                      <img
-                        src={getImageUrl(application.jobId.image)}
-                        alt={application.jobId.title}
-                        className="w-16 h-16 rounded-lg object-cover"
-                      />
-                    )}
-                    <div className="flex-1">
-                      <h4 className="text-lg font-medium text-foreground mb-2">
-                        {application.jobId?.title}
-                      </h4>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Client: {application.jobPosterUserId?.fullName}
-                      </p>
+        {filteredData.map((application) => {
+          // Handle different data structures for jobs vs tenders
+          const isTenderData = category === "tenders";
+          const title = isTenderData
+            ? "Tender Response"
+            : application.jobId?.title;
+          const clientName = isTenderData
+            ? "Client"
+            : application.jobPosterUserId?.fullName;
+          const image = isTenderData ? null : application.jobId?.image;
+          const location = isTenderData ? "N/A" : application.jobId?.location;
+          const duration = isTenderData ? "N/A" : application.jobId?.duration;
+          const minBudget = isTenderData
+            ? application.amount
+            : application.jobId?.min_budget;
+          const maxBudget = isTenderData
+            ? application.amount
+            : application.jobId?.max_budget;
+          const price = isTenderData ? application.amount : application.price;
 
-                      <div className="flex flex-wrap gap-4 mb-3">
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <MapPin className="w-4 h-4" />
-                          {application.jobId?.location}
-                        </div>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Clock className="w-4 h-4" />
-                          {application.jobId?.duration}
-                        </div>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <DollarSign className="w-4 h-4" />$
-                          {application.jobId?.min_budget} - $
-                          {application.jobId?.max_budget}
-                        </div>
-                      </div>
+          return (
+            <Card
+              key={application._id}
+              className="hover:shadow-md transition-shadow"
+            >
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-start gap-4">
+                      {image && (
+                        <img
+                          src={getImageUrl(image)}
+                          alt={title}
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <h4 className="text-lg font-medium text-foreground mb-2">
+                          {title}
+                        </h4>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {isTenderData
+                            ? "Tender Response"
+                            : `Client: ${clientName}`}
+                        </p>
 
-                      <div className="flex items-center gap-2 mb-3">
-                        <Badge className={getStatusColor(application.status)}>
-                          {application.status.charAt(0).toUpperCase() +
-                            application.status.slice(1)}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          Applied: {formatDate(application.createdAt)}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">
-                          Your Quote: ${application.price}
-                        </span>
-                        {application.uploadDocuments?.length > 0 && (
+                        <div className="flex flex-wrap gap-4 mb-3">
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <FileText className="w-4 h-4" />
-                            {application.uploadDocuments.length} document(s)
+                            <MapPin className="w-4 h-4" />
+                            {location}
                           </div>
-                        )}
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Clock className="w-4 h-4" />
+                            {duration}
+                          </div>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <DollarSign className="w-4 h-4" />
+                            {isTenderData
+                              ? `$${minBudget}`
+                              : `$${minBudget} - $${maxBudget}`}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge className={getStatusColor(application.status)}>
+                            {application.status.charAt(0).toUpperCase() +
+                              application.status.slice(1)}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            Applied: {formatDate(application.createdAt)}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">
+                            {isTenderData ? "Amount: " : "Your Quote: "}${price}
+                          </span>
+                          {application.uploadDocuments?.length > 0 && (
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <FileText className="w-4 h-4" />
+                              {application.uploadDocuments.length} document(s)
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="text-right space-y-2 ml-4">
-                  <p className="text-xs text-muted-foreground">
-                    Job ID: {application.jobId?._id?.slice(-8)}
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      className="button-gradient"
-                      onClick={() => handlePreviewClick(application)}
-                    >
-                      View Details
-                    </Button>
-                    <Button variant="outline">Message Client</Button>
+                  <div className="text-right space-y-2 ml-4">
+                    <p className="text-xs text-muted-foreground">
+                      {isTenderData ? "Invoice ID: " : "Job ID: "}
+                      {application._id?.slice(-8)}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        className="button-gradient"
+                        onClick={() => handlePreviewClick(application)}
+                      >
+                        View Details
+                      </Button>
+                      <Button variant="outline">Message Client</Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
         {filteredData.length === 0 && (
           <Card>
             <CardContent className="p-6 text-center">

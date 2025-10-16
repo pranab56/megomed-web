@@ -26,6 +26,9 @@ function ClientJobTenderPreview({
 }) {
   if (!jobData) return null;
 
+  // Determine if this is tender data (invoice data)
+  const isTenderData = jobData.invoiceType === "tender";
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -89,25 +92,29 @@ function ClientJobTenderPreview({
           {/* Header Section */}
           <div className="text-center space-y-2">
             <h2 className="text-lg lg:text-2xl font-bold text-foreground">
-              {jobData.jobId?.title}
+              {isTenderData ? "Tender Response" : jobData.jobId?.title}
             </h2>
             <p className="text-lg lg:text-xl text-muted-foreground">
-              Client: {jobData.jobPosterUserId?.fullName}
+              {isTenderData
+                ? "Invoice Response"
+                : `Client: ${jobData.jobPosterUserId?.fullName}`}
             </p>
-            <div className="flex justify-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
-                {jobData.jobId?.location}
+            {!isTenderData && (
+              <div className="flex justify-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  {jobData.jobId?.location}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  {jobData.jobId?.duration}
+                </div>
+                <div className="flex items-center gap-1">
+                  <DollarSign className="w-4 h-4" />${jobData.jobId?.min_budget}{" "}
+                  - ${jobData.jobId?.max_budget}
+                </div>
               </div>
-              <div className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                {jobData.jobId?.duration}
-              </div>
-              <div className="flex items-center gap-1">
-                <DollarSign className="w-4 h-4" />${jobData.jobId?.min_budget} -
-                ${jobData.jobId?.max_budget}
-              </div>
-            </div>
+            )}
             <Badge
               variant={
                 jobData.status === "pending"
@@ -153,10 +160,12 @@ function ClientJobTenderPreview({
               {/* Proposal Section */}
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="font-semibold text-lg mb-4">Cover Message</h3>
+                  <h3 className="font-semibold text-lg mb-4">
+                    {isTenderData ? "Message" : "Cover Message"}
+                  </h3>
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border">
                     <p className="text-muted-foreground whitespace-pre-wrap">
-                      {jobData.coverMessage}
+                      {isTenderData ? jobData.message : jobData.coverMessage}
                     </p>
                   </div>
                 </CardContent>
@@ -218,25 +227,29 @@ function ClientJobTenderPreview({
 
               {/* Estimated Time and Price Quote */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="font-semibold text-lg mb-4">
-                      Estimated Time
-                    </h3>
-                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border text-center">
-                      <span className="text-2xl font-bold text-foreground">
-                        {jobData.availableDate || "Not specified"}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
+                {!isTenderData && (
+                  <Card>
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-lg mb-4">
+                        Estimated Time
+                      </h3>
+                      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border text-center">
+                        <span className="text-2xl font-bold text-foreground">
+                          {jobData.availableDate || "Not specified"}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 <Card>
                   <CardContent className="p-6">
-                    <h3 className="font-semibold text-lg mb-4">Your Quote</h3>
+                    <h3 className="font-semibold text-lg mb-4">
+                      {isTenderData ? "Amount" : "Your Quote"}
+                    </h3>
                     <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border text-center">
                       <span className="text-2xl font-bold text-foreground">
-                        ${jobData.price}
+                        ${isTenderData ? jobData.amount : jobData.price}
                       </span>
                     </div>
                   </CardContent>
@@ -247,46 +260,74 @@ function ClientJobTenderPreview({
               <Card>
                 <CardContent className="p-6">
                   <h3 className="font-semibold text-lg mb-4">
-                    Application Details
+                    {isTenderData ? "Invoice Details" : "Application Details"}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">
-                        Applied:
+                        {isTenderData ? "Created:" : "Applied:"}
                       </span>
                       <span className="text-sm font-medium">
                         {formatDate(jobData.createdAt)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        Client:
-                      </span>
-                      <span className="text-sm font-medium">
-                        {jobData.jobPosterUserId?.fullName}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        Job Budget:
-                      </span>
-                      <span className="text-sm font-medium">
-                        ${jobData.jobId?.min_budget} - $
-                        {jobData.jobId?.max_budget}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        Location:
-                      </span>
-                      <span className="text-sm font-medium">
-                        {jobData.jobId?.location}
-                      </span>
-                    </div>
+                    {!isTenderData && (
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          Client:
+                        </span>
+                        <span className="text-sm font-medium">
+                          {jobData.jobPosterUserId?.fullName}
+                        </span>
+                      </div>
+                    )}
+                    {!isTenderData && (
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          Job Budget:
+                        </span>
+                        <span className="text-sm font-medium">
+                          ${jobData.jobId?.min_budget} - $
+                          {jobData.jobId?.max_budget}
+                        </span>
+                      </div>
+                    )}
+                    {!isTenderData && (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          Location:
+                        </span>
+                        <span className="text-sm font-medium">
+                          {jobData.jobId?.location}
+                        </span>
+                      </div>
+                    )}
+                    {isTenderData && (
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          Amount:
+                        </span>
+                        <span className="text-sm font-medium">
+                          ${jobData.amount}
+                        </span>
+                      </div>
+                    )}
+                    {isTenderData && (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          Date:
+                        </span>
+                        <span className="text-sm font-medium">
+                          {formatDate(jobData.date)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
