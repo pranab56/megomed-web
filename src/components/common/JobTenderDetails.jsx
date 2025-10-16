@@ -94,12 +94,10 @@ function JobTenderDetails({ jobData }) {
         "Competitive compensation",
       ],
       // For tender data
-      startDate: formatDate(apiData.startDate),
-      endDate: formatDate(apiData.endDate),
+      duration: apiData.duration,
+      applicationDeadline: formatDate(apiData.application_deadline),
       postedOn: formatDate(apiData.createdAt),
-      deadLine: formatDate(apiData.endDate), // Using endDate as deadline
-      location: "Remote", // Default since API doesn't have location
-      role: apiData.serviceTypeName || "Professional",
+      location: apiData.location, // Default since API doesn't have location
     };
   };
 
@@ -211,15 +209,17 @@ function JobTenderDetails({ jobData }) {
             <div className="space-y-3">
               <p className="text-gray-700">
                 <span className="font-semibold">
-                  {jobDetailsTranslations.startDateLabel || "Start Date"}:
+                  {jobDetailsTranslations.durationLabel || "Duration"}:
                 </span>{" "}
-                {job.startDate || "N/A"}
+                {job.duration || "N/A"}
               </p>
               <p className="text-gray-700">
                 <span className="font-semibold">
-                  {jobDetailsTranslations.endDateLabel || "End Date"}:
+                  {jobDetailsTranslations.applicationDeadlineLabel ||
+                    "Application Deadline"}
+                  :
                 </span>{" "}
-                {job.endDate || "N/A"}
+                {job.applicationDeadline || "N/A"}
               </p>
             </div>
             <div className="space-y-3">
@@ -228,12 +228,6 @@ function JobTenderDetails({ jobData }) {
                   {jobDetailsTranslations.postedOnLabel || "Posted On"}:
                 </span>{" "}
                 {job.postedOn || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <span className="font-semibold">
-                  {jobDetailsTranslations.deadlineLabel || "Deadline"}:
-                </span>{" "}
-                {job.deadLine || "N/A"}
               </p>
             </div>
           </div>
@@ -246,14 +240,14 @@ function JobTenderDetails({ jobData }) {
           <div className="flex justify-center">
             <Button
               className={`max-w-60 mx-auto text-white font-medium ${
-                isJobClosed(jobData?.endDate)
+                isJobClosed(jobData?.applicationDeadline)
                   ? "bg-red-500 cursor-not-allowed hover:bg-red-500"
                   : "button-gradient hover:bg-gray-400"
               }`}
-              disabled={isJobClosed(jobData?.endDate)}
+              disabled={isJobClosed(jobData?.applicationDeadline)}
               onClick={() => {
                 // Don't allow any action if job is closed
-                if (isJobClosed(jobData?.endDate)) {
+                if (isJobClosed(jobData?.applicationDeadline)) {
                   return;
                 }
 

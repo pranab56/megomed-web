@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useGetAllCategoryQuery } from "../../../features/category/categoryApi";
 
-export default function CreateJobTopForm({
+export default function CreateJobCompanyForm({
   onDataChange,
   resetForm,
   initialEndDate,

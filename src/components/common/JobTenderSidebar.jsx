@@ -43,8 +43,8 @@ function JobTenderSidebar({ jobData }) {
     jobType: jobData?.jobType,
     categoryName: jobData?.categoryName,
     serviceTypeName: jobData?.serviceTypeName,
-    startDate: jobData?.startDate,
-    endDate: jobData?.endDate,
+    duration: jobData?.duration,
+    applicationDeadline: jobData?.applicationDeadline,
     createdAt: jobData?.createdAt,
   });
 
@@ -92,21 +92,21 @@ function JobTenderSidebar({ jobData }) {
     return {
       id: apiData._id,
       company: {
-        name: apiData.title || "Company",
+        name: apiData.title || "N/A",
         logo: apiData.image
           ? `/${apiData.image}`
           : "/jobtender/job_tender_details.png",
         website: apiData.websiteLink || "https://example.com",
       },
       title: apiData.title || "Position",
-      jobType: apiData.jobType || "Full-Time",
-      totalApply: 20, // Default value since API doesn't have this
-      location: "Remote", // Default since API doesn't have location
+      jobType: apiData.jobType || "N/A",
+      totalApply: 20,
+      location: apiData.location || "N/A",
       datePosted: formatDate(apiData.createdAt),
-      startDate: formatDate(apiData.startDate),
-      endDate: formatDate(apiData.endDate),
-      category: apiData.categoryName || "Not specified",
-      serviceType: apiData.serviceTypeName || "Not specified",
+      duration: apiData.duration,
+      applicationDeadline: formatDate(apiData.application_deadline),
+      category: apiData.categoryName || "N/A",
+      serviceType: apiData.serviceTypeName || "N/A",
     };
   };
 
@@ -220,19 +220,6 @@ function JobTenderSidebar({ jobData }) {
         {/* Company Name */}
         <h3 className="text-xl font-bold text-gray-900 mb-2">{job.title}</h3>
 
-        {/* Website Link */}
-        {/* <div className="mb-4">
-          <a
-            href={job.company.website}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-blue-600 hover:text-blue-800 flex items-center justify-center gap-1"
-          >
-            <Globe className="w-4 h-4" />
-            {jobTenderSidebarTranslations.visitWebsite || "Visit Website"}
-          </a>
-        </div> */}
-
         {/* Fixed conditional rendering for buttons */}
         {role !== "client" && (
           <Button
@@ -324,7 +311,7 @@ function JobTenderSidebar({ jobData }) {
           <span className="text-sm text-gray-600">{job.category}</span>
         </div>
 
-        {/* Service Type */}
+        {/* Service Type
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-gray-500" />
@@ -333,7 +320,7 @@ function JobTenderSidebar({ jobData }) {
             </span>
           </div>
           <span className="text-sm text-gray-600">{job.serviceType}</span>
-        </div>
+        </div> */}
 
         {/* Location */}
         <div className="flex items-center justify-between">
@@ -362,10 +349,10 @@ function JobTenderSidebar({ jobData }) {
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-gray-500" />
             <span className="text-sm font-medium text-gray-700">
-              {jobTenderSidebarTranslations.startDateLabel || "Start Date"}
+              {jobTenderSidebarTranslations.durationLabel || "Duration"}
             </span>
           </div>
-          <span className="text-sm text-gray-600">{job.startDate}</span>
+          <span className="text-sm text-gray-600">{job.duration}</span>
         </div>
 
         {/* End Date */}
@@ -373,10 +360,13 @@ function JobTenderSidebar({ jobData }) {
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-gray-500" />
             <span className="text-sm font-medium text-gray-700">
-              {jobTenderSidebarTranslations.endDateLabel || "End Date"}
+              {jobTenderSidebarTranslations.applicationDeadlineLabel ||
+                "Application Deadline"}
             </span>
           </div>
-          <span className="text-sm text-gray-600">{job.endDate}</span>
+          <span className="text-sm text-gray-600">
+            {job.applicationDeadline}
+          </span>
         </div>
       </CardContent>
 

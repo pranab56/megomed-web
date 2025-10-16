@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useCreateJobMutation } from "../../../features/jobBoard/jobBoardApi";
-import CreateJobTopForm from "./CreateJobTopForm";
+import CreateJobCompanyForm from "./CreateJobCompanyForm";
 import JobDescription from "./JobDescription";
 import toast from "react-hot-toast";
 
-function CreateJobClientLayout() {
+function CreateJobCompanyLayout() {
   const router = useRouter();
   const [createJob, { isLoading, isError, isSuccess, error }] =
     useCreateJobMutation();
@@ -57,7 +57,7 @@ function CreateJobClientLayout() {
     }
   }, [isSuccess, isError, error, router]);
 
-  // Handle data changes from CreateJobTopForm
+  // Handle data changes from CreateJobCompanyForm
   const handleTopFormDataChange = useCallback((formData) => {
     setJobData((prev) => ({
       ...prev,
@@ -227,7 +227,7 @@ function CreateJobClientLayout() {
 
   return (
     <div className="space-y-6">
-      <CreateJobTopForm
+      <CreateJobCompanyForm
         onDataChange={handleTopFormDataChange}
         resetForm={resetFormTrigger}
         initialEndDate={jobData.applicationDeadline}
@@ -264,4 +264,4 @@ function CreateJobClientLayout() {
   );
 }
 
-export default CreateJobClientLayout;
+export default CreateJobCompanyLayout;

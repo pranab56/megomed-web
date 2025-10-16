@@ -15,6 +15,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useGetMyprofileQuery } from "@/features/clientProfile/ClientProfile";
+import { getImageUrl } from "@/utils/getImageUrl";
 import provideIcon from "@/utils/IconProvider/provideIcon";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
@@ -45,7 +47,7 @@ function ClientNavBar() {
   const [mounted, setMounted] = useState(false);
   const [currentUser, setCurrentUser] = useState({ type: "client" });
   const pathname = usePathname();
-
+  const { data: userData } = useGetMyprofileQuery();
   // Navigation items - only client specific pages
   const navItems = [
     { label: translations.jobBoard, href: `/job-board` },
@@ -71,9 +73,9 @@ function ClientNavBar() {
 
   // Mock user data
   const user = {
-    name: "John Client",
+    fullName: userData?.data?.fullName,
     role: translations.client,
-    avatar: "/client/profile/client.png",
+    avatar: userData?.data?.profile || "/client/profile/client.png",
   };
 
   const handleSignOut = () => {
@@ -126,15 +128,15 @@ function ClientNavBar() {
                 className="flex items-center space-x-3 shadow-md rounded-full  border hover:bg-gray-50 h-12"
               >
                 <Image
-                  src={user.avatar}
-                  alt={user.name}
+                  src={getImageUrl(user.avatar)}
+                  alt={user.fullName || "User"}
                   width={40}
                   height={40}
                   className="w-10 h-10 rounded-full  object-cover"
                 />
                 <div className="text-left">
                   <p className="text-sm font-medium text-[#012A8B]">
-                    {user.name}
+                    {user.fullName}
                   </p>
                   <p className="text-xs text-[#012A8B] ">{user.role}</p>
                 </div>
@@ -202,13 +204,13 @@ function ClientNavBar() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <img
-                      src={user.avatar}
-                      alt={user.name}
+                      src={getImageUrl(user.avatar)}
+                      alt={user.fullName || "client"}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div>
                       <DrawerTitle className="text-sm font-medium">
-                        {user.name}
+                        {user.fullName || "client"}
                       </DrawerTitle>
                       <p className="text-xs text-gray-500">{user.role}</p>
                     </div>

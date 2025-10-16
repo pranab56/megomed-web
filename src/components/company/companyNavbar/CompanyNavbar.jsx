@@ -55,7 +55,7 @@ function CompanyNavbar() {
   const navItems = [
     {
       label: "Job Board",
-      href: `/job-board`,
+      href: `/job-board-company`,
     },
     {
       label: "Tenders",
