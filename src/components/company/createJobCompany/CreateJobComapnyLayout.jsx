@@ -36,7 +36,7 @@ function CreateJobCompanyLayout() {
     minBudget: "",
     maxBudget: "",
     skills: [],
-    posterType: "client",
+    posterType: "company",
   });
 
   const [resetFormTrigger, setResetFormTrigger] = useState(false);
