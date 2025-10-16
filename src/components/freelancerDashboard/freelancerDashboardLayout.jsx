@@ -4,13 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AppliedJobsTender from "./appliedJobsTender";
+import { useGetAppliedJobsQuery } from "@/features/freelancer/freelancerApi";
 
 function FreelancerDashboardLayout() {
   const currentUser = localStorage.getItem("role");
   const userType = currentUser;
   const [selectedCategory, setSelectedCategory] = useState("jobs");
   const [selectedTab, setSelectedTab] = useState("applied");
-
+  const { data: appliedJobs } = useGetAppliedJobsQuery();
+  console.log(appliedJobs);
   if (userType !== "freelancer") {
     return <div>You are not authorized to access this page</div>;
   }

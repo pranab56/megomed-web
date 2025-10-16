@@ -8,6 +8,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getImageUrl } from "@/utils/getImageUrl";
+import {
+  FileText,
+  Calendar,
+  DollarSign,
+  MapPin,
+  Clock,
+  User,
+} from "lucide-react";
 
 function ClientJobTenderPreview({
   isOpen,
@@ -16,6 +25,56 @@ function ClientJobTenderPreview({
   category = "jobs",
 }) {
   if (!jobData) return null;
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const getFileType = (filename) => {
+    const extension = filename.split(".").pop().toLowerCase();
+    if (["pdf"].includes(extension)) return "PDF";
+    if (["jpg", "jpeg", "png", "gif"].includes(extension)) return "IMG";
+    if (["doc", "docx"].includes(extension)) return "DOC";
+    if (["ppt", "pptx"].includes(extension)) return "PPT";
+    if (["xls", "xlsx"].includes(extension)) return "XLS";
+    return "FILE";
+  };
+
+  const getFileIconColor = (type) => {
+    switch (type) {
+      case "PDF":
+        return "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400";
+      case "IMG":
+        return "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400";
+      case "DOC":
+        return "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400";
+      case "PPT":
+        return "bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400";
+      case "XLS":
+        return "bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-400";
+      default:
+        return "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400";
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      case "approve":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+      case "shortlist":
+        return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300";
+      case "cancel":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -30,24 +89,47 @@ function ClientJobTenderPreview({
           {/* Header Section */}
           <div className="text-center space-y-2">
             <h2 className="text-lg lg:text-2xl font-bold text-foreground">
-              {jobData.title}
+              {jobData.jobId?.title}
             </h2>
             <p className="text-lg lg:text-xl text-muted-foreground">
-              {category === "jobs" ? jobData.company : jobData.client}
+              Client: {jobData.jobPosterUserId?.fullName}
             </p>
+            <div className="flex justify-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                {jobData.jobId?.location}
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                {jobData.jobId?.duration}
+              </div>
+              <div className="flex items-center gap-1">
+                <DollarSign className="w-4 h-4" />${jobData.jobId?.min_budget} -
+                ${jobData.jobId?.max_budget}
+              </div>
+            </div>
             <Badge
               variant={
-                jobData.status === "Applied"
+                jobData.status === "pending"
                   ? "default"
-                  : jobData.status === "Shortlisted"
+                  : jobData.status === "accepted"
                   ? "secondary"
-                  : jobData.status === "Accepted"
-                  ? "default"
-                  : "destructive"
+                  : jobData.status === "rejected"
+                  ? "destructive"
+                  : "default"
               }
-              className="text-sm px-3 py-1"
+              className={`text-sm px-3 py-1 ${getStatusColor(jobData.status)}`}
             >
-              {jobData.status}
+              {jobData.status === "Pending"
+                ? "Pending"
+                : jobData.status === "approve"
+                ? "Accepted"
+                : jobData.status === "shortlist"
+                ? "Shortlisted"
+                : jobData.status === "cancel"
+                ? "Canceled"
+                : jobData.status.charAt(0).toUpperCase() +
+                  jobData.status.slice(1)}
             </Badge>
           </div>
 
@@ -68,35 +150,13 @@ function ClientJobTenderPreview({
 
             {/* Freelancer Proposal Content */}
             <div className="space-y-4">
-              {/* Introduction Section */}
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="font-semibold text-lg mb-4">Introduction</h3>
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border">
-                    <p className="text-muted-foreground">
-                      I believe I am the right fit for this project because of
-                      my extensive experience in data analytics and proven track
-                      record of delivering high-quality results. With over 5
-                      years in the field, I have successfully completed similar
-                      projects and understand the specific requirements needed
-                      for this role.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* Proposal Section */}
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="font-semibold text-lg mb-4">Proposal</h3>
+                  <h3 className="font-semibold text-lg mb-4">Cover Message</h3>
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border">
-                    <p className="text-muted-foreground">
-                      My approach involves thorough data analysis, advanced
-                      modeling techniques, and clear reporting. I will start by
-                      understanding your specific requirements, then develop a
-                      comprehensive data strategy that aligns with your business
-                      objectives. The project will be delivered in phases with
-                      regular updates and feedback sessions.
+                    <p className="text-muted-foreground whitespace-pre-wrap">
+                      {jobData.coverMessage}
                     </p>
                   </div>
                 </CardContent>
@@ -106,29 +166,52 @@ function ClientJobTenderPreview({
               <Card>
                 <CardContent className="p-6">
                   <h3 className="font-semibold text-lg mb-4">
-                    Upload Documents
+                    Uploaded Documents
                   </h3>
                   <div className="space-y-3">
-                    <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border">
-                      <div className="w-8 h-8 bg-red-100 dark:bg-red-900 rounded flex items-center justify-center">
-                        <span className="text-red-600 dark:text-red-400 text-xs font-bold">
-                          PDF
-                        </span>
+                    {jobData.uploadDocuments &&
+                    jobData.uploadDocuments.length > 0 ? (
+                      jobData.uploadDocuments.map((doc, index) => {
+                        const fileType = getFileType(doc);
+                        const fileName =
+                          doc.split("\\").pop() || doc.split("/").pop();
+                        return (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div
+                                className={`w-8 h-8 rounded flex items-center justify-center ${getFileIconColor(
+                                  fileType
+                                )}`}
+                              >
+                                <span className="text-xs font-bold">
+                                  {fileType}
+                                </span>
+                              </div>
+                              <span className="text-sm font-medium">
+                                {fileName}
+                              </span>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                window.open(getImageUrl(doc), "_blank")
+                              }
+                            >
+                              View
+                            </Button>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-center py-4 text-muted-foreground">
+                        <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No documents uploaded</p>
                       </div>
-                      <span className="text-sm font-medium">
-                        Project_Presentation.pdf
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border">
-                      <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded flex items-center justify-center">
-                        <span className="text-orange-600 dark:text-orange-400 text-xs font-bold">
-                          PPT
-                        </span>
-                      </div>
-                      <span className="text-sm font-medium">
-                        Case_Study.pptx
-                      </span>
-                    </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -142,7 +225,7 @@ function ClientJobTenderPreview({
                     </h3>
                     <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border text-center">
                       <span className="text-2xl font-bold text-foreground">
-                        4 weeks
+                        {jobData.availableDate || "Not specified"}
                       </span>
                     </div>
                   </CardContent>
@@ -150,15 +233,63 @@ function ClientJobTenderPreview({
 
                 <Card>
                   <CardContent className="p-6">
-                    <h3 className="font-semibold text-lg mb-4">Price Quote</h3>
+                    <h3 className="font-semibold text-lg mb-4">Your Quote</h3>
                     <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border text-center">
                       <span className="text-2xl font-bold text-foreground">
-                        $5,000
+                        ${jobData.price}
                       </span>
                     </div>
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Application Details */}
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold text-lg mb-4">
+                    Application Details
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Applied:
+                      </span>
+                      <span className="text-sm font-medium">
+                        {formatDate(jobData.createdAt)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Client:
+                      </span>
+                      <span className="text-sm font-medium">
+                        {jobData.jobPosterUserId?.fullName}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Job Budget:
+                      </span>
+                      <span className="text-sm font-medium">
+                        ${jobData.jobId?.min_budget} - $
+                        {jobData.jobId?.max_budget}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Location:
+                      </span>
+                      <span className="text-sm font-medium">
+                        {jobData.jobId?.location}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Action Buttons */}

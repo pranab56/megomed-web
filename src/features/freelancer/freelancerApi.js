@@ -30,6 +30,21 @@ export const freelancerApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["freelancer"],
     }),
+    freelancerProposal: builder.mutation({
+      query: (data) => ({
+        url: "/apply-jobs/create-job",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["freelancer"],
+    }),
+    getAppliedJobs: builder.query({
+      query: () => ({
+        url: "/apply-jobs/freelancer",
+        method: "GET",
+      }),
+      providesTags: ["freelancer"],
+    }),
   }),
 });
 
@@ -38,4 +53,6 @@ export const {
   useGetAllFreeLancerQuery,
   useGetTopFreeLancerQuery,
   useFreelancerVerificationRequestMutation,
+  useFreelancerProposalMutation,
+  useGetAppliedJobsQuery,
 } = freelancerApi;

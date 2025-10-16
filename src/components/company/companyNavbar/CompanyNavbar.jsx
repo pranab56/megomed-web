@@ -57,10 +57,7 @@ function CompanyNavbar() {
       label: "Job Board",
       href: `/job-board`,
     },
-    {
-      label: "Tenders",
-      href: `/tenders`,
-    },
+
     {
       label: "Inbox",
       href: `/chat`,

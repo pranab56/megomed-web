@@ -72,6 +72,7 @@ function JobTenderDetails({ jobData }) {
     if (!apiData) return null;
 
     return {
+      jobId: apiData._id,
       title: apiData.title || "No Title",
       description: apiData.description || "No description available",
       fullDescription: apiData.description
@@ -291,7 +292,7 @@ function JobTenderDetails({ jobData }) {
       <ProposalModalJobTender
         open={openProposalModal}
         onOpenChange={setOpenProposalModal}
-        jobData={jobData}
+        jobId={job.jobId}
         type={isTenderPage ? "tender" : "job"}
       />
     </div>

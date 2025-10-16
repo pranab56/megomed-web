@@ -391,7 +391,7 @@ function JobTenderSidebar({ jobData }) {
       <ProposalModalJobTender
         open={openProposalModal}
         onOpenChange={setOpenProposalModal}
-        jobData={jobData}
+        jobId={jobData._id}
         type={isTenderPage ? "tender" : "job"}
       />
     </Card>

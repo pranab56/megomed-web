@@ -153,7 +153,7 @@ function JobTenderCard({ type = "tender", data }) {
       <ProposalModalJobTender
         open={openProposalModal}
         onOpenChange={setOpenProposalModal}
-        jobData={data}
+        jobId={data._id}
         type={type}
       />
     </div>
