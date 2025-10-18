@@ -304,13 +304,7 @@ function FreelancerNavBar() {
                   >
                     Connect Stripe
                   </Button>
-                  {/* <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    asChild
-                  >
-                    <Link href={`/billing`}>Billing & Plans</Link>
-                  </Button> */}
+
                   <Button
                     variant="ghost"
                     className="w-full justify-start"

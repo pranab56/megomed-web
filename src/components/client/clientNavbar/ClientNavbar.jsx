@@ -1,4 +1,5 @@
 "use client";
+import HelpsAndSupport from "@/components/common/helpsAndSupport/helpsAndSupport";
 import NotificationBell from "@/components/common/NotificationBell";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,9 +47,11 @@ const translations = {
 function ClientNavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [currentUser, setCurrentUser] = useState({ type: "client" });
+  const [isHelpSheetOpen, setIsHelpSheetOpen] = useState(false);
+
   const pathname = usePathname();
   const { data: userData } = useGetMyprofileQuery();
+
   // Navigation items - only client specific pages
   const navItems = [
     { label: translations.jobBoard, href: `/job-board` },
@@ -82,6 +85,9 @@ function ClientNavBar() {
   const handleSignOut = () => {
     localStorage.clear();
     window.location.href = "/";
+  };
+  const handleHelpSheetClose = (open) => {
+    setIsHelpSheetOpen(open);
   };
 
   useEffect(() => {
@@ -153,22 +159,7 @@ function ClientNavBar() {
                   {translations.viewProfile}
                 </Link>
               </DropdownMenuItem>
-              {/* <DropdownMenuItem asChild>
-                <Link href={`/settings`} className="w-full cursor-pointer">
-                  {translations.accountSettings}
-                </Link>
-              </DropdownMenuItem> */}
-              {/* <DropdownMenuItem asChild>
-                <Link href={`/billing`} className="w-full cursor-pointer">
-                  {translations.billingPlans}
-                </Link>
-              </DropdownMenuItem> */}
-              <DropdownMenuItem asChild>
-                <Link href={`/help`} className="w-full cursor-pointer">
-                  {translations.helpSupport}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
+
               <DropdownMenuItem asChild>
                 <Link
                   href={`/client-dashboard`}
@@ -177,10 +168,11 @@ function ClientNavBar() {
                   {translations.dashboard}
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/help`} className="w-full cursor-pointer">
-                  {translations.helpSupport}
-                </Link>
+              <DropdownMenuItem
+                className="w-full cursor-pointer"
+                onClick={() => setIsHelpSheetOpen(true)}
+              >
+                {translations.helpSupport}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -266,13 +258,12 @@ function ClientNavBar() {
                   >
                     <Link href={`/billing`}>{translations.billingPlans}</Link>
                   </Button> */}
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    asChild
+                  <DropdownMenuItem
+                    className="w-full cursor-pointer"
+                    onClick={() => setIsHelpSheetOpen(true)}
                   >
-                    <Link href={`/help`}>{translations.helpSupport}</Link>
-                  </Button>
+                    {translations.helpSupport}
+                  </DropdownMenuItem>
                   <Button
                     variant="ghost"
                     className="w-full justify-start text-red-600"
@@ -285,7 +276,12 @@ function ClientNavBar() {
             </DrawerContent>
           </Drawer>
         </div>
-      </div>
+      </div>{" "}
+      {/* Help & Support Sheet */}
+      <HelpsAndSupport
+        isOpen={isHelpSheetOpen}
+        onOpenChange={handleHelpSheetClose}
+      />
     </nav>
   );
 }
