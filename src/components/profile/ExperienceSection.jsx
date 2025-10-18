@@ -53,30 +53,6 @@ function ExperienceSection({ freelancerInfo }) {
     return `${startYear} - ${endDate ? endYear : "Present"}`;
   };
 
-  // Calculate total experience
-  // const calculateTotalExperience = (experiences) => {
-  //   if (!experiences.length) return "0 years";
-
-  //   let totalMonths = 0;
-
-  //   experiences.forEach((exp) => {
-  //     const start = new Date(exp.startDate);
-  //     const end = exp.endDate ? new Date(exp.endDate) : new Date();
-
-  //     const months =
-  //       (end.getFullYear() - start.getFullYear()) * 12 +
-  //       (end.getMonth() - start.getMonth());
-  //     totalMonths += Math.max(0, months);
-  //   });
-
-  //   const years = Math.floor(totalMonths / 12);
-  //   const months = totalMonths % 12;
-
-  //   if (years === 0) return `${months} months`;
-  //   if (months === 0) return `${years} years`;
-  //   return `${years} years ${months} months`;
-  // };
-
   const handleAddExperience = () => {
     setEditingExperience(null);
     setIsExperienceDialogOpen(true);
@@ -160,11 +136,6 @@ function ExperienceSection({ freelancerInfo }) {
               <CardTitle className="text-lg font-semibold text-blue-600">
                 {translations.title}
               </CardTitle>
-              {/* {apiExperiences.length > 0 && (
-                <span className="text-sm text-gray-600 bg-blue-50 px-3 py-1 rounded-full">
-                  Total: {calculateTotalExperience(apiExperiences)}
-                </span>
-              )} */}
             </div>
             <div className="flex items-center gap-4">
               {isFreelancerAndLoggedIn && (

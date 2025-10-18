@@ -58,7 +58,8 @@ const nextConfig = {
       },
     ],
   },
-  output: "standalone",
+  // Removing standalone output mode to fix build issues
+  // output: "standalone",
 
   webpack: (config, { dev }) => {
     if (dev) {

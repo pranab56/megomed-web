@@ -28,7 +28,7 @@ function CommentSection() {
     <div className="mb-8">
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-2xl font-bold text-blue-600 h2-gradient-text">
-          CommentSection
+          Comment Section
         </h1>
       </div>
 

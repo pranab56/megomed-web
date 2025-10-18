@@ -4,13 +4,55 @@ import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientAppliedJobsTender from "./clientAppliedJobsTender";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useGetClientDashboardQuery } from "@/features/clientDashboard/clientDashboardApi";
 
 function ClientDashboardLayout() {
   const currentUser = localStorage.getItem("role");
   const userType = currentUser;
   const [selectedCategory, setSelectedCategory] = useState("jobs");
   const [selectedTab, setSelectedTab] = useState("applied");
+  const {
+    data: clientDashboard,
+    isLoading,
+    error,
+  } = useGetClientDashboardQuery();
 
+  // Organize dashboard data by category and status
+  const organizedData = React.useMemo(() => {
+    if (!clientDashboard?.data) return { jobs: {}, tenders: {} };
+
+    const result = {
+      jobs: {
+        applied: [],
+        shortlisted: [],
+        accepted: [],
+        rejected: [],
+      },
+      tenders: {
+        applied: [],
+        shortlisted: [],
+        accepted: [],
+        rejected: [],
+      },
+    };
+
+    // Sort applications by category and status
+    clientDashboard.data.forEach((item) => {
+      // Check if it's a job or tender based on jobId or tenderId
+      const category = item.jobId ? "jobs" : "tenders";
+
+      // Map status to the correct tab
+      let status = "applied";
+      if (item.status === "shortlist") status = "shortlisted";
+      else if (item.status === "accepted") status = "accepted";
+      else if (item.status === "rejected") status = "rejected";
+
+      // Add to the right category and status bucket
+      result[category][status].push(item);
+    });
+
+    return result;
+  }, [clientDashboard?.data]);
   if (userType !== "client") {
     return <div>You are not authorized to access this page</div>;
   }
@@ -25,6 +67,9 @@ function ClientDashboardLayout() {
           selectedCategory={selectedCategory}
           selectedTab={selectedTab}
           setSelectedTab={setSelectedTab}
+          isLoading={isLoading}
+          error={error}
+          data={organizedData}
         />
       </div>
     </div>
@@ -66,26 +111,67 @@ const Sidebar = ({ selectedCategory, setSelectedCategory }) => {
   );
 };
 
-const MainContent = ({ selectedCategory, selectedTab, setSelectedTab }) => {
+const MainContent = ({
+  selectedCategory,
+  selectedTab,
+  setSelectedTab,
+  isLoading,
+  error,
+  data,
+}) => {
   const getTabLabels = () => {
     if (selectedCategory === "jobs") {
       return {
-        applied: "Job Proposals",
-        shortlisted: "Shortlisted Proposals",
-        accepted: "Accepted Proposals",
-        rejected: "Rejected Proposals",
+        applied: `Job Proposals (${data?.jobs?.applied?.length})`,
+        shortlisted: `Shortlisted Proposals (${data?.jobs?.shortlisted?.length})`,
+        accepted: `Accepted Proposals (${data?.jobs?.accepted?.length})`,
+        rejected: `Rejected Proposals (${data?.jobs?.rejected?.length})`,
       };
     } else {
       return {
-        applied: "Tender Proposals",
-        shortlisted: "Shortlisted Proposals",
-        accepted: "Accepted Proposals",
-        rejected: "Rejected Proposals",
+        applied: `Tender Proposals (${data.tenders.applied.length})`,
+        shortlisted: `Shortlisted Proposals (${data.tenders.shortlisted.length})`,
+        accepted: `Accepted Proposals (${data.tenders.accepted.length})`,
+        rejected: `Rejected Proposals (${data.tenders.rejected.length})`,
       };
     }
   };
 
   const tabLabels = getTabLabels();
+
+  if (isLoading) {
+    return (
+      <Card className="w-full md:w-3/4">
+        <CardHeader>
+          <CardTitle>Loading dashboard data...</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-28 bg-gray-200 rounded-md"></div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="w-full md:w-3/4">
+        <CardHeader>
+          <CardTitle className="text-red-500">
+            Error loading dashboard
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>
+            There was an error loading your dashboard. Please try again later.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full md:w-3/4">
@@ -104,24 +190,44 @@ const MainContent = ({ selectedCategory, selectedTab, setSelectedTab }) => {
               <ClientAppliedJobsTender
                 category={selectedCategory}
                 type="applied"
+                items={
+                  selectedCategory === "jobs"
+                    ? data.jobs.applied
+                    : data.tenders.applied
+                }
               />
             </TabsContent>
             <TabsContent value="shortlisted" className="mt-5">
               <ClientAppliedJobsTender
                 category={selectedCategory}
                 type="shortlisted"
+                items={
+                  selectedCategory === "jobs"
+                    ? data.jobs.shortlisted
+                    : data.tenders.shortlisted
+                }
               />
             </TabsContent>
             <TabsContent value="accepted" className="mt-5">
               <ClientAppliedJobsTender
                 category={selectedCategory}
                 type="accepted"
+                items={
+                  selectedCategory === "jobs"
+                    ? data.jobs.accepted
+                    : data.tenders.accepted
+                }
               />
             </TabsContent>
             <TabsContent value="rejected" className="mt-5">
               <ClientAppliedJobsTender
                 category={selectedCategory}
                 type="rejected"
+                items={
+                  selectedCategory === "jobs"
+                    ? data.jobs.rejected
+                    : data.tenders.rejected
+                }
               />
             </TabsContent>
           </Tabs>

@@ -67,5 +67,6 @@ export const baseApi = createApi({
     "message",
     "policy",
     "company",
-  ], // useful for cache invalidationdfsdf
+    "clientDashboard",
+  ], // useful for cache invalidation
 });

@@ -8,10 +8,13 @@ import { useState } from "react";
 import ReactCountryFlag from "react-country-flag";
 import { languageToCountryCode } from "@/utils/flag";
 import Link from "next/link";
+import { MdVerifiedUser } from "react-icons/md";
 import { socialPlatforms } from "@/components/profile/socialPlatforms";
 import { useGetFreelancerPublicProfileQuery } from "@/features/clientProfile/ClientProfile";
 import { useParams } from "next/navigation";
-function ProfileHeader({ setCoverPhoto }) {
+import { Card } from "@/components/ui/card";
+
+function ProfileHeader({ setCoverPhoto, data }) {
   const [profileImage, setProfileImage] = useState(
     "/client/profile/client.png"
   );
@@ -37,17 +40,9 @@ function ProfileHeader({ setCoverPhoto }) {
     designation: "",
     yearsOfExperience: "",
   });
-  const params = useParams();
-  const id = params.id;
 
-  console.log("ProfileHeader - Params object:", params);
-  console.log("ProfileHeader - Extracted ID:", id);
-
-  const { data, isLoading, error } = useGetFreelancerPublicProfileQuery(id, {
-    skip: !id, // Skip the query if no ID is available
-  });
-
-  if (isLoading) {
+  // If no data is provided, show a placeholder
+  if (!data) {
     return (
       <div className="w-full mx-auto relative bg-white my-5 p-4">
         <div className="animate-pulse">
@@ -64,27 +59,7 @@ function ProfileHeader({ setCoverPhoto }) {
     );
   }
 
-  if (!id) {
-    return (
-      <div className="w-full">
-        <div className="text-center py-8">
-          <p className="text-gray-500">No freelancer ID provided</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="w-full">
-        <div className="text-center py-8">
-          <p className="text-red-500">
-            Error loading freelancer profile: {error.message}
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // No need to extract certificates here anymore as they are handled by the CertificationSectionPublic component
 
   return (
     <div className="w-full mx-auto relative bg-white my-5">
@@ -92,9 +67,9 @@ function ProfileHeader({ setCoverPhoto }) {
         <div className="flex flex-col sm:flex-row items-center sm:items-center gap-6 sm:gap-8 w-full lg:w-auto">
           <div className="relative flex-shrink-0">
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-white shadow-lg">
-              {data?.data?.profile ? (
+              {data?.profile ? (
                 <Image
-                  src={getImageUrl(data.data.profile)}
+                  src={getImageUrl(data.profile)}
                   alt={profileData.name}
                   width={112}
                   height={112}
@@ -113,24 +88,29 @@ function ProfileHeader({ setCoverPhoto }) {
             <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
           </div>
           <div className="flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 break-words text-center md:text-left">
-              {data?.data?.fullName || profileData.name}
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 break-words text-center md:text-left flex items-center gap-2">
+              {data?.fullName || profileData.name}
+              {data?.isVarified === "varified" && (
+                <span className="flex items-center gap-2">
+                  <MdVerifiedUser className="w-4 h-4 text-green-600" />
+                </span>
+              )}
             </h1>
 
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-600 mb-3 text-sm sm:text-base">
-              <p>{data?.data?.designation || "Professional"}</p>
+              <p>{data?.designation || "Professional"}</p>
               <span>|</span>
-              <p>{data?.data?.yearsOfExperience || "0"} of experience</p>
+              <p>{data?.yearsOfExperience || "0"} of experience</p>
               <span>|</span>
-              <p>{data?.data?.location || profileData.location}</p>
+              <p>{data?.location || profileData.location}</p>
             </div>
 
             {/* Languages Display with Flag Icons */}
-            {data?.data?.language && (
+            {data?.language && (
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <span className="text-sm text-gray-500">Languages:</span>
-                {Array.isArray(data.data.language) ? (
-                  data.data.language.map((lang, index) => {
+                {Array.isArray(data.language) ? (
+                  data.language.map((lang, index) => {
                     const countryCode = getLanguageCountryCode(lang);
                     return (
                       <div
@@ -155,19 +135,19 @@ function ProfileHeader({ setCoverPhoto }) {
                   })
                 ) : (
                   <div className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                    {getLanguageCountryCode(data.data.language) && (
+                    {getLanguageCountryCode(data.language) && (
                       <ReactCountryFlag
-                        countryCode={getLanguageCountryCode(data.data.language)}
+                        countryCode={getLanguageCountryCode(data.language)}
                         svg
                         style={{
                           width: "16px",
                           height: "12px",
                           borderRadius: "2px",
                         }}
-                        title={data.data.language}
+                        title={data.language}
                       />
                     )}
-                    <span>{data.data.language}</span>
+                    <span>{data.language}</span>
                   </div>
                 )}
               </div>
@@ -183,62 +163,47 @@ function ProfileHeader({ setCoverPhoto }) {
             Available
           </Badge>
 
-          {/* Verified Freelancer */}
-          {data?.data?.isVarified === true ? (
-            <div className="flex items-center gap-2 text-sm text-gray-700 bg-green-100 rounded-full px-2 py-1">
-              <Shield className="w-4 h-4 text-green-600" />
-              <span>Verified Freelancer</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-sm text-gray-700 bg-red-100 rounded-full px-2 py-1">
-              <Shield className="w-4 h-4 text-red-600" />
-              <span>Profile Not Verified</span>
-            </div>
-          )}
-
           {/* Day Rate */}
           <div className="flex items-center gap-2 text-sm">
             <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
               <DollarSign className="w-3 h-3 text-blue-600" />
             </div>
             <span className="text-blue-600 font-semibold">
-              Day Rate ${data?.data?.dailyRate || profileData.dailyRate}
+              Day Rate ${data?.dailyRate || profileData.dailyRate}
             </span>
           </div>
           {/* Social Links Display */}
           <div className="flex items-center gap-2">
             {/* Existing Social Links */}
-            {data?.data?.freelancerId?.socialLinks &&
-              data.data.freelancerId.socialLinks.length > 0 && (
+            {data?.freelancerId?.socialLinks &&
+              data.freelancerId.socialLinks.length > 0 && (
                 <div className="flex flex-wrap gap-2 items-center ">
-                  {data.data.freelancerId.socialLinks.map(
-                    (socialLink, index) => {
-                      const platformIcon = getPlatformIcon(socialLink.name);
-                      return (
-                        <div
-                          key={socialLink._id || index}
-                          className="relative group"
+                  {data.freelancerId.socialLinks.map((socialLink, index) => {
+                    const platformIcon = getPlatformIcon(socialLink.name);
+                    return (
+                      <div
+                        key={socialLink._id || index}
+                        className="relative group"
+                      >
+                        <Link
+                          href={socialLink.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 rounded-lg transition-colors"
                         >
-                          <Link
-                            href={socialLink.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 rounded-lg transition-colors"
-                          >
-                            {platformIcon && (
-                              <Image
-                                src={platformIcon}
-                                alt={socialLink.name}
-                                width={32}
-                                height={32}
-                                className="w-8 h-8 rounded-full object-fill"
-                              />
-                            )}
-                          </Link>
-                        </div>
-                      );
-                    }
-                  )}
+                          {platformIcon && (
+                            <Image
+                              src={platformIcon}
+                              alt={socialLink.name}
+                              width={32}
+                              height={32}
+                              className="w-8 h-8 rounded-full object-fill"
+                            />
+                          )}
+                        </Link>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
           </div>

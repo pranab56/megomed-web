@@ -8,21 +8,72 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getImageUrl } from "@/utils/getImageUrl";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 function ClientJobTenderPreview({
   isOpen,
   onClose,
-  jobData,
+  applicationData,
   category = "jobs",
 }) {
-  if (!jobData) return null;
+  if (!applicationData) return null;
+
+  // Extract data from application object
+  const freelancer = applicationData.freelancerUserId || {};
+  const jobOrTender = applicationData.jobId || applicationData.tenderId || {};
+
+  // Map status to display format
+  const getStatusDisplay = (status) => {
+    if (status === "shortlist") return "Shortlisted";
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
+  // Get file extension/type for document display
+  const getFileType = (filename) => {
+    if (!filename) return "FILE";
+    const ext = filename.split(".").pop().toUpperCase();
+    return ext.length <= 4 ? ext : "FILE";
+  };
+
+  // Get color for file type
+  const getFileColor = (type) => {
+    switch (type) {
+      case "PDF":
+        return "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400";
+      case "DOC":
+      case "DOCX":
+        return "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400";
+      case "XLS":
+      case "XLSX":
+        return "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400";
+      case "PPT":
+      case "PPTX":
+        return "bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400";
+      case "JPG":
+      case "JPEG":
+      case "PNG":
+        return "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400";
+      default:
+        return "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400";
+    }
+  };
+
+  // Extract document filename from path
+  const getFileName = (path) => {
+    if (!path) return "Unknown file";
+    const parts = path.split("\\");
+    return parts[parts.length - 1];
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl md:max-w-5xl lg:min-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center">
-            {category === "jobs" ? "Job Preview" : "Tender Preview"}
+            {category === "jobs"
+              ? "Job Application Preview"
+              : "Tender Application Preview"}
           </DialogTitle>
         </DialogHeader>
 
@@ -30,111 +81,129 @@ function ClientJobTenderPreview({
           {/* Header Section */}
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-bold text-foreground">
-              {jobData.title}
+              {jobOrTender.title || "Untitled Project"}
             </h2>
-            <p className="text-lg text-muted-foreground">
-              {category === "jobs" ? jobData.company : jobData.client}
-            </p>
-            <Badge
-              variant={
-                jobData.status === "Applied"
-                  ? "default"
-                  : jobData.status === "Shortlisted"
-                  ? "secondary"
-                  : jobData.status === "Accepted"
-                  ? "default"
-                  : "destructive"
-              }
-              className="text-sm px-3 py-1"
-            >
-              {jobData.status}
-            </Badge>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Badge variant="outline" className="text-sm px-3 py-1">
+                {jobOrTender.categoryName || "Uncategorized"}
+              </Badge>
+              <Badge
+                variant={
+                  applicationData.status === "applied"
+                    ? "default"
+                    : applicationData.status === "shortlist"
+                    ? "secondary"
+                    : applicationData.status === "accepted"
+                    ? "success"
+                    : "destructive"
+                }
+                className="text-sm px-3 py-1"
+              >
+                {getStatusDisplay(applicationData.status)}
+              </Badge>
+              {applicationData.price && (
+                <Badge
+                  variant="outline"
+                  className="text-sm px-3 py-1 bg-green-50"
+                >
+                  ${applicationData.price}
+                </Badge>
+              )}
+            </div>
           </div>
 
           {/* Freelancer Profile Section */}
           <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <span className="text-2xl font-bold text-primary">RG</span>
-            </div>
+            <Avatar className="h-16 w-16">
+              {freelancer?.profile ? (
+                <AvatarImage src={getImageUrl(freelancer.profile)} />
+              ) : (
+                <AvatarFallback className="text-2xl font-bold">
+                  {freelancer?.fullName?.charAt(0) || "U"}
+                </AvatarFallback>
+              )}
+            </Avatar>
             <div>
               <h3 className="text-xl font-bold text-foreground">
-                Robin Gibson
+                {freelancer?.fullName || "Unknown Freelancer"}
               </h3>
-              <p className="text-muted-foreground">Data Analytics Engineer</p>
+              <p className="text-muted-foreground">{freelancer?.email || ""}</p>
+              {applicationData.availableDate && (
+                <p className="text-sm text-blue-600">
+                  Available in: {applicationData.availableDate}
+                </p>
+              )}
             </div>
           </div>
 
           {/* Freelancer Proposal Content */}
           <div className="space-y-6">
-            {/* Introduction Section */}
+            {/* Cover Message Section */}
             <Card>
               <CardContent className="p-6">
-                <h3 className="font-semibold text-lg mb-4">Introduction</h3>
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border">
+                <h3 className="font-semibold text-lg mb-4">Cover Message</h3>
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border whitespace-pre-wrap">
                   <p className="text-muted-foreground">
-                    I believe I am the right fit for this project because of my
-                    extensive experience in data analytics and proven track
-                    record of delivering high-quality results. With over 5 years
-                    in the field, I have successfully completed similar projects
-                    and understand the specific requirements needed for this
-                    role.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Proposal Section */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-lg mb-4">Proposal</h3>
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border">
-                  <p className="text-muted-foreground">
-                    My approach involves thorough data analysis, advanced
-                    modeling techniques, and clear reporting. I will start by
-                    understanding your specific requirements, then develop a
-                    comprehensive data strategy that aligns with your business
-                    objectives. The project will be delivered in phases with
-                    regular updates and feedback sessions.
+                    {applicationData.coverMessage ||
+                      "No cover message provided."}
                   </p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Upload Documents Section */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-lg mb-4">Upload Documents</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border">
-                    <div className="w-8 h-8 bg-red-100 dark:bg-red-900 rounded flex items-center justify-center">
-                      <span className="text-red-600 dark:text-red-400 text-xs font-bold">
-                        PDF
-                      </span>
+            {applicationData.uploadDocuments &&
+              applicationData.uploadDocuments.length > 0 && (
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold text-lg mb-4">
+                      Uploaded Documents
+                    </h3>
+                    <div className="space-y-3">
+                      {applicationData.uploadDocuments.map((doc, index) => {
+                        const fileName = getFileName(doc);
+                        const fileType = getFileType(fileName);
+                        const colorClass = getFileColor(fileType);
+
+                        return (
+                          <div
+                            key={index}
+                            className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border"
+                          >
+                            <div
+                              className={`w-8 h-8 ${colorClass} rounded flex items-center justify-center`}
+                            >
+                              <span className="text-xs font-bold">
+                                {fileType}
+                              </span>
+                            </div>
+                            <span className="text-sm font-medium">
+                              {fileName}
+                            </span>
+                            <a
+                              href={getImageUrl(doc)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ml-auto text-blue-600 hover:text-blue-800 text-sm"
+                            >
+                              View
+                            </a>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <span className="text-sm font-medium">
-                      Project_Presentation.pdf
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border">
-                    <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded flex items-center justify-center">
-                      <span className="text-orange-600 dark:text-orange-400 text-xs font-bold">
-                        PPT
-                      </span>
-                    </div>
-                    <span className="text-sm font-medium">Case_Study.pptx</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              )}
 
             {/* Estimated Time and Price Quote */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="font-semibold text-lg mb-4">Estimated Time</h3>
+                  <h3 className="font-semibold text-lg mb-4">Availability</h3>
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border text-center">
                     <span className="text-2xl font-bold text-foreground">
-                      4 weeks
+                      {applicationData.availableDate || "Not specified"}
                     </span>
                   </div>
                 </CardContent>
@@ -145,13 +214,28 @@ function ClientJobTenderPreview({
                   <h3 className="font-semibold text-lg mb-4">Price Quote</h3>
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border text-center">
                     <span className="text-2xl font-bold text-foreground">
-                      $5,000
+                      ${applicationData.price || "Not specified"}
                     </span>
                   </div>
                 </CardContent>
               </Card>
             </div>
           </div>
+
+          {/* Project Details
+          {jobOrTender.description && (
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-lg mb-4">
+                  Project Description
+                </h3>
+                <div
+                  className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border"
+                  dangerouslySetInnerHTML={{ __html: jobOrTender.description }}
+                />
+              </CardContent>
+            </Card>
+          )} */}
 
           {/* Action Buttons */}
           <div className="flex justify-center space-x-4 pt-4">
@@ -161,12 +245,47 @@ function ClientJobTenderPreview({
             <Button
               className="button-gradient px-8"
               onClick={() => {
-                // Handle message action
                 console.log("Message clicked");
+                // Handle message action
               }}
             >
               Message Freelancer
             </Button>
+
+            {applicationData.status === "applied" && (
+              <>
+                <Button
+                  className="button-gradient px-8"
+                  onClick={() => {
+                    console.log("Shortlist clicked");
+                    // Handle shortlist action
+                  }}
+                >
+                  Shortlist
+                </Button>
+                <Button
+                  className="bg-green-600 hover:bg-green-700 text-white px-8"
+                  onClick={() => {
+                    console.log("Accept clicked");
+                    // Handle accept action
+                  }}
+                >
+                  Accept
+                </Button>
+              </>
+            )}
+
+            {applicationData.status === "shortlist" && (
+              <Button
+                className="bg-green-600 hover:bg-green-700 text-white px-8"
+                onClick={() => {
+                  console.log("Accept clicked");
+                  // Handle accept action
+                }}
+              >
+                Accept
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
