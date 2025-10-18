@@ -188,7 +188,7 @@ function CompanyNavbar() {
                   View Profile
                 </Link>
               </DropdownMenuItem>
-              {userData?.data?.isStripeConnectedAccount === true ? (
+              {/* {userData?.data?.isStripeConnectedAccount === true ? (
                 <DropdownMenuItem className="w-full cursor-pointer">
                   Connect Stripe{" "}
                   <span className="text-green-500">Connected</span>
@@ -201,7 +201,7 @@ function CompanyNavbar() {
                   Connect Stripe{" "}
                   <span className="w-4 h-4 text-red-500">Pending</span>
                 </DropdownMenuItem>
-              )}
+              )} */}
               {/* <DropdownMenuItem asChild>
                 <Link href={`/billing`} className="w-full cursor-pointer">
                   Billing & Plans

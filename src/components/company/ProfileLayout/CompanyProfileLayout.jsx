@@ -23,7 +23,7 @@ function CompanyProfileLayout() {
   }
 
   if (isPublic && id) {
-    return <CompanyHeaderPublic />;
+    return <CompanyHeaderPublic id={id} />;
   }
 }
 

@@ -303,8 +303,8 @@ function EditModal({ isOpen, onClose, companyData }) {
                   rules={{
                     required: "About company is required",
                     maxLength: {
-                      value: 300,
-                      message: "About company must not exceed 300 words",
+                      value: 500,
+                      message: "About company must not exceed 500 words",
                     },
                     minLength: {
                       value: 10,
@@ -315,7 +315,7 @@ function EditModal({ isOpen, onClose, companyData }) {
                     <Textarea
                       {...field}
                       id="aboutCompany"
-                      placeholder="Tell us about your company (max 300 words)"
+                      placeholder="Tell us about your company (max 500 words)"
                       className="h-32 resize-none"
                     />
                   )}
@@ -326,7 +326,7 @@ function EditModal({ isOpen, onClose, companyData }) {
                   </span>
                 )}
                 <p className="text-xs text-gray-500">
-                  {control._formValues?.aboutCompany?.length || 0}/300 words
+                  {control._formValues?.aboutCompany?.length || 0}/500 words
                 </p>
               </div>
             </div>
