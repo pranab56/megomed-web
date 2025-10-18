@@ -5,11 +5,11 @@ import provideIcon from "@/utils/IconProvider/provideIcon";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { useGetAllCategoryQuery } from '../../features/category/categoryApi';
+import { useGetAllCategoryQuery } from "../../features/category/categoryApi";
 
 function TalentCategories() {
   const { data, isLoading, isError, isFetching } = useGetAllCategoryQuery(null);
-  console.log("category data", data?.data);
+  // console.log("category data", data?.data);
 
   const swiperRef = useRef(null);
   const messages = true;
@@ -18,7 +18,8 @@ function TalentCategories() {
   const sliderTranslations = messages?.home?.slider || {};
 
   // Filter active categories
-  const activeCategories = data?.data?.filter(category => category.isActive === true) || [];
+  const activeCategories =
+    data?.data?.filter((category) => category.isActive === true) || [];
 
   useEffect(() => {
     // Only initialize Swiper if we have active categories and not loading
@@ -116,7 +117,9 @@ function TalentCategories() {
                 "Parcourez nos meilleurs talents par catégorie"}
             </h2>
           </div>
-          <p className="text-red-500">Erreur lors du chargement des catégories</p>
+          <p className="text-red-500">
+            Erreur lors du chargement des catégories
+          </p>
         </div>
       </section>
     );

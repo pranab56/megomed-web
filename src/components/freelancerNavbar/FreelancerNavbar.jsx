@@ -28,6 +28,7 @@ import toast from "react-hot-toast";
 import { useGetMyprofileQuery } from "@/features/clientProfile/ClientProfile";
 import { getImageUrl } from "@/utils/getImageUrl";
 import HelpsAndSupport from "@/components/common/helpsAndSupport/helpsAndSupport";
+import NotificationBell from "../common/NotificationBell";
 
 function FreelancerNavBar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -154,7 +155,8 @@ function FreelancerNavBar() {
         </div>
 
         {/* User Profile Section */}
-        <div className="hidden lg:flex items-center">
+        <div className="hidden lg:flex items-center gap-4">
+          <NotificationBell />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button

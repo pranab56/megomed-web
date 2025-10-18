@@ -1,4 +1,5 @@
 "use client";
+import NotificationBell from "@/components/common/NotificationBell";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -60,11 +61,11 @@ function ClientNavBar() {
   ];
 
   // Debug: Check what's in navItems
-  console.log("Nav Items:", navItems);
-  console.log(
-    "Package route exists:",
-    navItems.find((item) => item.href === "/package")
-  );
+  // console.log("Nav Items:", navItems);
+  // console.log(
+  //   "Package route exists:",
+  //   navItems.find((item) => item.href === "/package")
+  // );
 
   // Helper function to determine if link is active
   const isActiveLink = (href) => {
@@ -102,7 +103,7 @@ function ClientNavBar() {
         {/* Desktop Navigation Links */}
         <div className="hidden lg:flex items-center space-x-8">
           {navItems.map((item, index) => {
-            console.log(`Rendering: ${item.label} -> ${item.href}`); // Debug each item
+            // console.log(`Rendering: ${item.label} -> ${item.href}`); // Debug each item
             return (
               <Link
                 key={index}
@@ -120,7 +121,8 @@ function ClientNavBar() {
         </div>
 
         {/* User Profile Section */}
-        <div className="hidden lg:flex items-center">
+        <div className="hidden lg:flex items-center gap-4">
+          <NotificationBell />
           <DropdownMenu>
             <DropdownMenuTrigger asChild className="h-12">
               <Button
