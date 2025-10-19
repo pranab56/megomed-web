@@ -70,6 +70,8 @@ const SubscriptionPlanContent = dynamic(
             isExpired: expired,
             isBadge: subscription.packageId?.isBadge || false,
             isSupport: subscription.packageId?.isSupport || false,
+            jobCount: subscription.jobCount || 0,
+            takeJobCount: subscription.takeJobCount || 0,
             createdAt: subscription.createdAt,
           };
         });
@@ -310,6 +312,9 @@ const SubscriptionPlanContent = dynamic(
                           <p className="text-sm text-gray-600 mt-2">
                             Tenders: {plan.takeTenderCount || 0}/
                             {plan.tenderCount}
+                          </p>
+                          <p className="text-sm text-gray-600 mt-2">
+                            Jobs: {plan.takeJobCount || 0}/{plan.jobCount}
                           </p>
                         </div>
 

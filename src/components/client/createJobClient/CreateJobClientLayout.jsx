@@ -22,6 +22,8 @@ function CreateJobClientLayout() {
     return { startDate, endDate };
   };
 
+  const currentUser = localStorage.getItem("role");
+  const userType = currentUser;
   // Local state to manage all job data
   const [jobData, setJobData] = useState({
     jobTitle: "",
@@ -36,7 +38,7 @@ function CreateJobClientLayout() {
     minBudget: "",
     maxBudget: "",
     skills: [],
-    posterType: "client",
+    posterType: userType,
   });
 
   const [resetFormTrigger, setResetFormTrigger] = useState(false);

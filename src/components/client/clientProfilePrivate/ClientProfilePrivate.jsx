@@ -55,7 +55,7 @@ function ClientProfilePrivate({ translations }) {
         type: "client",
       }).unwrap();
       toast.success(
-        response?.data || "Client verification request sent successfully!"
+        response?.message || "Client verification request sent successfully!"
       );
       refetch();
     } catch (error) {
@@ -142,7 +142,7 @@ function ClientProfilePrivate({ translations }) {
             <p>Languages: {clientInfo.language.join(", ")}</p>
           )}
 
-          {clientInfo.isVarified && (
+          {clientInfo.isVarified === "varified" && (
             <div className="flex items-center gap-2">
               <span>{provideIcon({ name: "verified" })}</span>{" "}
               {translations.verifiedClient}
@@ -198,7 +198,7 @@ const ClientInformationSection = ({ onEditClick, documentInfo }) => {
             SIREN (Company Registration Number)
           </p>
           <p className="text-base font-semibold mt-1">
-            {documentInfo.registrationNumber}
+            {documentInfo?.registrationNumber}
           </p>
         </div>
 
@@ -207,7 +207,7 @@ const ClientInformationSection = ({ onEditClick, documentInfo }) => {
             SIRET (Establishment Number)
           </p>
           <p className="text-base font-semibold mt-1">
-            {documentInfo.establishmentNumber}
+            {documentInfo?.establishmentNumber}
           </p>
         </div>
 
@@ -216,7 +216,7 @@ const ClientInformationSection = ({ onEditClick, documentInfo }) => {
             Numéro de TVA (VAT ID)
           </p>
           <p className="text-base font-semibold mt-1">
-            {documentInfo.clientVatNumber}
+            {documentInfo?.clientVatNumber}
           </p>
         </div>
       </div>
@@ -229,7 +229,7 @@ const ClientInformationSection = ({ onEditClick, documentInfo }) => {
               <FileText className="w-5 h-5 text-blue-600" />
               <div>
                 <p className="text-sm font-medium">
-                  {documentInfo.clientKBISFile || "KBIS ou Statut (EI)"}
+                  {documentInfo?.clientKBISFile || "KBIS ou Statut (EI)"}
                 </p>
                 <p className="text-xs text-gray-500">
                   Business Registration or Articles of Association
@@ -246,7 +246,7 @@ const ClientInformationSection = ({ onEditClick, documentInfo }) => {
               <FileText className="w-5 h-5 text-blue-600" />
               <div>
                 <p className="text-sm font-medium">
-                  {documentInfo.clientRCFile || "RC Pro"}
+                  {documentInfo?.clientRCFile || "RC Pro"}
                 </p>
                 <p className="text-xs text-gray-500">
                   Professional Liability Insurance
@@ -263,7 +263,7 @@ const ClientInformationSection = ({ onEditClick, documentInfo }) => {
               <FileText className="w-5 h-5 text-blue-600" />
               <div>
                 <p className="text-sm font-medium">
-                  {documentInfo.clientCertificateFile || "Certificat de TVA"}
+                  {documentInfo?.clientCertificateFile || "Certificat de TVA"}
                 </p>
                 <p className="text-xs text-gray-500">VAT Certificate</p>
               </div>

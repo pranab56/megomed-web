@@ -502,10 +502,11 @@ function ProfileHeader({ setCoverPhoto }) {
     try {
       const response = await freelancerVerificationRequest().unwrap();
       toast.success(
-        response?.data || "Freelancer verification request sent successfully!"
+        response?.message ||
+          "Freelancer verification request sent successfully!"
       );
     } catch (error) {
-      console.error("Failed to send freelancer verification request:", error);
+      // console.error("Failed to send freelancer verification request:", error);
       toast.error(
         "Failed to send freelancer verification request. Please try again."
       );

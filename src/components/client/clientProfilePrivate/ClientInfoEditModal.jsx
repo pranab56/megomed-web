@@ -77,17 +77,17 @@ function ClientInfoEditModal({ isOpen, onClose, clientInfo, documentInfo }) {
   useEffect(() => {
     if (isOpen && clientInfo) {
       reset({
-        registrationNumber: documentInfo.registrationNumber || "",
-        establishmentNumber: documentInfo.establishmentNumber || "",
-        clientVatNumber: documentInfo.clientVatNumber || "",
+        registrationNumber: documentInfo?.registrationNumber || "",
+        establishmentNumber: documentInfo?.establishmentNumber || "",
+        clientVatNumber: documentInfo?.clientVatNumber || "",
         clientKBISFile: null,
         clientRCFile: null,
         clientCertificateFile: null,
       });
       setDocuments({
-        clientKBISFile: documentInfo.clientKBISFile || null,
-        clientRCFile: documentInfo.clientRCFile || null,
-        clientCertificateFile: documentInfo.clientCertificateFile || null,
+        clientKBISFile: documentInfo?.clientKBISFile || null,
+        clientRCFile: documentInfo?.clientRCFile || null,
+        clientCertificateFile: documentInfo?.clientCertificateFile || null,
       });
     }
   }, [isOpen, clientInfo, reset, documentInfo]);

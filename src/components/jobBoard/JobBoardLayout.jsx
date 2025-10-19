@@ -117,12 +117,12 @@ const JobBoardLayoutContent = () => {
               : setJobBannerFreelancer.text
           }
           buttonName={
-            userType === "client"
+            userType === "client" || userType === "company"
               ? setJobBannerClient.buttonName
               : setJobBannerFreelancer.buttonName
           }
           buttonLink={
-            userType === "client"
+            userType === "client" || userType === "company"
               ? setJobBannerClient.buttonLink
               : setJobBannerFreelancer.buttonLink
           }

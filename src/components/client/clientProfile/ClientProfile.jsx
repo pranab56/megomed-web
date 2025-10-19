@@ -116,7 +116,7 @@ function ClientProfile({ setError }) {
       const response = await followClient({
         followerUserId: id,
       }).unwrap();
-      toast.success(response?.data || "Client followed successfully!");
+      toast.success(response?.data?.message || "Client followed successfully!");
     } catch (error) {
       console.error("Failed to follow client:", error);
       toast.error("Failed to follow client. Please try again.");

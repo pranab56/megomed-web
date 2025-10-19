@@ -60,7 +60,7 @@ function CompanyHeaderPrivate() {
     try {
       const response = await companyVerificationRequest().unwrap();
       toast.success(
-        response?.data || "Company verification request sent successfully!"
+        response?.message || "Company verification request sent successfully!"
       );
     } catch (error) {
       console.error("Failed to send company verification request:", error);
