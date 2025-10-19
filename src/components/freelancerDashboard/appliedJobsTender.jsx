@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
@@ -5,15 +6,19 @@ import ClientJobTenderPreview from "./freelanderJobTenderPreview";
 import {
   useGetAppliedJobsQuery,
   useGetAppliedTendersQuery,
+  useJobResponseMessageMutation,
 } from "@/features/freelancer/freelancerApi";
 import { getImageUrl } from "@/utils/getImageUrl";
 import { Badge } from "../ui/badge";
 import { FileText, Calendar, DollarSign, MapPin, Clock } from "lucide-react";
+import { useResponseMessageMutation } from "@/features/tender/tenderApi";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export function AppliedJobsTender({ category = "jobs", type = "applied" }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
-
+  const router = useRouter();
   const {
     data: appliedJobsData,
     isLoading: isLoadingJobs,
@@ -94,11 +99,43 @@ export function AppliedJobsTender({ category = "jobs", type = "applied" }) {
       ? `Shortlisted ${category === "jobs" ? "Jobs" : "Tenders"}`
       : `Current ${category === "jobs" ? "Jobs" : "Tenders"}`;
 
-  // Debug logging
-  console.log("Category:", category);
-  console.log("Type:", type);
-  console.log("Current data:", currentData?.data);
-  console.log("Filtered data:", filteredData);
+  const [responseMessage, { isLoading: isResponseMessageLoading }] =
+    useResponseMessageMutation();
+  const [jobResponseMessage, { isLoading: isJobResponseMessageLoading }] =
+    useJobResponseMessageMutation();
+
+  const handleMessageClick = async (application) => {
+    try {
+      // Determine if it's a tender or job based on the application data
+      const isTenderApplication =
+        category === "tenders" || application.tenderId;
+
+      // Get the correct ID - either tenderId or jobId
+      const applicationId = isTenderApplication
+        ? application.tenderId?._id || application.tenderId
+        : application._id || application.jobId;
+
+      console.log("Application ID:", applicationId);
+      console.log("Is Tender:", isTenderApplication);
+
+      let response;
+      if (isTenderApplication) {
+        // Use tender API for tenders
+        response = await responseMessage(applicationId).unwrap();
+      } else {
+        // Use job API for jobs
+        response = await jobResponseMessage(applicationId).unwrap();
+      }
+
+      if (response.success) {
+        toast.success("Message sent successfully");
+        router.push(`/chat`);
+      }
+    } catch (error) {
+      console.error("Message error:", error);
+      toast.error("Failed to send message");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -235,10 +272,34 @@ export function AppliedJobsTender({ category = "jobs", type = "applied" }) {
                           <Button className="button-gradient">
                             Track Progress
                           </Button> */}
-                          <Button variant="outline">Message Client</Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => handleMessageClick(application)}
+                            disabled={
+                              isResponseMessageLoading ||
+                              isJobResponseMessageLoading
+                            }
+                          >
+                            {isResponseMessageLoading ||
+                            isJobResponseMessageLoading
+                              ? "Sending..."
+                              : "Message Client"}
+                          </Button>
                         </>
                       ) : (
-                        <Button variant="outline">Message Client</Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => handleMessageClick(application)}
+                          disabled={
+                            isResponseMessageLoading ||
+                            isJobResponseMessageLoading
+                          }
+                        >
+                          {isResponseMessageLoading ||
+                          isJobResponseMessageLoading
+                            ? "Sending..."
+                            : "Message Client"}
+                        </Button>
                       )}
                     </div>
                   </div>

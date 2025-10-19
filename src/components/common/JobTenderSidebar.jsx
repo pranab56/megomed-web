@@ -199,7 +199,7 @@ function JobTenderSidebar({ jobData }) {
   }
 
   return (
-    <Card className="w-full  mx-auto bg-white shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-200">
+    <Card className="w-full max-w-[17rem] mx-auto bg-white shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-200">
       <CardHeader className="text-center p-6 pb-4">
         {/* Company Avatar */}
         <div className="flex justify-center mb-4">
@@ -221,7 +221,7 @@ function JobTenderSidebar({ jobData }) {
         <h3 className="text-xl font-bold text-gray-900 mb-2">{job.title}</h3>
 
         {/* Fixed conditional rendering for buttons */}
-        {role !== "client" && (
+        {role !== "client" && role !== "company" && (
           <Button
             className={`max-w-60 mx-auto text-white font-medium ${
               isJobClosed(jobData?.endDate)

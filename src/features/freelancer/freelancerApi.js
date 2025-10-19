@@ -52,6 +52,13 @@ export const freelancerApi = baseApi.injectEndpoints({
       }),
       providesTags: ["freelancer"],
     }),
+    jobResponseMessage: builder.mutation({
+      query: (id) => ({
+        url: `/tender/respond/${id}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["freelancer"],
+    }),
   }),
 });
 
@@ -63,4 +70,5 @@ export const {
   useFreelancerProposalMutation,
   useGetAppliedJobsQuery,
   useGetAppliedTendersQuery,
+  useJobResponseMessageMutation,
 } = freelancerApi;

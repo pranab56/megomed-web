@@ -17,7 +17,8 @@ function JobTenderDetails({ jobData }) {
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
   const [openProposalModal, setOpenProposalModal] = useState(false);
   const router = useRouter();
-
+  const currentUser = localStorage.getItem("role");
+  const userType = currentUser;
   console.log("job data", jobData);
 
   // Only render on client side to prevent hydration issues
@@ -236,22 +237,22 @@ function JobTenderDetails({ jobData }) {
       </Card>
 
       {/* Apply Button Section */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex justify-center">
-            <Button
-              className={`max-w-60 mx-auto text-white font-medium ${
-                isJobClosed(jobData?.applicationDeadline)
-                  ? "bg-red-500 cursor-not-allowed hover:bg-red-500"
-                  : "button-gradient hover:bg-gray-400"
-              }`}
-              disabled={isJobClosed(jobData?.applicationDeadline)}
-              onClick={() => {
-                // Don't allow any action if job is closed
-                if (isJobClosed(jobData?.applicationDeadline)) {
-                  return;
-                }
 
+      <div className="flex justify-center ">
+        {/* Show "Job Closed" for all users when job is closed */}
+        {isJobClosed(jobData?.applicationDeadline) ? (
+          <Button
+            className="max-w-60 mx-auto text-white font-medium bg-red-500 cursor-not-allowed hover:bg-red-500"
+            disabled={true}
+          >
+            Job Closed
+          </Button>
+        ) : (
+          /* Show "Apply for this Job" only for freelancers when job is open */
+          userType === "freelancer" && (
+            <Button
+              className="max-w-60 mx-auto text-white font-medium button-gradient hover:bg-gray-400"
+              onClick={() => {
                 if (isLoggedIn) {
                   setOpenProposalModal(true);
                 } else {
@@ -259,15 +260,11 @@ function JobTenderDetails({ jobData }) {
                 }
               }}
             >
-              {isJobClosed(jobData?.endDate)
-                ? "Job Closed"
-                : isTenderPage
-                ? "Respond to Tender"
-                : "Apply for this Job"}
+              {isTenderPage ? "Respond to Tender" : "Apply for this Job"}
             </Button>
-          </div>
-        </CardContent>
-      </Card>
+          )
+        )}
+      </div>
 
       <ShowLoginDialog open={openLoginDialog} onOpenChange={setOpenLoginDialog}>
         <DialogTitle className="text-2xl font-bold">

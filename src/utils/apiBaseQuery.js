@@ -68,5 +68,6 @@ export const baseApi = createApi({
     "policy",
     "company",
     "clientDashboard",
+    "companyDashboard",
   ], // useful for cache invalidation
 });

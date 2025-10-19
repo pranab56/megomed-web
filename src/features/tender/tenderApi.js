@@ -150,7 +150,16 @@ export const tenderApi = baseApi.injectEndpoints({
       }),
       providesTags: ["tender"],
     }),
+
+    responseMessage: builder.mutation({
+      query: (id) => ({
+        url: `/tender/respond/${id}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["tender"],
+    }),
   }),
+  overrideExisting: true,
 });
 
 // Export hooks
@@ -164,4 +173,5 @@ export const {
   useRunningTenderByClientIdQuery,
   useApplyTenderMutation,
   useGetAllPostByClientPublicQuery,
+  useResponseMessageMutation,
 } = tenderApi;
