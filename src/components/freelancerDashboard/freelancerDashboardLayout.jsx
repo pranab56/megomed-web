@@ -31,6 +31,8 @@ function FreelancerDashboardLayout() {
           selectedCategory={selectedCategory}
           selectedTab={selectedTab}
           setSelectedTab={setSelectedTab}
+          appliedJobs={appliedJobs}
+          appliedTenders={appliedTenders}
         />
       </div>
     </div>
@@ -72,17 +74,50 @@ const Sidebar = ({ selectedCategory, setSelectedCategory }) => {
   );
 };
 
-const MainContent = ({ selectedCategory, selectedTab, setSelectedTab }) => {
+const MainContent = ({
+  selectedCategory,
+  selectedTab,
+  setSelectedTab,
+  appliedJobs,
+  appliedTenders,
+}) => {
+  // Get current data based on selected category
+  const currentData =
+    selectedCategory === "jobs" ? appliedJobs : appliedTenders;
+
+  // Calculate counts for each status
+  const getCounts = () => {
+    if (!currentData?.data) return { applied: 0, shortlisted: 0, current: 0 };
+
+    const data = currentData.data;
+    return {
+      applied: data.filter((item) => item.status === "pending").length,
+      shortlisted: data.filter((item) => item.status === "shortlist").length,
+      current: data.filter((item) => item.status === "accepted").length,
+    };
+  };
+
+  const counts = getCounts();
+
+  // If current tab is selected but has no data, switch to applied tab
+  React.useEffect(() => {
+    if (selectedTab === "current" && counts.current === 0) {
+      setSelectedTab("applied");
+    }
+  }, [selectedTab, counts.current, setSelectedTab]);
+
   const getTabLabels = () => {
     if (selectedCategory === "jobs") {
       return {
-        applied: "Applied Jobs",
-        shortlisted: "Shortlisted Jobs",
+        applied: `Applied Jobs (${counts.applied})`,
+        shortlisted: `Shortlisted Jobs (${counts.shortlisted})`,
+        current: `Current Jobs (${counts.current})`,
       };
     } else {
       return {
-        applied: "Applied Tenders",
-        shortlisted: "Shortlisted Tenders",
+        applied: `Applied Tenders (${counts.applied})`,
+        shortlisted: `Shortlisted Tenders (${counts.shortlisted})`,
+        current: `Current Tenders (${counts.current})`,
       };
     }
   };
@@ -99,6 +134,11 @@ const MainContent = ({ selectedCategory, selectedTab, setSelectedTab }) => {
               <TabsTrigger value="shortlisted">
                 {tabLabels.shortlisted}
               </TabsTrigger>
+              {counts.current > 0 && (
+                <TabsTrigger value="current" className="button-gradient">
+                  {tabLabels.current}
+                </TabsTrigger>
+              )}
             </TabsList>
             <TabsContent value="applied" className="mt-4">
               <AppliedJobsTender category={selectedCategory} type="applied" />
@@ -109,6 +149,11 @@ const MainContent = ({ selectedCategory, selectedTab, setSelectedTab }) => {
                 type="shortlisted"
               />
             </TabsContent>
+            {counts.current > 0 && (
+              <TabsContent value="current" className="mt-4">
+                <AppliedJobsTender category={selectedCategory} type="current" />
+              </TabsContent>
+            )}
           </Tabs>
         </CardTitle>
       </CardHeader>

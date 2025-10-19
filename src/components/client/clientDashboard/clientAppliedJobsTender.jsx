@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import ClientJobTenderPreview from "./clientJobTenderPreview";
 import { AvatarFallback, AvatarImage, Avatar } from "@/components/ui/avatar";
 import { getImageUrl } from "@/utils/getImageUrl";
+import { useClientJobSortingMutation } from "@/features/clientDashboard/clientDashboardApi";
+import toast from "react-hot-toast";
 
 export function ClientAppliedJobsTender({
   category = "jobs",
@@ -12,6 +14,21 @@ export function ClientAppliedJobsTender({
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState(null);
+  const [clientJobSorting, { isLoading: isSorting }] =
+    useClientJobSortingMutation();
+
+  const handleSorting = async (applicationId, status) => {
+    try {
+      const response = await clientJobSorting({ jobID: applicationId, status });
+      if (response.data) {
+        toast.success("Application status updated successfully");
+      } else {
+        toast.error("Failed to update application status");
+      }
+    } catch (error) {
+      toast.error("Failed to update application status");
+    }
+  };
 
   const handlePreviewClick = (application) => {
     setSelectedApplication(application);
@@ -111,35 +128,76 @@ export function ClientAppliedJobsTender({
                       Application ID: #
                       {application._id?.substring(0, 6) || "N/A"}
                     </p>
-                    <Button className="button-gradient">Message</Button>
-                    <div className="flex flex-wrap gap-2 md:mt-8">
+                    <div className="flex gap-2 justify-end">
                       <Button
                         className="button-gradient"
                         onClick={() => handlePreviewClick(application)}
                       >
                         Preview
                       </Button>
-
+                      <Button className="button-gradient">Message</Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 md:mt-8">
                       {type === "applied" && (
                         <>
-                          <Button className="button-gradient">Shortlist</Button>
-                          <Button className="button-gradient">Accept</Button>
-                          <Button variant="destructive">Reject</Button>
+                          <Button
+                            className="button-gradient"
+                            onClick={() =>
+                              handleSorting(application._id, "shortlist")
+                            }
+                            disabled={isSorting}
+                          >
+                            {isSorting ? "Processing..." : "Shortlist"}
+                          </Button>
+                          <Button
+                            className="button-gradient"
+                            onClick={() =>
+                              handleSorting(application._id, "accept")
+                            }
+                            disabled={isSorting}
+                          >
+                            {isSorting ? "Processing..." : "Accept"}
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() =>
+                              handleSorting(application._id, "rejected")
+                            }
+                            disabled={isSorting}
+                          >
+                            {isSorting ? "Processing..." : "Reject"}
+                          </Button>
                         </>
                       )}
 
                       {type === "shortlisted" && (
                         <>
-                          <Button className="button-gradient">Accept</Button>
-                          <Button variant="destructive">Reject</Button>
+                          <Button
+                            className="button-gradient"
+                            onClick={() =>
+                              handleSorting(application._id, "accept")
+                            }
+                            disabled={isSorting}
+                          >
+                            {isSorting ? "Processing..." : "Accept"}
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() =>
+                              handleSorting(application._id, "rejected")
+                            }
+                            disabled={isSorting}
+                          >
+                            {isSorting ? "Processing..." : "Reject"}
+                          </Button>
                         </>
                       )}
 
-                      {type === "accepted" && (
+                      {/* {type === "accepted" && (
                         <Button className="button-gradient">
                           View Contract
                         </Button>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 </div>

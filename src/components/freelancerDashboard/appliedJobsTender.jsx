@@ -50,6 +50,8 @@ export function AppliedJobsTender({ category = "jobs", type = "applied" }) {
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
       case "rejected":
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+      case "shortlist":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
     }
@@ -68,13 +70,15 @@ export function AppliedJobsTender({ category = "jobs", type = "applied" }) {
 
     let filteredData = currentData.data;
 
-    // Filter by type (applied/shortlisted)
+    // Filter by type (applied/shortlisted/current)
     if (type === "applied") {
       filteredData = filteredData.filter((item) => item.status === "pending");
     } else if (type === "shortlisted") {
       filteredData = filteredData.filter((item) => item.status === "shortlist");
+    } else if (type === "current") {
+      filteredData = filteredData.filter((item) => item.status === "accepted");
     } else if (type === "approve") {
-      filteredData = filteredData.filter((item) => item.status === "approve");
+      filteredData = filteredData.filter((item) => item.status === "accepted");
     } else if (type === "cancel") {
       filteredData = filteredData.filter((item) => item.status === "cancel");
     }
@@ -86,7 +90,9 @@ export function AppliedJobsTender({ category = "jobs", type = "applied" }) {
   const title =
     type === "applied"
       ? `Applied ${category === "jobs" ? "Jobs" : "Tenders"}`
-      : `Shortlisted ${category === "jobs" ? "Jobs" : "Tenders"}`;
+      : type === "shortlisted"
+      ? `Shortlisted ${category === "jobs" ? "Jobs" : "Tenders"}`
+      : `Current ${category === "jobs" ? "Jobs" : "Tenders"}`;
 
   // Debug logging
   console.log("Category:", category);
@@ -221,7 +227,19 @@ export function AppliedJobsTender({ category = "jobs", type = "applied" }) {
                       >
                         View Details
                       </Button>
-                      <Button variant="outline">Message Client</Button>
+                      {type === "current" ? (
+                        <>
+                          {/* <Button className="button-gradient">
+                            View Contract
+                          </Button>
+                          <Button className="button-gradient">
+                            Track Progress
+                          </Button> */}
+                          <Button variant="outline">Message Client</Button>
+                        </>
+                      ) : (
+                        <Button variant="outline">Message Client</Button>
+                      )}
                     </div>
                   </div>
                 </div>

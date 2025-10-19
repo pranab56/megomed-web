@@ -178,7 +178,7 @@ const MainContent = ({
       <CardHeader>
         <CardTitle>
           <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-            <TabsList className="flex flex-wrap">
+            <TabsList className="flex flex-col flex-wrap">
               <TabsTrigger value="applied">{tabLabels.applied}</TabsTrigger>
               <TabsTrigger value="shortlisted">
                 {tabLabels.shortlisted}

@@ -17,6 +17,13 @@ export const clientDashboardApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["company"],
     }),
+    clientJobSorting: builder.mutation({
+      query: (data) => ({
+        url: `/apply-jobs/invoice-approve-cancel-shortlist/${data.jobID}?status=${data.status}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["clientDashboard"],
+    }),
   }),
 });
 
@@ -24,4 +31,5 @@ export const clientDashboardApi = baseApi.injectEndpoints({
 export const {
   useGetClientDashboardQuery,
   useCompanyVerificationRequestMutation,
+  useClientJobSortingMutation,
 } = clientDashboardApi;
