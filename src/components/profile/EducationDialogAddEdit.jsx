@@ -49,12 +49,11 @@ export default function EducationDialogAddEdit({
     errorMessage: "Failed to save education. Please try again.",
     duplicateEducationMessage:
       "This education record already exists! Please check your entries.",
-    // Degree options
     associateDegree: "Associate Degree",
     bachelorsDegree: "Bachelor's Degree",
     mastersDegree: "Master's Degree",
     doctorate: "Doctorate (PhD)",
-    certificate: "Certificate",
+
     other: "Other",
   };
 
@@ -161,7 +160,6 @@ export default function EducationDialogAddEdit({
     translations.bachelorsDegree,
     translations.mastersDegree,
     translations.doctorate,
-    translations.certificate,
     translations.other,
   ];
 

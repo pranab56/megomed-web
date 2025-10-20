@@ -112,7 +112,7 @@ export function AppliedJobsTender({ category = "jobs", type = "applied" }) {
 
       // Get the correct ID - either tenderId or jobId
       const applicationId = isTenderApplication
-        ? application.tenderId?._id || application.tenderId
+        ? application?._id
         : application._id || application.jobId;
 
       console.log("Application ID:", applicationId);
