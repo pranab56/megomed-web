@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getImageUrl } from "@/utils/getImageUrl";
+import { useGetMyprofileQuery } from "@/features/clientProfile/ClientProfile";
 import {
   FileText,
   Calendar,
@@ -24,6 +25,8 @@ function ClientJobTenderPreview({
   jobData,
   category = "jobs",
 }) {
+  const { data: userData } = useGetMyprofileQuery();
+
   if (!jobData) return null;
 
   // Determine if this is tender data (invoice data)
@@ -144,14 +147,29 @@ function ClientJobTenderPreview({
 
           <div className=" lg:max-h-[65vh] max-h-[55vh] overflow-y-auto">
             <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border mb-4">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                <span className="text-2xl font-bold text-primary">RG</span>
+              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
+                <img
+                  src={
+                    userData?.data?.profile
+                      ? getImageUrl(userData.data.profile)
+                      : "/client/profile/client.png"
+                  }
+                  alt={userData?.data?.fullName || "Freelancer"}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div>
                 <h3 className="text-xl font-bold text-foreground">
-                  Robin Gibson
+                  {userData?.data?.fullName || "Freelancer"}
                 </h3>
-                <p className="text-muted-foreground">Data Analytics Engineer</p>
+                <p className="text-muted-foreground">
+                  {userData?.data?.designation || "Freelancer"}
+                </p>
+                {userData?.data?.location && (
+                  <p className="text-sm text-muted-foreground">
+                    📍 {userData.data.location}
+                  </p>
+                )}
               </div>
             </div>
 

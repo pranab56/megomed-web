@@ -38,9 +38,9 @@ export default function CreateTenderTopForm() {
       <div className="grid  lg:grid-cols-2 gap-6 ">
         {/* Greeting */}
         <div className="space-y-2">
-          <h2 className="text-2xl font-medium h2-gradient-text">
+          {/* <h2 className="text-2xl font-medium h2-gradient-text">
             Hi MD SABBIR,
-          </h2>
+          </h2> */}
           <h1 className="text-5xl mb-8">
             Discover top talent for your next project.
           </h1>
@@ -84,7 +84,6 @@ export default function CreateTenderTopForm() {
             </Select>
           </div>
 
-
           <div className="flex flex-col gap-2 ">
             <label className="font-medium">Service Type*</label>
             <Select
@@ -102,8 +101,6 @@ export default function CreateTenderTopForm() {
               </SelectContent>
             </Select>
           </div>
-
-
 
           <div className="flex flex-col gap-2">
             <label className="font-medium">Upload Image</label>
@@ -135,8 +132,9 @@ export default function CreateTenderTopForm() {
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className={`w-full justify-start text-left font-normal ${!startDate && "text-muted-foreground"
-                      }`}
+                    className={`w-full justify-start text-left font-normal ${
+                      !startDate && "text-muted-foreground"
+                    }`}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {startDate ? format(startDate, "MM/dd/yyyy") : "mm/dd/yyyy"}
@@ -160,8 +158,9 @@ export default function CreateTenderTopForm() {
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className={`w-full justify-start text-left font-normal ${!endDate && "text-muted-foreground"
-                      }`}
+                    className={`w-full justify-start text-left font-normal ${
+                      !endDate && "text-muted-foreground"
+                    }`}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {endDate ? format(endDate, "MM/dd/yyyy") : "mm/dd/yyyy"}

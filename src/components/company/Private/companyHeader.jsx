@@ -70,6 +70,47 @@ function CompanyHeaderPrivate() {
     }
   };
 
+  const handleViewDocument = (documentUrl, documentName) => {
+    if (!documentUrl || documentUrl === "Not uploaded") {
+      toast.error("No document available to view");
+      return;
+    }
+
+    // Get file extension
+    const fileExtension = documentUrl.split(".").pop().toLowerCase();
+
+    // Create full URL using getImageUrl utility
+    const fullUrl = getImageUrl(documentUrl);
+
+    if (
+      fileExtension === "pdf" ||
+      ["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(fileExtension)
+    ) {
+      // Open PDFs and images in new tab
+      window.open(fullUrl, "_blank");
+    } else if (fileExtension === "docx" || fileExtension === "doc") {
+      // Download DOCX/DOC files
+      const link = document.createElement("a");
+      link.href = fullUrl;
+      link.download = documentName || "document";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      // For other file types, try to open in new tab first, fallback to download
+      try {
+        window.open(fullUrl, "_blank");
+      } catch (error) {
+        const link = document.createElement("a");
+        link.href = fullUrl;
+        link.download = documentName || "document";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    }
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -175,6 +216,7 @@ function CompanyHeaderPrivate() {
         <CompanyInformationSection
           companyInfo={companyInfo}
           onEditClick={() => setIsCompanyInfoModalOpen(true)}
+          onViewDocument={handleViewDocument}
         />
       </div>
       <CompanyInfoModal
@@ -193,7 +235,11 @@ function CompanyHeaderPrivate() {
 
 export default CompanyHeaderPrivate;
 
-const CompanyInformationSection = ({ onEditClick, companyInfo }) => {
+const CompanyInformationSection = ({
+  onEditClick,
+  companyInfo,
+  onViewDocument,
+}) => {
   return (
     <div className=" mb-10 ">
       <h1 className="h2-gradient-text text-2xl font-bold text-justify flex items-center gap-2">
@@ -252,7 +298,12 @@ const CompanyInformationSection = ({ onEditClick, companyInfo }) => {
                 </p>
               </div>
             </div>
-            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            <button
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              onClick={() =>
+                onViewDocument(companyInfo?.companyKBISFile, "Company KBIS")
+              }
+            >
               View
             </button>
           </div>
@@ -272,7 +323,12 @@ const CompanyInformationSection = ({ onEditClick, companyInfo }) => {
                 </p>
               </div>
             </div>
-            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            <button
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              onClick={() =>
+                onViewDocument(companyInfo?.companyRCFile, "Company RC Pro")
+              }
+            >
               View
             </button>
           </div>
@@ -293,7 +349,15 @@ const CompanyInformationSection = ({ onEditClick, companyInfo }) => {
                 </p>
               </div>
             </div>
-            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            <button
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              onClick={() =>
+                onViewDocument(
+                  companyInfo?.companyCertificateFile,
+                  "VAT Certificate"
+                )
+              }
+            >
               View
             </button>
           </div>

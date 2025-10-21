@@ -147,7 +147,7 @@ export default function CreateJobTopForm({
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Greeting */}
         <div className="space-y-2">
-          <h2 className="text-2xl font-medium text-blue-600">Hi MD SABBIR,</h2>
+          {/* <h2 className="text-2xl font-medium text-blue-600">Hi MD SABBIR,</h2> */}
           <h1 className="text-5xl mb-8">Find your next great hire</h1>
         </div>
 

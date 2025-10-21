@@ -47,6 +47,13 @@ export const clientProfileApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["clientProfile"],
     }),
+    getSocialLink: builder.query({
+      query: () => ({
+        url: "/social-link",
+        method: "GET",
+      }),
+      providesTags: ["clientProfile"],
+    }),
     updateSocialLink: builder.mutation({
       query: (data) => ({
         url: "/freelancer-info/update",
@@ -83,4 +90,5 @@ export const {
   useGetClientPublicProfileQuery,
   useUpdateClientInfoMutation,
   useClientVerificationRequestMutation,
+  useGetSocialLinkQuery,
 } = clientProfileApi;

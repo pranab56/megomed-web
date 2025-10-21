@@ -546,19 +546,55 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
     } catch (error) {
       console.error("❌ Failed to send support message:", error);
 
-      // Show error message
+      // Extract error message from the response
+      let errorMessage =
+        "Sorry, there was an error sending your message. Please try again.";
+
+      if (error?.data) {
+        // Handle different error response formats
+        if (error.data.message) {
+          errorMessage = error.data.message;
+        } else if (
+          error.data.errorSources &&
+          error.data.errorSources.length > 0
+        ) {
+          errorMessage = error.data.errorSources[0].message;
+        } else if (error.data.err && error.data.err.statusCode) {
+          switch (error.data.err.statusCode) {
+            case 401:
+              errorMessage = "You are not authorized. Please log in again.";
+              break;
+            case 403:
+              errorMessage =
+                "Access denied. You don't have permission to perform this action.";
+              break;
+            case 404:
+              errorMessage = "Service not found. Please try again later.";
+              break;
+            case 500:
+              errorMessage = "Server error. Please try again later.";
+              break;
+            default:
+              errorMessage =
+                error.data.message || "An error occurred. Please try again.";
+          }
+        }
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      // Show error message in chat
       const errorResponse = {
         id: Date.now() + 1,
-        text: "Sorry, there was an error sending your message. Please try again.",
+        text: errorMessage,
         sender: "support",
         timestamp: new Date(),
         type: "text",
       };
       setMessages((prev) => [...prev, errorResponse]);
 
-      toast.error(
-        error?.data?.message || "Failed to send message. Please try again."
-      );
+      // Show toast with the specific error message
+      toast.error(errorMessage);
     }
   };
 
@@ -607,17 +643,41 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
 
           {chatByIdError && (
             <div className="flex justify-center items-center py-4">
-              <span className="text-sm text-red-500">
-                Failed to load chat info
-              </span>
+              <div className="text-center">
+                <span className="text-sm text-red-500">
+                  {chatByIdError?.data?.message ||
+                    chatByIdError?.data?.errorSources?.[0]?.message ||
+                    "Failed to load chat info"}
+                </span>
+                {chatByIdError?.data?.err?.statusCode === 401 && (
+                  <p className="text-xs text-red-400 mt-1">
+                    Please log in again to continue <br />
+                    or
+                    <br />
+                    You need to puschase subscription plan to continue
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
           {chatError && (
             <div className="flex justify-center items-center py-4">
-              <span className="text-sm text-red-500">
-                Failed to load chat messages
-              </span>
+              <div className="text-center">
+                <span className="text-sm text-red-500">
+                  {chatError?.data?.message ||
+                    chatError?.data?.errorSources?.[0]?.message ||
+                    "Failed to load chat messages"}
+                </span>
+                {chatError?.data?.err?.statusCode === 401 && (
+                  <p className="text-xs text-red-400 mt-1">
+                    Please log in again to continue <br />
+                    or
+                    <br />
+                    You need to puschase subscription plan to continue
+                  </p>
+                )}
+              </div>
             </div>
           )}
 

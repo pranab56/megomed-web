@@ -16,7 +16,7 @@ function FreelancerDashboardLayout() {
   const [selectedTab, setSelectedTab] = useState("applied");
   const { data: appliedJobs } = useGetAppliedJobsQuery();
   const { data: appliedTenders } = useGetAppliedTendersQuery();
-  console.log(appliedJobs, appliedTenders);
+  // console.log(appliedJobs, appliedTenders);
   if (userType !== "freelancer") {
     return <div>You are not authorized to access this page</div>;
   }

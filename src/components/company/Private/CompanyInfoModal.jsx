@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { RiUploadCloudLine } from "react-icons/ri";
 import { useUpdateCompanyInfoMutation } from "@/features/company/companyApi";
 import { toast } from "react-hot-toast";
+import { getImageUrl } from "@/utils/getImageUrl";
 function CompanyInfoModal({ isOpen, onClose, clientInfo }) {
   const [documents, setDocuments] = useState({
     companyKbis: null,
@@ -51,9 +52,9 @@ function CompanyInfoModal({ isOpen, onClose, clientInfo }) {
   useEffect(() => {
     if (isOpen && clientInfo) {
       reset({
-        companySiren: clientInfo.siren || "",
-        companySiret: clientInfo.siret || "",
-        companyVatId: clientInfo.vatId || "",
+        companySiren: clientInfo.registrationNumber || "",
+        companySiret: clientInfo.establishmentNumber || "",
+        companyVatId: clientInfo.companyVatNumber || "",
         companyKbis: null,
         companyRcPro: null,
         companyVatCertificate: null,
@@ -100,6 +101,47 @@ function CompanyInfoModal({ isOpen, onClose, clientInfo }) {
     // Clear the input
     if (documentInputRefs[documentType].current) {
       documentInputRefs[documentType].current.value = "";
+    }
+  };
+
+  const handleViewDocument = (documentUrl, documentName) => {
+    if (!documentUrl || documentUrl === "Not uploaded") {
+      toast.error("No document available to view");
+      return;
+    }
+
+    // Get file extension
+    const fileExtension = documentUrl.split(".").pop().toLowerCase();
+
+    // Create full URL using getImageUrl utility
+    const fullUrl = getImageUrl(documentUrl);
+
+    if (
+      fileExtension === "pdf" ||
+      ["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(fileExtension)
+    ) {
+      // Open PDFs and images in new tab
+      window.open(fullUrl, "_blank");
+    } else if (fileExtension === "docx" || fileExtension === "doc") {
+      // Download DOCX/DOC files
+      const link = document.createElement("a");
+      link.href = fullUrl;
+      link.download = documentName || "document";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      // For other file types, try to open in new tab first, fallback to download
+      try {
+        window.open(fullUrl, "_blank");
+      } catch (error) {
+        const link = document.createElement("a");
+        link.href = fullUrl;
+        link.download = documentName || "document";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     }
   };
 
