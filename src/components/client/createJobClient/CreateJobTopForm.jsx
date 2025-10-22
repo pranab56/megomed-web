@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Upload } from "lucide-react";
+import { Calendar as CalendarIcon, Upload, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -19,41 +19,52 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGetAllCategoryQuery } from '../../../features/category/categoryApi';
-import { useGetAllServicesQuery } from '../../../features/services/servicesApi';
+import { useGetAllCategoryQuery } from "../../../features/category/categoryApi";
+import Image from "next/image";
 
-export default function CreateJobTopForm({ onDataChange, resetForm, initialStartDate, initialEndDate }) {
+export default function CreateJobTopForm({
+  onDataChange,
+  resetForm,
+  initialEndDate,
+}) {
   // Function to get default dates
   const getDefaultDates = () => {
     const currentDate = new Date();
     const startDate = new Date(currentDate);
     const endDate = new Date(currentDate);
     endDate.setDate(endDate.getDate() + 1); // End date is one day ahead
-    
+
     return { startDate, endDate };
   };
 
-  const [jobTitle, setJobTitle] = useState("User Experience Designer");
+  const [jobTitle, setJobTitle] = useState("");
   const [jobType, setJobType] = useState("Full Time");
   const [jobLink, setJobLink] = useState("https://yourcompany.com/job123");
-  const [startDate, setStartDate] = useState(initialStartDate || getDefaultDates().startDate);
-  const [endDate, setEndDate] = useState(initialEndDate || getDefaultDates().endDate);
+  const [duration, setDuration] = useState("");
+  const [applicationDeadline, setApplicationDeadline] = useState(
+    initialEndDate || getDefaultDates().endDate
+  );
   const [uploadedImage, setUploadedImage] = useState(null);
   const [categoryId, setCategoryId] = useState("");
-  const [serviceTypeId, setServiceTypeId] = useState("");
+  // const [serviceTypeId, setServiceTypeId] = useState("");
+  const [location, setLocation] = useState("");
+  const [minBudget, setMinBudget] = useState("");
+  const [maxBudget, setMaxBudget] = useState("");
+  const [skills, setSkills] = useState([]);
+  const [skillInput, setSkillInput] = useState("");
 
-  const { data: categoryData, isLoading: categoryLoading, isError: categoryError } = useGetAllCategoryQuery();
-  const { data: serviceData, isLoading: serviceLoading, isError: serviceError } = useGetAllServicesQuery();
+  const {
+    data: categoryData,
+    isLoading: categoryLoading,
+    isError: categoryError,
+  } = useGetAllCategoryQuery();
 
-  // Update dates when initial dates change
+  // Update application deadline when initial date changes
   useEffect(() => {
-    if (initialStartDate) {
-      setStartDate(initialStartDate);
-    }
     if (initialEndDate) {
-      setEndDate(initialEndDate);
+      setApplicationDeadline(initialEndDate);
     }
-  }, [initialStartDate, initialEndDate]);
+  }, [initialEndDate]);
 
   // Send data to parent component whenever it changes
   useEffect(() => {
@@ -61,41 +72,54 @@ export default function CreateJobTopForm({ onDataChange, resetForm, initialStart
       jobTitle,
       jobType,
       jobLink,
-      startDate,
-      endDate,
+      duration,
+      applicationDeadline,
       uploadedImage,
       categoryId,
-      serviceTypeId,
+      // serviceTypeId,
+      location,
+      minBudget,
+      maxBudget,
+      skills,
     };
 
     if (onDataChange) {
       onDataChange(formData);
     }
-  }, [jobTitle, jobType, jobLink, startDate, endDate, uploadedImage, categoryId, serviceTypeId, onDataChange]);
+  }, [
+    jobTitle,
+    jobType,
+    jobLink,
+    duration,
+    applicationDeadline,
+    uploadedImage,
+    categoryId,
+    // serviceTypeId,
+    location,
+    minBudget,
+    maxBudget,
+    skills,
+    onDataChange,
+  ]);
 
   // Reset form when resetForm prop changes
   useEffect(() => {
     if (resetForm) {
       const defaultDates = getDefaultDates();
-      setJobTitle("User Experience Designer");
+      setJobTitle("");
       setJobType("Full Time");
       setJobLink("https://yourcompany.com/job123");
-      setStartDate(defaultDates.startDate);
-      setEndDate(defaultDates.endDate);
+      setDuration("");
+      setApplicationDeadline(defaultDates.endDate);
       setUploadedImage(null);
       setCategoryId("");
-      setServiceTypeId("");
+      setLocation("");
+      setMinBudget("");
+      setMaxBudget("");
+      setSkills([]);
+      setSkillInput("");
     }
   }, [resetForm]);
-
-  // Update end date when start date changes to ensure it's always after start date
-  useEffect(() => {
-    if (startDate && endDate && startDate >= endDate) {
-      const newEndDate = new Date(startDate);
-      newEndDate.setDate(newEndDate.getDate() + 1);
-      setEndDate(newEndDate);
-    }
-  }, [startDate, endDate]);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -104,27 +128,35 @@ export default function CreateJobTopForm({ onDataChange, resetForm, initialStart
     }
   };
 
-  const handleStartDateChange = (date) => {
-    setStartDate(date);
-    
-    // If the selected start date is after or equal to the current end date,
-    // automatically set end date to one day after the new start date
-    if (date && endDate && date >= endDate) {
-      const newEndDate = new Date(date);
-      newEndDate.setDate(newEndDate.getDate() + 1);
-      setEndDate(newEndDate);
+  const handleSkillAdd = (e) => {
+    if (e.key === "Enter" && skillInput.trim()) {
+      e.preventDefault();
+      const newSkill = skillInput.trim();
+      if (!skills.includes(newSkill)) {
+        setSkills([...skills, newSkill]);
+      }
+      setSkillInput("");
     }
+  };
+
+  const handleSkillRemove = (skillToRemove) => {
+    setSkills(skills.filter((skill) => skill !== skillToRemove));
   };
 
   return (
     <div className="max-w-7xl mx-auto py-6 px-4 md:px-6 2xl:px-0">
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Greeting */}
-        <div className="space-y-2">
-          <h2 className="text-2xl font-medium text-blue-600">
-            Hi MD SABBIR,
-          </h2>
+        <div className="space-y-10 flex flex-col items-start justify-start">
+          {/* <h2 className="text-2xl font-medium text-blue-600">Hi MD SABBIR,</h2> */}
           <h1 className="text-5xl mb-8">Find your next great hire</h1>
+
+          <Image
+            src="/jobtender/hiringpage.png"
+            alt="Job Board"
+            width={800}
+            height={800}
+          />
         </div>
 
         {/* Job Form Fields */}
@@ -132,22 +164,11 @@ export default function CreateJobTopForm({ onDataChange, resetForm, initialStart
           {/* Job Title */}
           <div className="flex flex-col gap-2">
             <label className="font-medium">Job title*</label>
-            <Select
+            <Input
+              placeholder="e.g., Senior Frontend Developer"
               value={jobTitle}
-              onValueChange={(value) => setJobTitle(value)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select job title" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="User Experience Designer">
-                  User Experience Designer
-                </SelectItem>
-                <SelectItem value="UI Designer">UI Designer</SelectItem>
-                <SelectItem value="Product Manager">Product Manager</SelectItem>
-                <SelectItem value="Software Engineer">Software Engineer</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(e) => setJobTitle(e.target.value)}
+            />
           </div>
 
           {/* Job Type */}
@@ -200,37 +221,6 @@ export default function CreateJobTopForm({ onDataChange, resetForm, initialStart
             </Select>
           </div>
 
-          {/* Service Type */}
-          <div className="flex flex-col gap-2">
-            <label className="font-medium">Service Type*</label>
-            <Select
-              value={serviceTypeId}
-              onValueChange={(value) => setServiceTypeId(value)}
-              disabled={serviceLoading}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select service type" />
-              </SelectTrigger>
-              <SelectContent>
-                {serviceLoading ? (
-                  <SelectItem value="loading" disabled>
-                    Loading services...
-                  </SelectItem>
-                ) : serviceError ? (
-                  <SelectItem value="error" disabled>
-                    Error loading services
-                  </SelectItem>
-                ) : (
-                  serviceData?.data?.map((service) => (
-                    <SelectItem key={service._id} value={service._id}>
-                      {service.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Job Link */}
           <div className="flex flex-col gap-2">
             <label className="font-medium">Job Apply Website Link*</label>
@@ -241,80 +231,128 @@ export default function CreateJobTopForm({ onDataChange, resetForm, initialStart
             />
           </div>
 
+          {/* Location */}
+          <div className="flex flex-col gap-2">
+            <label className="font-medium">Location*</label>
+            <Input
+              placeholder="e.g., New York, NY or Remote"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+          </div>
+
+          {/* Budget Range */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2">
+              <label className="font-medium">Min Budget ($)*</label>
+              <Input
+                type="number"
+                placeholder="1000"
+                value={minBudget}
+                onChange={(e) => setMinBudget(e.target.value)}
+                min="0"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="font-medium">Max Budget ($)*</label>
+              <Input
+                type="number"
+                placeholder="5000"
+                value={maxBudget}
+                onChange={(e) => setMaxBudget(e.target.value)}
+                min="0"
+              />
+            </div>
+          </div>
+
+          {/* Skills */}
+          <div className="flex flex-col gap-2">
+            <label className="font-medium">Required Skills*</label>
+            <Input
+              placeholder="Type a skill and press Enter (e.g., JavaScript, React, Node.js)"
+              value={skillInput}
+              onChange={(e) => setSkillInput(e.target.value)}
+              onKeyDown={handleSkillAdd}
+            />
+            {skills.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {skills.map((skill, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                  >
+                    <span>{skill}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleSkillRemove(skill)}
+                      className="ml-1 hover:bg-blue-200 rounded-full p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Upload Image */}
           <div className="flex flex-col gap-2">
             <label className="font-medium">Upload Image</label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-                id="image-upload"
-              />
-              <label
-                htmlFor="image-upload"
-                className="cursor-pointer flex flex-col items-center gap-2"
-              >
-                <Upload className="h-8 w-8 text-gray-400" />
-                <span className="text-gray-500">
-                  {uploadedImage ? uploadedImage.name : "Upload Image"}
-                </span>
-              </label>
-            </div>
+
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+              id="image-upload"
+            />
+            <label
+              htmlFor="image-upload"
+              className="button-gradient cursor-pointer w-fit  gap-2 border px-4 py-2 rounded-md"
+            >
+              {uploadedImage ? uploadedImage.name : "Upload Image"}
+            </label>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-6 mt-6">
-        {/* Start Date */}
+        {/* Duration */}
         <div className="flex flex-col gap-2">
-          <label className="font-medium">Start Date*</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={`w-full justify-start text-left font-normal ${!startDate && "text-muted-foreground"
-                  }`}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {startDate ? format(startDate, "MM/dd/yyyy") : "mm/dd/yyyy"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={startDate}
-                onSelect={handleStartDateChange}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          <label className="font-medium">Duration*</label>
+          <Input
+            placeholder="e.g., 10 days, 2 weeks, 3 months"
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+          />
         </div>
 
-        {/* End Date */}
+        {/* Application Deadline */}
         <div className="flex flex-col gap-2">
-          <label className="font-medium">End Date*</label>
+          <label className="font-medium">Application Deadline*</label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={`w-full justify-start text-left font-normal ${!endDate && "text-muted-foreground"
-                  }`}
+                className={`w-full justify-start text-left font-normal ${
+                  !applicationDeadline && "text-muted-foreground"
+                }`}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {endDate ? format(endDate, "MM/dd/yyyy") : "mm/dd/yyyy"}
+                {applicationDeadline
+                  ? format(applicationDeadline, "MM/dd/yyyy")
+                  : "mm/dd/yyyy"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
               <Calendar
                 mode="single"
-                selected={endDate}
-                onSelect={(date) => setEndDate(date)}
+                selected={applicationDeadline}
+                onSelect={(date) => setApplicationDeadline(date)}
                 initialFocus
                 disabled={(date) => {
-                  // Disable dates that are before or equal to start date
-                  return startDate ? date <= startDate : date < new Date();
+                  // Disable dates that are before today
+                  return date < new Date();
                 }}
               />
             </PopoverContent>

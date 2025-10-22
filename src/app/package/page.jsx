@@ -7,6 +7,8 @@ import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 import { useGetAllPlanQuery } from "../../features/plan/planApi";
 import { useCreateSubcriptionMutation } from "../../features/subcription/subcriptionApi";
+import { getImageUrl } from "../../utils/getImageUrl";
+import Image from "next/image";
 
 const SubscriptionPlanContent = dynamic(
   () =>
@@ -46,10 +48,13 @@ const SubscriptionPlanContent = dynamic(
         );
       }
 
+      // Extract plans from API response
+      const plans = apiResponse?.data || [];
+
       // Sort plans: monthly first, then yearly
-      const sortedPlans = [...(apiResponse?.data || [])].sort((a, b) => {
-        if (a.type === "monthly" && b.type === "yearly") return -1;
-        if (a.type === "yearly" && b.type === "monthly") return 1;
+      const sortedPlans = [...plans].sort((a, b) => {
+        if (a.type === "month" && b.type === "year") return -1;
+        if (a.type === "year" && b.type === "month") return 1;
         return 0;
       });
 
@@ -81,7 +86,7 @@ const SubscriptionPlanContent = dynamic(
       };
 
       const getDurationText = (type) => {
-        if (type === "yearly") {
+        if (type === "year") {
           return subscriptionPlanTranslations.duration?.year || "year";
         }
         return subscriptionPlanTranslations.duration?.month || "mo";
@@ -138,9 +143,10 @@ const SubscriptionPlanContent = dynamic(
                     >
                       <div className="p-6 h-full flex flex-col">
                         {/* Badge for featured plans */}
-                        {plan.isBadge && (
+                        {plan.isBadge === true && (
                           <div className="text-center mb-2">
-                            <Badge className="bg-green-100 text-green-800 text-xs">
+                            <Badge className="bg-gradient-to-r from-green-100 to-green-200 text-green-800 text-xs font-semibold px-3 py-1 rounded-full border border-green-300">
+                              ⭐{" "}
                               {subscriptionPlanTranslations.featured ||
                                 "Featured"}
                             </Badge>
@@ -149,19 +155,32 @@ const SubscriptionPlanContent = dynamic(
 
                         {/* Plan Icon and Title */}
                         <div className="text-center mb-6">
-                          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <div className="text-xl">
-                              {getPlanIcon(plan.title)}
-                            </div>
+                          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 overflow-hidden">
+                            {plan.image ? (
+                              <Image
+                                src={getImageUrl(plan.image)}
+                                alt={plan.title}
+                                width={64}
+                                height={64}
+                                className="w-full h-full object-cover rounded-full"
+                              />
+                            ) : (
+                              <div className="text-xl">
+                                {getPlanIcon(plan.title)}
+                              </div>
+                            )}
                           </div>
                           <h3 className="text-lg font-semibold text-blue-600 mb-0">
                             {plan.title}
                           </h3>
-                          {plan.isSupport && (
-                            <span className="text-xs text-green-600 mt-1">
-                              {subscriptionPlanTranslations.prioritySupport ||
-                                "Priority Support"}
-                            </span>
+                          {plan.isSupport === true && (
+                            <div className="mt-2">
+                              <span className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full font-medium">
+                                🎧{" "}
+                                {subscriptionPlanTranslations.prioritySupport ||
+                                  "Priority Support"}
+                              </span>
+                            </div>
                           )}
                         </div>
 
@@ -177,7 +196,7 @@ const SubscriptionPlanContent = dynamic(
                             </span>
                           </div>
                           <p className="text-center text-sm text-gray-500 mt-2">
-                            {plan.type === "yearly"
+                            {plan.type === "year"
                               ? subscriptionPlanTranslations.billedYearly ||
                                 "Billed yearly"
                               : subscriptionPlanTranslations.billedMonthly ||
@@ -185,12 +204,42 @@ const SubscriptionPlanContent = dynamic(
                           </p>
                         </div>
 
-                        {/* Tender Count */}
-                        <div className="mb-4 text-center">
-                          <span className="text-sm font-medium text-gray-700">
-                            {formatTenderCount(plan.tenderCount)}{" "}
-                            {subscriptionPlanTranslations.tenders || "tenders"}
-                          </span>
+                        {/* Job and Tender Counts */}
+                        <div className="mb-4 space-y-3">
+                          {/* Job Count */}
+                          <div className="bg-blue-50 rounded-lg p-3 text-center">
+                            <div className="flex items-center justify-center gap-2 mb-1">
+                              <span className="text-lg font-bold text-blue-600">
+                                {formatTenderCount(plan.jobCount)}
+                              </span>
+                              <span className="text-sm font-medium text-blue-700">
+                                {subscriptionPlanTranslations.jobs || "Jobs"}
+                              </span>
+                            </div>
+                            <p className="text-xs text-blue-600">
+                              {subscriptionPlanTranslations.jobsAvailable ||
+                                "Available to post"}
+                            </p>
+                          </div>
+
+                          {/* Tender Count - Only show if tenderCount is not null */}
+                          {plan.tenderCount !== null && (
+                            <div className="bg-green-50 rounded-lg p-3 text-center">
+                              <div className="flex items-center justify-center gap-2 mb-1">
+                                <span className="text-lg font-bold text-green-600">
+                                  {formatTenderCount(plan.tenderCount)}
+                                </span>
+                                <span className="text-sm font-medium text-green-700">
+                                  {subscriptionPlanTranslations.tenders ||
+                                    "Tenders"}
+                                </span>
+                              </div>
+                              <p className="text-xs text-green-600">
+                                {subscriptionPlanTranslations.tendersAvailable ||
+                                  "Available to post"}
+                              </p>
+                            </div>
+                          )}
                         </div>
 
                         {/* Features/Benefits */}
@@ -207,23 +256,35 @@ const SubscriptionPlanContent = dynamic(
                           ))}
                         </div>
 
+                        {console.log("sssssssssss", plan.type)}
+
+                        {plan.type === "trial" ? (
+                          <Button
+                            disabled
+                            className="w-full font-medium button-gradient relative"
+                          >
+                            Already Subscribed
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={() => handleCreateSubscription(plan?._id)}
+                            disabled={isCurrentPlanLoading || createSubcLoading}
+                            className="w-full font-medium button-gradient relative"
+                          >
+                            {isCurrentPlanLoading ? (
+                              <div className="flex items-center justify-center">
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                                {subscriptionPlanTranslations.status
+                                  ?.processing || "Processing..."}
+                              </div>
+                            ) : (
+                              subscriptionPlanTranslations.status?.subscribe ||
+                              "Subscribe Now"
+                            )}
+                          </Button>
+                        )}
+
                         {/* Button with Individual Loading State */}
-                        <Button
-                          onClick={() => handleCreateSubscription(plan?._id)}
-                          disabled={isCurrentPlanLoading || createSubcLoading}
-                          className="w-full font-medium button-gradient relative"
-                        >
-                          {isCurrentPlanLoading ? (
-                            <div className="flex items-center justify-center">
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                              {subscriptionPlanTranslations.status
-                                ?.processing || "Processing..."}
-                            </div>
-                          ) : (
-                            subscriptionPlanTranslations.status?.subscribe ||
-                            "Subscribe Now"
-                          )}
-                        </Button>
                       </div>
                     </Card>
                   );

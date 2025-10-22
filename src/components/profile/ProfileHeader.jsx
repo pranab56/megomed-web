@@ -29,12 +29,14 @@ import {
   useGetMyprofileQuery,
   useUpdateMyprofileMutation,
   useUpdateSocialLinkMutation,
+  useGetSocialLinkQuery,
 } from "../../features/clientProfile/ClientProfile";
 import { useGetAllServicesQuery } from "../../features/services/servicesApi";
 import SocialLinkAddDialog from "./SocialLinkAddDialog";
 import { socialPlatforms } from "./socialPlatforms";
 import Link from "next/link";
 import { languageToCountryCode } from "@/utils/flag";
+import { useFreelancerVerificationRequestMutation } from "@/features/freelancer/freelancerApi";
 function ProfileHeader({ setCoverPhoto }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSocialLinkDialogOpen, setIsSocialLinkDialogOpen] = useState(false);
@@ -49,10 +51,19 @@ function ProfileHeader({ setCoverPhoto }) {
 
   const curentUser = localStorage.getItem("role");
 
-  // Helper function to get platform icon
+  // Helper function to get platform icon from API data
   const getPlatformIcon = (platformName) => {
-    const platform = socialPlatforms.find((p) => p.value === platformName);
-    return platform?.icon || null;
+    // Try to find platform in API data first
+    const platform = socialLinkData?.data?.find((p) => p.name === platformName);
+    if (platform?.image) {
+      return getImageUrl(platform.image);
+    }
+
+    // Fallback to hardcoded platforms if needed
+    const fallbackPlatform = socialPlatforms?.find(
+      (p) => p.value === platformName
+    );
+    return fallbackPlatform?.icon || null;
   };
 
   // Helper function to get country code for language
@@ -88,7 +99,7 @@ function ProfileHeader({ setCoverPhoto }) {
     yearsOfExperience: "",
   });
 
-  const { data, isLoading } = useGetMyprofileQuery();
+  const { data, isLoading, refetch } = useGetMyprofileQuery();
   const [updateMyprofile, { isLoading: isUpdating }] =
     useUpdateMyprofileMutation();
   const [updateSocialLink, { isLoading: isDeletingSocialLink }] =
@@ -103,6 +114,10 @@ function ProfileHeader({ setCoverPhoto }) {
     isLoading: serviceLoading,
     isError: serviceError,
   } = useGetAllServicesQuery();
+  const { data: socialLinkData, isLoading: socialLinkLoading } =
+    useGetSocialLinkQuery();
+
+  console.log("socialLinkData", socialLinkData);
 
   // Set categories and services when data is loaded
   useEffect(() => {
@@ -491,6 +506,28 @@ function ProfileHeader({ setCoverPhoto }) {
       }
     }
     setIsDialogOpen(open);
+  };
+  const [
+    freelancerVerificationRequest,
+    { isLoading: isFreelancerVerificationRequestLoading },
+  ] = useFreelancerVerificationRequestMutation();
+
+  const handleGetVerified = async () => {
+    try {
+      const response = await freelancerVerificationRequest().unwrap();
+      toast.success(
+        response?.message ||
+          "Freelancer verification request sent successfully!"
+      );
+
+      // Refetch profile data to get updated verification status
+      await refetch();
+    } catch (error) {
+      // console.error("Failed to send freelancer verification request:", error);
+      toast.error(
+        "Failed to send freelancer verification request. Please try again."
+      );
+    }
   };
 
   // Loading state for dropdowns
@@ -1132,22 +1169,42 @@ function ProfileHeader({ setCoverPhoto }) {
         {/* Status & Info */}
         <div className="flex flex-col sm:flex-row lg:flex-col items-center sm:items-center lg:items-end gap-3 w-full lg:w-auto">
           {/* Available Badge */}
-          <Badge className="bg-none flex items-center">
+          {/* <Badge className="bg-none flex items-center">
             <div className="w-2.5 h-2.5 bg-green-500 rounded-full mr-2"></div>
             Available
-          </Badge>
+          </Badge> */}
 
           {/* Verified Freelancer */}
-          {data?.data?.isVarified === true ? (
+          {data?.data?.isVarified === "varified" ? (
             <div className="flex items-center gap-2 text-sm text-gray-700 bg-green-100 rounded-full px-2 py-1">
               <Shield className="w-4 h-4 text-green-600" />
               <span>Verified Freelancer</span>
             </div>
-          ) : (
-            <div className="flex items-center gap-2 text-sm text-gray-700 bg-red-100 rounded-full px-2 py-1">
-              <Shield className="w-4 h-4 text-red-600" />
-              <span>Profile Not Verified</span>
+          ) : data?.data?.isVarified === "verified_request" ? (
+            <div className="flex items-center gap-2 text-sm text-gray-700 bg-yellow-100 rounded-full px-2 py-1">
+              <Shield className="w-4 h-4 text-yellow-600" />
+              <span>Pending Verification</span>
             </div>
+          ) : data?.data?.isVarified === "revision" ? (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-sm text-gray-700 bg-red-100 rounded-full px-2 py-1">
+                <Shield className="w-4 h-4 text-red-600" />
+                <span>Revision</span>
+              </div>
+              <Button
+                className="button-gradient"
+                onClick={() => handleGetVerified()}
+              >
+                Get Verified
+              </Button>
+            </div>
+          ) : (
+            <Button
+              className="button-gradient"
+              onClick={() => handleGetVerified()}
+            >
+              Get Verified
+            </Button>
           )}
           {/* Day Rate */}
           <div className="flex items-center gap-2 text-sm">
@@ -1160,7 +1217,7 @@ function ProfileHeader({ setCoverPhoto }) {
           </div>
           {/* Social Links Display */}
           <div className="flex items-center gap-2">
-            {/* Existing Social Links */}
+            {/* Existing Social Links from Profile Data */}
             {data?.data?.freelancerId?.socialLinks &&
               data.data.freelancerId.socialLinks.length > 0 && (
                 <div className="flex flex-wrap gap-2 items-center ">
@@ -1172,22 +1229,39 @@ function ProfileHeader({ setCoverPhoto }) {
                           key={socialLink._id || index}
                           className="relative group"
                         >
-                          <Link
-                            href={socialLink.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 rounded-lg transition-colors"
-                          >
-                            {platformIcon && (
-                              <Image
-                                src={platformIcon}
-                                alt={socialLink.name}
-                                width={32}
-                                height={32}
-                                className="w-8 h-8 rounded-full object-fill"
-                              />
-                            )}
-                          </Link>
+                          {socialLink.link ? (
+                            <Link
+                              href={socialLink.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 rounded-lg transition-colors"
+                            >
+                              {platformIcon && (
+                                <Image
+                                  src={platformIcon}
+                                  alt={socialLink.name}
+                                  width={32}
+                                  height={32}
+                                  className="w-8 h-8 rounded-full object-fill"
+                                />
+                              )}
+                            </Link>
+                          ) : (
+                            <div className="flex items-center gap-2 rounded-lg transition-colors cursor-default">
+                              {platformIcon && (
+                                <Image
+                                  src={platformIcon}
+                                  alt={socialLink.name}
+                                  width={32}
+                                  height={32}
+                                  className="w-8 h-8 rounded-full object-fill"
+                                />
+                              )}
+                              <span className="text-sm text-gray-500">
+                                {socialLink.name}
+                              </span>
+                            </div>
+                          )}
 
                           {/* Delete Button - Shows on Hover */}
                           <button

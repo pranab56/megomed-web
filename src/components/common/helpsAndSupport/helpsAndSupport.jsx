@@ -5,16 +5,13 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetClose,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   HelpCircle,
   Send,
   Image as ImageIcon,
-  Paperclip,
   X,
   User,
   Bot,
@@ -47,6 +44,7 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
+  const currentUserId = localStorage.getItem("user");
   // API hooks
   const [createSupportChat, { isLoading: isSendingMessage }] =
     useCreateSupportChatMutation();
@@ -77,11 +75,9 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
   // Get current user ID from localStorage
   const getCurrentUserId = () => {
     try {
-      const token = localStorage.getItem("loginToken");
-      if (token) {
-        // You might need to decode the JWT token to get user ID
-        // For now, we'll use a placeholder - adjust based on your auth system
-        return "68e1e75ac082eb0c840ce0b1"; // Replace with actual user ID logic
+      const userId = localStorage.getItem("user");
+      if (userId) {
+        return userId;
       }
     } catch (error) {
       console.error("Error getting user ID:", error);
@@ -369,19 +365,38 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
     ) {
       const currentUserId = getCurrentUserId();
       const supportUserId = getSupportUserId();
-      const formattedMessages = supportChatData.data.resultAll.map(
-        (msg, index) => ({
-          id: msg._id || `msg-${index}`,
-          text: msg.message || "",
-          sender: msg.sender === currentUserId ? "user" : "support",
-          timestamp: new Date(msg.createdAt),
-          type: msg.image ? "image" : "text",
-          image: msg.image ? getImageUrl(msg.image) : null,
-        })
-      );
 
       console.log("📥 Current User ID:", currentUserId);
+      console.log("📥 Current User ID Type:", typeof currentUserId);
       console.log("📥 Support User ID (Admin):", supportUserId);
+      console.log("📥 Raw messages from API:", supportChatData.data.resultAll);
+
+      const formattedMessages = supportChatData.data.resultAll.map(
+        (msg, index) => {
+          const isCurrentUser = String(msg.sender) === String(currentUserId);
+
+          console.log(`📥 Message ${index + 1}:`, {
+            messageId: msg._id,
+            message: msg.message,
+            senderFromAPI: msg.sender,
+            senderType: typeof msg.sender,
+            currentUserId: currentUserId,
+            currentUserIdType: typeof currentUserId,
+            comparison: `"${msg.sender}" === "${currentUserId}"`,
+            isCurrentUser: isCurrentUser,
+            displayAs: isCurrentUser ? "user (right)" : "support (left)",
+          });
+
+          return {
+            id: msg._id || `msg-${index}`,
+            text: msg.message || "",
+            sender: isCurrentUser ? "user" : "support",
+            timestamp: new Date(msg.createdAt),
+            type: msg.image ? "image" : "text",
+            image: msg.image ? getImageUrl(msg.image) : null,
+          };
+        }
+      );
 
       console.log("📥 Loading chat messages:", supportChatData.data.resultAll);
       console.log("📥 Formatted messages:", formattedMessages);
@@ -546,19 +561,55 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
     } catch (error) {
       console.error("❌ Failed to send support message:", error);
 
-      // Show error message
+      // Extract error message from the response
+      let errorMessage =
+        "Sorry, there was an error sending your message. Please try again.";
+
+      if (error?.data) {
+        // Handle different error response formats
+        if (error.data.message) {
+          errorMessage = error.data.message;
+        } else if (
+          error.data.errorSources &&
+          error.data.errorSources.length > 0
+        ) {
+          errorMessage = error.data.errorSources[0].message;
+        } else if (error.data.err && error.data.err.statusCode) {
+          switch (error.data.err.statusCode) {
+            case 401:
+              errorMessage = "You are not authorized. Please log in again.";
+              break;
+            case 403:
+              errorMessage =
+                "Access denied. You don't have permission to perform this action.";
+              break;
+            case 404:
+              errorMessage = "Service not found. Please try again later.";
+              break;
+            case 500:
+              errorMessage = "Server error. Please try again later.";
+              break;
+            default:
+              errorMessage =
+                error.data.message || "An error occurred. Please try again.";
+          }
+        }
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      // Show error message in chat
       const errorResponse = {
         id: Date.now() + 1,
-        text: "Sorry, there was an error sending your message. Please try again.",
+        text: errorMessage,
         sender: "support",
         timestamp: new Date(),
         type: "text",
       };
       setMessages((prev) => [...prev, errorResponse]);
 
-      toast.error(
-        error?.data?.message || "Failed to send message. Please try again."
-      );
+      // Show toast with the specific error message
+      toast.error(errorMessage);
     }
   };
 
@@ -607,17 +658,41 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
 
           {chatByIdError && (
             <div className="flex justify-center items-center py-4">
-              <span className="text-sm text-red-500">
-                Failed to load chat info
-              </span>
+              <div className="text-center">
+                <span className="text-sm text-red-500">
+                  {chatByIdError?.data?.message ||
+                    chatByIdError?.data?.errorSources?.[0]?.message ||
+                    "Failed to load chat info"}
+                </span>
+                {chatByIdError?.data?.err?.statusCode === 401 && (
+                  <p className="text-xs text-red-400 mt-1">
+                    Please log in again to continue <br />
+                    or
+                    <br />
+                    You need to puschase subscription plan to continue
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
           {chatError && (
             <div className="flex justify-center items-center py-4">
-              <span className="text-sm text-red-500">
-                Failed to load chat messages
-              </span>
+              <div className="text-center">
+                <span className="text-sm text-red-500">
+                  {chatError?.data?.message ||
+                    chatError?.data?.errorSources?.[0]?.message ||
+                    "Failed to load chat messages"}
+                </span>
+                {chatError?.data?.err?.statusCode === 401 && (
+                  <p className="text-xs text-red-400 mt-1">
+                    Please log in again to continue <br />
+                    or
+                    <br />
+                    You need to puschase subscription plan to continue
+                  </p>
+                )}
+              </div>
             </div>
           )}
 

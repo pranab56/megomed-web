@@ -1,6 +1,6 @@
-import { baseApi } from '../../utils/apiBaseQuery';
+import { baseApi } from "../../utils/apiBaseQuery";
 
-export const categoryApi = baseApi.injectEndpoints({
+export const contactApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     createContact: builder.mutation({
       query: (data) => ({
@@ -10,10 +10,8 @@ export const categoryApi = baseApi.injectEndpoints({
       }),
       providesTags: ["contact"],
     }),
-  })
+  }),
 });
 
 // Export hooks
-export const {
-  useCreateContactMutation
-} = categoryApi;
+export const { useCreateContactMutation } = contactApi;

@@ -2,6 +2,7 @@
 import useToast from "@/hooks/showToast/ShowToast";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import {
   useRespondMutation,
@@ -9,11 +10,15 @@ import {
 } from "../../features/tender/tenderApi";
 import { baseURL } from "../../utils/BaseURL";
 import { Card, CardContent, CardFooter } from "../ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
+import ProposalModalJobTender from "./ProposalModalJobTender";
 
 function JobTenderCard({ type = "tender", data }) {
   const router = useRouter();
   const showToast = useToast();
   const [respond, { isLoading: respondLoading }] = useRespondMutation();
+  const [openProposalModal, setOpenProposalModal] = useState(false);
 
   const currentUser = localStorage.getItem("role");
   const userType = currentUser;
@@ -34,6 +39,19 @@ function JobTenderCard({ type = "tender", data }) {
 
   const cardData =
     data || (type === "job" ? defaultJobData : defaultTenderData);
+
+  // Check if job end date is today
+  const isJobClosed = (endDateString) => {
+    if (!endDateString) return false;
+    const endDate = new Date(endDateString);
+    const today = new Date();
+
+    // Reset time to compare only dates
+    endDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return endDate <= today;
+  };
 
   const handleViewJob = (e) => {
     e.preventDefault();
@@ -65,9 +83,73 @@ function JobTenderCard({ type = "tender", data }) {
   //   }
   // };
 
-  const handleRespondToJob = () => {
-    // Redirect to the website directly
-    window.open(data.websiteLink, "_blank");
+  const handleRespondToJob = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Don't allow any action if job is closed
+    if (isJobClosed(data?.endDate)) {
+      return;
+    }
+
+    console.log("JobTenderCard - Opening proposal modal");
+    setOpenProposalModal(true);
+  };
+
+  // Generate random user images for avatars
+  const getRandomUserImage = (index) => {
+    const randomSeed = (data?._id || "default") + index;
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${randomSeed}`;
+  };
+
+  // Render group avatars
+  const renderGroupAvatars = () => {
+    const applicantCount = data?.appliersList?.length || 0;
+
+    if (applicantCount === 0) {
+      return null;
+    }
+
+    if (applicantCount <= 5) {
+      // Show individual avatars for 5 or fewer applicants
+      return (
+        <div className="flex -space-x-2">
+          {Array.from({ length: applicantCount }, (_, index) => (
+            <Avatar key={index} className="border-2 border-white">
+              <AvatarImage
+                src={getRandomUserImage(index)}
+                alt={`Applicant ${index + 1}`}
+              />
+              <AvatarFallback className="bg-gray-200 text-gray-600 text-xs">
+                {index + 1}
+              </AvatarFallback>
+            </Avatar>
+          ))}
+        </div>
+      );
+    } else {
+      // Show first 4 avatars + "5+" indicator for more than 5 applicants
+      return (
+        <div className="flex -space-x-2">
+          {Array.from({ length: 4 }, (_, index) => (
+            <Avatar key={index} className="bg-gray-200">
+              <AvatarImage
+                src={getRandomUserImage(index)}
+                alt={`Applicant ${index + 1}`}
+              />
+              <AvatarFallback className="bg-gray-200 text-gray-600 text-xs">
+                {index + 1}
+              </AvatarFallback>
+            </Avatar>
+          ))}
+          <Avatar size={24} className="border-2 border-white bg-blue-500">
+            <AvatarFallback className="gradient text-white text-xs font-bold">
+              5+
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      );
+    }
   };
 
   return (
@@ -93,10 +175,16 @@ function JobTenderCard({ type = "tender", data }) {
               {userType === "freelancer" && (
                 <button
                   onClick={handleRespondToJob}
-                  disabled={respondLoading}
-                  className="px-4 py-2 bg-white text-black rounded-lg cursor-pointer font-medium hover:bg-gray-100 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={respondLoading || isJobClosed(data?.endDate)}
+                  className={`px-4 py-2 rounded-lg cursor-pointer font-medium transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isJobClosed(data?.endDate)
+                      ? "bg-red-500 text-white cursor-not-allowed"
+                      : "bg-white text-black hover:bg-gray-100"
+                  }`}
                 >
-                  {respondLoading
+                  {isJobClosed(data?.endDate)
+                    ? "Job Closed"
+                    : respondLoading
                     ? "Applying..."
                     : type === "job"
                     ? "Apply Job"
@@ -107,7 +195,7 @@ function JobTenderCard({ type = "tender", data }) {
           </div>
         </CardContent>
 
-        <CardFooter className="p-1 md:p-2">
+        <CardFooter className="p-1 md:p-2 relative">
           <div className="flex flex-col items-start justify-between w-full px-1 md:px-2">
             <div className="space-y-1 md:space-y-2 w-full">
               <h1 className="text-base font-bold line-clamp-2">
@@ -116,8 +204,26 @@ function JobTenderCard({ type = "tender", data }) {
               <p className="text-sm">{data?.jobType}</p>
             </div>
           </div>
+          <div className="absolute bottom-2 right-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="cursor-pointer">{renderGroupAvatars()}</div>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>Applicants ({data?.appliersList?.length || 0})</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </CardFooter>
       </Card>
+
+      {/* Proposal Modal */}
+      <ProposalModalJobTender
+        open={openProposalModal}
+        onOpenChange={setOpenProposalModal}
+        jobId={data._id}
+        type={type}
+      />
     </div>
   );
 }

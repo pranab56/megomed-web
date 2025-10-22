@@ -6,6 +6,7 @@ import FreelancerNavBar from "@/components/freelancerNavbar/FreelancerNavbar";
 import NavBar from "@/components/navbar/NavBar";
 import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
+import CompanyNavbar from "../company/companyNavbar/CompanyNavbar";
 
 export default function Navigation({ children }) {
   const [mounted, setMounted] = useState(false);
@@ -37,7 +38,11 @@ export default function Navigation({ children }) {
     if (!currentUser) {
       return NavBar;
     }
-    return currentUser === "client" ? ClientNavBar : FreelancerNavBar;
+    return currentUser === "client"
+      ? ClientNavBar
+      : currentUser === "company"
+      ? CompanyNavbar
+      : FreelancerNavBar;
   }, [currentUser]);
 
   // Prevent rendering before mounting to avoid hydration issues

@@ -74,12 +74,12 @@ function JobDetailsLayout() {
   return (
     <div className="flex flex-col w-full md:flex-row md:items-start gap-x-6 max-w-7xl mx-auto mt-10 px-4 sm:px-6 lg:px-8 2xl:px-0 animate-fade-in-up">
       {/* Sidebar */}
-      <div className="w-3/12 md:w-4/12 flex-shrink-0">
+      <div className="w-3/12 md:w-[20rem] flex-shrink-0">
         <JobTenderSidebar jobData={jobData} />
       </div>
 
       {/* Main Content */}
-      <div className="w-9/12 md:w-8/12 pt-6 md:pt-0">
+      <div className="w-9/12 md:w-[calc(100%-20rem)] pt-6 md:pt-0">
         <JobTenderDetails jobData={jobData} />
       </div>
     </div>

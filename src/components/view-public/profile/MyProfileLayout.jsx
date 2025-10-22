@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { getImageUrl } from "@/utils/getImageUrl";
 import CommentSection from "./CommentSection";
+import { useParams } from "next/navigation";
+import { useGetFreelancerPublicProfileQuery } from "@/features/clientProfile/ClientProfile";
 
 // Dynamic imports with ssr: false
 
@@ -48,6 +50,7 @@ function MyProfileLayoutContent({
   isClient,
   coverPhoto,
   setCoverPhoto,
+  freelancerData,
 }) {
   return (
     <div className="w-full">
@@ -62,12 +65,14 @@ function MyProfileLayoutContent({
         />
       </div>
       <div className="max-w-7xl mx-auto px-4 md:px-6 2xl:px-0">
-        <ProfileHeader setCoverPhoto={setCoverPhoto} />
-        <ProfileSections />
-        <SkillsSection />
-        <CommentSection />
+        {/* Pass the API data to each component */}
+        <ProfileHeader setCoverPhoto={setCoverPhoto} data={freelancerData} />
+        <ProfileSections freelancerData={freelancerData} />
+        <SkillsSection freelancerData={freelancerData} />
+        <CertificationSectionPublic freelancerData={freelancerData} />
+        <CommentSection freelancerData={freelancerData} />
       </div>
-      <ExperienceSection />
+      <ExperienceSection freelancerData={freelancerData} />
     </div>
   );
 }
@@ -76,6 +81,20 @@ function MyProfileLayoutPublic() {
   // Client-side only state to prevent hydration mismatch
   const [isClient, setIsClient] = useState(false);
   const [coverPhoto, setCoverPhoto] = useState(null);
+  const params = useParams();
+  const id = params?.id;
+
+  // Make the API query here to pass to all child components
+  const { data, isLoading, error } = useGetFreelancerPublicProfileQuery(id, {
+    skip: !id, // Skip the query if no ID is available
+  });
+
+  // Extract freelancer data and cover photo if available
+  useEffect(() => {
+    if (data?.data?.coverPhoto) {
+      setCoverPhoto(data.data.coverPhoto);
+    }
+  }, [data]);
 
   // Get translations from Redux (moved outside dynamic component)
   const messages = "EN";
@@ -93,7 +112,7 @@ function MyProfileLayoutPublic() {
   }, []);
 
   // Show loading state until client-side hydration is complete
-  if (!isClient) {
+  if (!isClient || isLoading) {
     return (
       <div className="w-full">
         <div className="relative w-full h-48 sm:h-64 md:h-80 lg:h-96">
@@ -117,6 +136,18 @@ function MyProfileLayoutPublic() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="w-full">
+        <div className="text-center py-8">
+          <p className="text-red-500">
+            Error loading freelancer profile: {error.message}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="animate-fade-in-up">
       <MyProfileLayoutContent
@@ -124,9 +155,22 @@ function MyProfileLayoutPublic() {
         isClient={isClient}
         coverPhoto={coverPhoto}
         setCoverPhoto={setCoverPhoto}
+        freelancerData={data?.data}
       />
     </div>
   );
 }
 
 export default MyProfileLayoutPublic;
+
+const CertificationSectionPublic = dynamic(
+  () => import("./CertificationSectionPublic.jsx"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="h-32 bg-gray-200 rounded-lg mb-4"></div>
+      </div>
+    ),
+  }
+);

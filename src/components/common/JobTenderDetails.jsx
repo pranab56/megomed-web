@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { DialogDescription, DialogTitle } from "../ui/dialog";
 import ShowLoginDialog from "./showLoginDialog/ShowLoginDialog";
+import ProposalModalJobTender from "./ProposalModalJobTender";
 
 function JobTenderDetails({ jobData }) {
   const [isClient, setIsClient] = useState(false);
@@ -14,8 +15,10 @@ function JobTenderDetails({ jobData }) {
   const isTenderPage = pathname.includes("tenders-details");
   const isLoggedIn = true;
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
+  const [openProposalModal, setOpenProposalModal] = useState(false);
   const router = useRouter();
-
+  const currentUser = localStorage.getItem("role");
+  const userType = currentUser;
   console.log("job data", jobData);
 
   // Only render on client side to prevent hydration issues
@@ -32,6 +35,19 @@ function JobTenderDetails({ jobData }) {
       month: "short",
       day: "numeric",
     });
+  };
+
+  // Check if job end date is today
+  const isJobClosed = (endDateString) => {
+    if (!endDateString) return false;
+    const endDate = new Date(endDateString);
+    const today = new Date();
+
+    // Reset time to compare only dates
+    endDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return endDate <= today;
   };
 
   // Get translations
@@ -57,6 +73,7 @@ function JobTenderDetails({ jobData }) {
     if (!apiData) return null;
 
     return {
+      jobId: apiData._id,
       title: apiData.title || "No Title",
       description: apiData.description || "No description available",
       fullDescription: apiData.description
@@ -79,12 +96,10 @@ function JobTenderDetails({ jobData }) {
         "Competitive compensation",
       ],
       // For tender data
-      startDate: formatDate(apiData.startDate),
-      endDate: formatDate(apiData.endDate),
+      duration: apiData.duration,
+      applicationDeadline: formatDate(apiData.application_deadline),
       postedOn: formatDate(apiData.createdAt),
-      deadLine: formatDate(apiData.endDate), // Using endDate as deadline
-      location: "Remote", // Default since API doesn't have location
-      role: apiData.serviceTypeName || "Professional",
+      location: apiData.location, // Default since API doesn't have location
     };
   };
 
@@ -196,15 +211,17 @@ function JobTenderDetails({ jobData }) {
             <div className="space-y-3">
               <p className="text-gray-700">
                 <span className="font-semibold">
-                  {jobDetailsTranslations.startDateLabel || "Start Date"}:
+                  {jobDetailsTranslations.durationLabel || "Duration"}:
                 </span>{" "}
-                {job.startDate || "N/A"}
+                {job.duration || "N/A"}
               </p>
               <p className="text-gray-700">
                 <span className="font-semibold">
-                  {jobDetailsTranslations.endDateLabel || "End Date"}:
+                  {jobDetailsTranslations.applicationDeadlineLabel ||
+                    "Application Deadline"}
+                  :
                 </span>{" "}
-                {job.endDate || "N/A"}
+                {job.applicationDeadline || "N/A"}
               </p>
             </div>
             <div className="space-y-3">
@@ -214,16 +231,40 @@ function JobTenderDetails({ jobData }) {
                 </span>{" "}
                 {job.postedOn || "N/A"}
               </p>
-              <p className="text-gray-700">
-                <span className="font-semibold">
-                  {jobDetailsTranslations.deadlineLabel || "Deadline"}:
-                </span>{" "}
-                {job.deadLine || "N/A"}
-              </p>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Apply Button Section */}
+
+      <div className="flex justify-center ">
+        {/* Show "Job Closed" for all users when job is closed */}
+        {isJobClosed(jobData?.applicationDeadline) ? (
+          <Button
+            className="max-w-60 mx-auto text-white font-medium bg-red-500 cursor-not-allowed hover:bg-red-500"
+            disabled={true}
+          >
+            Job Closed
+          </Button>
+        ) : (
+          /* Show "Apply for this Job" only for freelancers when job is open */
+          userType === "freelancer" && (
+            <Button
+              className="max-w-60 mx-auto text-white font-medium button-gradient hover:bg-gray-400"
+              onClick={() => {
+                if (isLoggedIn) {
+                  setOpenProposalModal(true);
+                } else {
+                  setOpenLoginDialog(true);
+                }
+              }}
+            >
+              {isTenderPage ? "Respond to Tender" : "Apply for this Job"}
+            </Button>
+          )
+        )}
+      </div>
 
       <ShowLoginDialog open={openLoginDialog} onOpenChange={setOpenLoginDialog}>
         <DialogTitle className="text-2xl font-bold">
@@ -243,6 +284,14 @@ function JobTenderDetails({ jobData }) {
           </Button>
         </div>
       </ShowLoginDialog>
+
+      {/* Proposal Modal */}
+      <ProposalModalJobTender
+        open={openProposalModal}
+        onOpenChange={setOpenProposalModal}
+        jobId={job.jobId}
+        type={isTenderPage ? "tender" : "job"}
+      />
     </div>
   );
 }

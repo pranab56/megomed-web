@@ -2,13 +2,15 @@
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { useCreateJobMutation } from '../../../features/jobBoard/jobBoardApi';
+import { useCreateJobMutation } from "../../../features/jobBoard/jobBoardApi";
 import CreateJobTopForm from "./CreateJobTopForm";
 import JobDescription from "./JobDescription";
+import toast from "react-hot-toast";
 
 function CreateJobClientLayout() {
   const router = useRouter();
-  const [createJob, { isLoading, isError, isSuccess, error }] = useCreateJobMutation();
+  const [createJob, { isLoading, isError, isSuccess, error }] =
+    useCreateJobMutation();
 
   // Function to get dates based on current date
   const getDefaultDates = () => {
@@ -16,21 +18,27 @@ function CreateJobClientLayout() {
     const startDate = new Date(currentDate);
     const endDate = new Date(currentDate);
     endDate.setDate(endDate.getDate() + 1); // End date is one day ahead
-    
+
     return { startDate, endDate };
   };
 
+  const currentUser = localStorage.getItem("role");
+  const userType = currentUser;
   // Local state to manage all job data
   const [jobData, setJobData] = useState({
-    jobTitle: "User Experience Designer",
+    jobTitle: "",
     jobType: "Full Time",
     jobLink: "https://yourcompany.com/job123",
-    startDate: getDefaultDates().startDate,
-    endDate: getDefaultDates().endDate,
+    duration: "",
+    applicationDeadline: getDefaultDates().endDate,
     uploadedImage: null,
     description: "",
     categoryId: "",
-    serviceTypeId: "",
+    location: "",
+    minBudget: "",
+    maxBudget: "",
+    skills: [],
+    posterType: userType,
   });
 
   const [resetFormTrigger, setResetFormTrigger] = useState(false);
@@ -38,28 +46,32 @@ function CreateJobClientLayout() {
   // Handle success/error states
   useEffect(() => {
     if (isSuccess) {
+      toast.success("Job posted successfully!");
       handleReset();
       router.push("/thank-you-page");
     }
 
     if (isError) {
-      console.error("Failed to post job:", error?.data?.message || error);
+      const errorMessage =
+        error?.data?.message || error?.message || "Failed to post job";
+      console.error("Failed to post job:", error);
+      toast.error(errorMessage);
     }
   }, [isSuccess, isError, error, router]);
 
   // Handle data changes from CreateJobTopForm
   const handleTopFormDataChange = useCallback((formData) => {
-    setJobData(prev => ({
+    setJobData((prev) => ({
       ...prev,
-      ...formData
+      ...formData,
     }));
   }, []);
 
   // Handle description changes from JobDescription
   const handleDescriptionChange = useCallback((description) => {
-    setJobData(prev => ({
+    setJobData((prev) => ({
       ...prev,
-      description
+      description,
     }));
   }, []);
 
@@ -74,16 +86,19 @@ function CreateJobClientLayout() {
       errors.push("Job application link is required");
     }
 
-    if (!jobData.startDate) {
-      errors.push("Start date is required");
+    if (!jobData.duration.trim()) {
+      errors.push("Duration is required");
     }
 
-    if (!jobData.endDate) {
-      errors.push("End date is required");
+    if (!jobData.applicationDeadline) {
+      errors.push("Application deadline is required");
     }
 
-    if (jobData.startDate && jobData.endDate && new Date(jobData.startDate) >= new Date(jobData.endDate)) {
-      errors.push("End date must be after start date");
+    if (
+      jobData.applicationDeadline &&
+      new Date(jobData.applicationDeadline) < new Date()
+    ) {
+      errors.push("Application deadline must be in the future");
     }
 
     if (!jobData.description.trim()) {
@@ -94,8 +109,28 @@ function CreateJobClientLayout() {
       errors.push("Category is required");
     }
 
-    if (!jobData.serviceTypeId) {
-      errors.push("Service type is required");
+    if (!jobData.location.trim()) {
+      errors.push("Location is required");
+    }
+
+    if (!jobData.minBudget || jobData.minBudget <= 0) {
+      errors.push("Minimum budget is required and must be greater than 0");
+    }
+
+    if (!jobData.maxBudget || jobData.maxBudget <= 0) {
+      errors.push("Maximum budget is required and must be greater than 0");
+    }
+
+    if (
+      jobData.minBudget &&
+      jobData.maxBudget &&
+      parseFloat(jobData.minBudget) >= parseFloat(jobData.maxBudget)
+    ) {
+      errors.push("Maximum budget must be greater than minimum budget");
+    }
+
+    if (!jobData.skills || jobData.skills.length === 0) {
+      errors.push("At least one skill is required");
     }
 
     return errors;
@@ -104,17 +139,21 @@ function CreateJobClientLayout() {
   const handleReset = () => {
     const defaultDates = getDefaultDates();
     setJobData({
-      jobTitle: "User Experience Designer",
+      jobTitle: "",
       jobType: "Full Time",
       jobLink: "https://yourcompany.com/job123",
-      startDate: defaultDates.startDate,
-      endDate: defaultDates.endDate,
+      duration: "",
+      applicationDeadline: defaultDates.endDate,
       uploadedImage: null,
       description: "",
       categoryId: "",
-      serviceTypeId: "",
+      location: "",
+      minBudget: "",
+      maxBudget: "",
+      skills: [],
+      posterType: "client",
     });
-    setResetFormTrigger(prev => !prev);
+    setResetFormTrigger((prev) => !prev);
   };
 
   const handlePostJob = async () => {
@@ -123,10 +162,12 @@ function CreateJobClientLayout() {
       const validationErrors = validateJobData();
 
       if (validationErrors.length > 0) {
-        validationErrors.forEach(error => {
+        validationErrors.forEach((error) => {
           console.error("Validation error:", error);
         });
-        alert("Please fix the following errors:\n" + validationErrors.join("\n"));
+        toast.error(
+          "Please fix the following errors:\n" + validationErrors.join("\n")
+        );
         return;
       }
 
@@ -134,32 +175,53 @@ function CreateJobClientLayout() {
       const formData = new FormData();
 
       // Add basic fields
-      formData.append('title', jobData.jobTitle);
-      formData.append('jobType', jobData.jobType);
-      formData.append('websiteLink', jobData.jobLink);
-      formData.append('description', jobData.description);
-      formData.append('categoryId', jobData.categoryId);
-      formData.append('serviceTypeId', jobData.serviceTypeId);
+      formData.append("title", jobData.jobTitle);
+      formData.append("jobType", jobData.jobType);
+      formData.append("websiteLink", jobData.jobLink);
+      formData.append("description", jobData.description);
+      formData.append("categoryId", jobData.categoryId);
+      formData.append("location", jobData.location);
+      formData.append("min_budget", jobData.minBudget);
+      formData.append("max_budget", jobData.maxBudget);
+      formData.append("skills", jobData.skills);
+      formData.append("posterType", jobData.posterType);
 
       // Add image if uploaded
       if (jobData.uploadedImage) {
-        formData.append('image', jobData.uploadedImage);
+        formData.append("image", jobData.uploadedImage);
       }
 
-      formData.append('startDate', jobData.startDate.toISOString());
-      formData.append('endDate', jobData.endDate.toISOString());
+      formData.append("duration", jobData.duration);
+      formData.append(
+        "application_deadline",
+        jobData.applicationDeadline.toISOString()
+      );
 
       // Make API call
       const response = await createJob(formData).unwrap();
-      console.log('Job created successfully:', response);
-
+      console.log("Job created successfully:", response);
     } catch (error) {
-      console.error('Error posting job:', error);
+      console.error("Error posting job:", error);
+
+      // Extract error message from different possible error structures
+      let errorMessage = "Failed to post job. Please try again.";
+
+      if (error?.data?.message) {
+        errorMessage = error.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.data?.errorSources?.[0]?.message) {
+        errorMessage = error.data.errorSources[0].message;
+      }
+
+      toast.error(errorMessage);
     }
   };
 
   const handleCancel = () => {
-    if (confirm("Are you sure you want to cancel? All unsaved data will be lost.")) {
+    if (
+      confirm("Are you sure you want to cancel? All unsaved data will be lost.")
+    ) {
       handleReset();
       router.back();
     }
@@ -170,8 +232,7 @@ function CreateJobClientLayout() {
       <CreateJobTopForm
         onDataChange={handleTopFormDataChange}
         resetForm={resetFormTrigger}
-        initialStartDate={jobData.startDate}
-        initialEndDate={jobData.endDate}
+        initialEndDate={jobData.applicationDeadline}
       />
       <JobDescription
         onDescriptionChange={handleDescriptionChange}

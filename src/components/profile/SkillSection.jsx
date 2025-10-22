@@ -5,25 +5,22 @@ import { Edit3, Trash2 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import {
-  useGetMyprofileQuery,
+  // useGetMyprofileQuery,
   useUpdateProfileInfoMutation,
 } from "../../features/clientProfile/ClientProfile";
 import SkillsDialogAddEdit from "./SkillsDialogAddEdit";
 
-
-function SkillsSection() {
+function SkillsSection({ freelancerInfo }) {
   const isFreelancerAndLoggedIn = true;
   const [isSkillsDialogOpen, setIsSkillsDialogOpen] = useState(false);
   const [currentSkillCategory, setCurrentSkillCategory] = useState("");
   const [editingSkill, setEditingSkill] = useState(null);
-  const { data, isLoading } = useGetMyprofileQuery();
+  // const { data, isLoading } = useGetMyprofileQuery();
   const [updateSkills, { isLoading: updatingLoading }] =
     useUpdateProfileInfoMutation();
 
-
   // Get skills data from API response
-  const apiSkills = data?.data?.freelancerId?.skills || [];
-
+  const apiSkills = freelancerInfo?.skills || [];
 
   // Categorize skills based on their category from API
   const categorizeSkills = (skills) => {
@@ -32,7 +29,6 @@ function SkillsSection() {
       technical: [],
       functional: [],
     };
-
 
     skills.forEach((skill) => {
       const category = skill.category?.toLowerCase();
@@ -60,13 +56,10 @@ function SkillsSection() {
       }
     });
 
-
     return categorized;
   };
 
-
   const categorizedSkills = categorizeSkills(apiSkills);
-
 
   const handleAddSkill = (category) => {
     setCurrentSkillCategory(category);
@@ -74,13 +67,11 @@ function SkillsSection() {
     setIsSkillsDialogOpen(true);
   };
 
-
   const handleEditSkill = (skill) => {
     setCurrentSkillCategory(skill.category?.toLowerCase() || "technical");
     setEditingSkill(skill);
     setIsSkillsDialogOpen(true);
   };
-
 
   const handleDeleteSkill = async (skillId) => {
     if (window.confirm("Are you sure you want to delete this skill?")) {
@@ -98,36 +89,34 @@ function SkillsSection() {
     }
   };
 
-
-  if (isLoading) {
-    return (
-      <div className="w-full py-6">
-        <h2 className="text-xl font-bold mb-4 h2-gradient-text">Skills</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, index) => (
-            <Card key={index} className="max-h-auto">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {[...Array(4)].map((_, skillIndex) => (
-                    <div
-                      key={skillIndex}
-                      className="h-8 w-20 bg-gray-200 rounded-full animate-pulse"
-                    ></div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
+  // if (isLoading || updatingLoading) {
+  //   return (
+  //     <div className="w-full py-6">
+  //       <h2 className="text-xl font-bold mb-4 h2-gradient-text">Skills</h2>
+  //       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  //         {[...Array(3)].map((_, index) => (
+  //           <Card key={index} className="max-h-auto">
+  //             <CardHeader className="pb-2">
+  //               <div className="flex items-center justify-between">
+  //                 <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
+  //               </div>
+  //             </CardHeader>
+  //             <CardContent>
+  //               <div className="flex flex-wrap gap-2">
+  //                 {[...Array(4)].map((_, skillIndex) => (
+  //                   <div
+  //                     key={skillIndex}
+  //                     className="h-8 w-20 bg-gray-200 rounded-full animate-pulse"
+  //                   ></div>
+  //                 ))}
+  //               </div>
+  //             </CardContent>
+  //           </Card>
+  //         ))}
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="w-full py-6">
@@ -187,7 +176,6 @@ function SkillsSection() {
           </CardContent>
         </Card>
 
-
         {/* Technical Skills */}
         <Card className="max-h-auto relative">
           <CardHeader className="pb-2">
@@ -243,7 +231,6 @@ function SkillsSection() {
             </div>
           </CardContent>
         </Card>
-
 
         {/* Functional Skills */}
         <Card className="max-h-auto relative">
@@ -302,7 +289,6 @@ function SkillsSection() {
         </Card>
       </div>
 
-
       {/* Skills Dialog */}
       {isSkillsDialogOpen && (
         <SkillsDialogAddEdit
@@ -320,8 +306,4 @@ function SkillsSection() {
   );
 }
 
-
 export default SkillsSection;
-
-
-

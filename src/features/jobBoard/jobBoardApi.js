@@ -48,6 +48,33 @@ export const jobBoardApi = baseApi.injectEndpoints({
       providesTags: ["jobBoard"],
     }),
 
+    allProjectByCompany: builder.query({
+      query: ({ categoryName, serviceTypeName, searchTerm }) => {
+        let url = `/jobs/me`;
+        const params = [];
+
+        if (categoryName && categoryName.trim()) {
+          params.push(`categoryName=${encodeURIComponent(categoryName)}`);
+        }
+        if (serviceTypeName && serviceTypeName.trim()) {
+          params.push(`serviceTypeName=${encodeURIComponent(serviceTypeName)}`);
+        }
+        if (searchTerm && searchTerm.trim()) {
+          params.push(`searchTerm=${encodeURIComponent(searchTerm)}`);
+        }
+
+        if (params.length > 0) {
+          url += `?${params.join("&")}`;
+        }
+
+        return {
+          url: url,
+          method: "GET",
+        };
+      },
+      providesTags: ["jobBoard"],
+    }),
+
     getAllJobs: builder.query({
       query: ({ categoryName, serviceTypeName, searchTerm }) => {
         let url = `/jobs`;
@@ -97,6 +124,7 @@ export const jobBoardApi = baseApi.injectEndpoints({
 // Export hooks
 export const {
   useAllProjectByClientQuery,
+  useAllProjectByCompanyQuery,
   useCreateJobMutation,
   useDeleteJobsQuery,
   useGetAllJobsQuery,

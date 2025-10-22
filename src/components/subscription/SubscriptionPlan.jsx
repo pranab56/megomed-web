@@ -70,6 +70,8 @@ const SubscriptionPlanContent = dynamic(
             isExpired: expired,
             isBadge: subscription.packageId?.isBadge || false,
             isSupport: subscription.packageId?.isSupport || false,
+            jobCount: subscription.jobCount,
+            takeJobCount: subscription.takeJobCount || 0,
             createdAt: subscription.createdAt,
           };
         });
@@ -307,10 +309,31 @@ const SubscriptionPlanContent = dynamic(
                               /{plan.type}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-600 mt-2">
-                            Tenders: {plan.takeTenderCount || 0}/
-                            {plan.tenderCount}
-                          </p>
+                          {plan.tenderCount !== null && (
+                            <p className="text-sm text-gray-600 mt-2">
+                              Tenders: {plan.takeTenderCount || 0}/
+                              {plan.tenderCount}
+                            </p>
+                          )}
+
+                          {console.log(
+                            "plan.packageId.jobCount",
+                            plan.packageId?.jobCount,
+                            "plan.jobCount",
+                            plan.jobCount,
+                            "type:",
+                            typeof plan.packageId?.jobCount
+                          )}
+                          {plan.packageId?.jobCount === "unlimited" ? (
+                            <p className="text-sm text-gray-600 mt-2">
+                              Jobs: Unlimited
+                            </p>
+                          ) : (
+                            <p className="text-sm text-gray-600 mt-2">
+                              Jobs: {plan.takeJobCount || 0}/
+                              {plan.packageId?.jobCount || plan.jobCount || 0}
+                            </p>
+                          )}
                         </div>
 
                         {/* Benefits/Features */}

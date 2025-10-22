@@ -16,15 +16,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import Image from "next/image";
-import { useUpdateSocialLinkMutation } from "../../features/clientProfile/ClientProfile";
+import {
+  useUpdateSocialLinkMutation,
+  useGetSocialLinkQuery,
+} from "../../features/clientProfile/ClientProfile";
+import { getImageUrl } from "@/utils/getImageUrl";
 import { socialPlatforms } from "./socialPlatforms";
 
 export default function SocialLinkAddDialog({ isOpen, onClose }) {
   const [updateSocialLink, { isLoading }] = useUpdateSocialLinkMutation();
+  const { data: socialPlatformsData, isLoading: isLoadingSocialLink } =
+    useGetSocialLinkQuery();
 
   const {
     register,
@@ -42,11 +47,17 @@ export default function SocialLinkAddDialog({ isOpen, onClose }) {
 
   const onSubmit = async (data) => {
     try {
+      // Find the selected platform from API data
+      const selectedPlatform = socialPlatformsData?.data?.find(
+        (platform) => platform.name === data.name
+      );
+
       const socialLinkData = {
         type: "socialLink",
         operation: "add",
         name: data.name,
         link: data.link,
+        image: selectedPlatform?.image || null,
       };
 
       console.log("Submitting social link:", socialLinkData);
@@ -92,22 +103,46 @@ export default function SocialLinkAddDialog({ isOpen, onClose }) {
                   <SelectValue placeholder="Select social platform">
                     {watch("name") &&
                       (() => {
-                        const selectedPlatform = socialPlatforms.find(
-                          (p) => p.value === watch("name")
-                        );
+                        // Try to find in API data first
+                        const selectedPlatform =
+                          socialPlatformsData?.data?.find(
+                            (p) => p.name === watch("name")
+                          );
+
                         if (selectedPlatform) {
                           return (
                             <div className="flex items-center gap-2">
-                              {selectedPlatform.icon && (
+                              {selectedPlatform.image && (
                                 <Image
-                                  src={selectedPlatform.icon}
-                                  alt={selectedPlatform.label}
+                                  src={getImageUrl(selectedPlatform.image)}
+                                  alt={selectedPlatform.name}
                                   width={16}
                                   height={16}
                                   className="w-4 h-4"
                                 />
                               )}
-                              {selectedPlatform.label}
+                              {selectedPlatform.name}
+                            </div>
+                          );
+                        }
+
+                        // Fallback to hardcoded platforms
+                        const fallbackPlatform = socialPlatforms.find(
+                          (p) => p.value === watch("name")
+                        );
+                        if (fallbackPlatform) {
+                          return (
+                            <div className="flex items-center gap-2">
+                              {fallbackPlatform.icon && (
+                                <Image
+                                  src={fallbackPlatform.icon}
+                                  alt={fallbackPlatform.label}
+                                  width={16}
+                                  height={16}
+                                  className="w-4 h-4"
+                                />
+                              )}
+                              {fallbackPlatform.label}
                             </div>
                           );
                         }
@@ -116,22 +151,40 @@ export default function SocialLinkAddDialog({ isOpen, onClose }) {
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {socialPlatforms.map((platform) => (
-                    <SelectItem key={platform.value} value={platform.value}>
-                      <div className="flex items-center gap-2">
-                        {platform.icon && (
-                          <Image
-                            src={platform.icon}
-                            alt={platform.label}
-                            width={16}
-                            height={16}
-                            className="w-4 h-4"
-                          />
-                        )}
-                        {platform.label}
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {socialPlatformsData?.success && socialPlatformsData.data
+                    ? socialPlatformsData.data.map((platform) => (
+                        <SelectItem key={platform._id} value={platform.name}>
+                          <div className="flex items-center gap-2">
+                            {platform.image && (
+                              <Image
+                                src={getImageUrl(platform.image)}
+                                alt={platform.name}
+                                width={16}
+                                height={16}
+                                className="w-4 h-4"
+                              />
+                            )}
+                            {platform.name}
+                          </div>
+                        </SelectItem>
+                      ))
+                    : // Fallback to hardcoded platforms if API fails
+                      socialPlatforms.map((platform) => (
+                        <SelectItem key={platform.value} value={platform.value}>
+                          <div className="flex items-center gap-2">
+                            {platform.icon && (
+                              <Image
+                                src={platform.icon}
+                                alt={platform.label}
+                                width={16}
+                                height={16}
+                                className="w-4 h-4"
+                              />
+                            )}
+                            {platform.label}
+                          </div>
+                        </SelectItem>
+                      ))}
                 </SelectContent>
               </Select>
               {errors.name && (

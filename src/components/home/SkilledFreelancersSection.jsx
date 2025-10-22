@@ -25,7 +25,7 @@ function SkilledFreelancersSection() {
               </div>
 
               {/* Stats Cards Skeleton */}
-              <div className="absolute top-4 right-14 sm:top-10 sm:right-16 md:right-64 md:top-10 lg:right-36 lg:top-10 bg-white shadow-lg border-0 p-0 md:p-2">
+              <div className="absolute top-4 right-14 sm:top-10 sm:right-16 md:right-64 md:top-10 lg:right-36 lg:top-10 bg-white shadow-lg border-none p-0 md:p-2">
                 <div className="p-2 text-center min-w-[120px] sm:min-w-[140px]">
                   <div className="animate-pulse">
                     <div className="h-8 bg-gray-300 rounded mb-1"></div>
@@ -34,7 +34,7 @@ function SkilledFreelancersSection() {
                 </div>
               </div>
 
-              <div className="absolute bottom-40 left-14 sm:bottom-24 sm:left-20 md:left-64 md:bottom-48 lg:left-40 lg:bottom-48 2xl:left-40 2xl:bottom-60 bg-white shadow-lg border-0 border-0 p-0 md:p-2 lg:p-2">
+              <div className="absolute bottom-40 left-14 sm:bottom-24 sm:left-20 md:left-64 md:bottom-48 lg:left-40 lg:bottom-48 2xl:left-40 2xl:bottom-60 bg-white shadow-lg border-none border-0 p-0 md:p-2 lg:p-2">
                 <div className="p-2 text-center min-w-[180px]">
                   <div className="animate-pulse">
                     <div className="h-8 bg-gray-300 rounded mb-1"></div>
@@ -97,7 +97,7 @@ function SkilledFreelancersSection() {
               </CardContent>
             </Card>
 
-            <Card className="absolute bottom-40 left-14 sm:bottom-24 sm:left-20 md:left-64 md:bottom-48 lg:left-40 lg:bottom-48 2xl:left-40 2xl:bottom-60 bg-white shadow-lg border-0 border-0 p-0 md:p-2 lg:p-2">
+            <Card className="absolute bottom-40 left-14 sm:bottom-24 sm:left-20 md:left-64 md:bottom-48 lg:left-40 lg:bottom-48 2xl:left-40 2xl:bottom-60 bg-white shadow-lg border-none border-0 p-0 md:p-2 lg:p-2">
               <CardContent className="p-2 text-center min-w-[180px]">
                 <div className="text-2xl sm:text-3xl font-bold text-blue-600 mb-1">
                   300+

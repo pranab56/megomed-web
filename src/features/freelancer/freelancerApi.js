@@ -1,6 +1,4 @@
-import { baseApi } from '../../utils/apiBaseQuery';
-
-
+import { baseApi } from "../../utils/apiBaseQuery";
 
 export const freelancerApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -18,8 +16,6 @@ export const freelancerApi = baseApi.injectEndpoints({
       providesTags: ["freelancer"],
     }),
 
-
-
     getTopFreeLancer: builder.query({
       query: () => ({
         url: "/users/all-freelancers?freelancer=top",
@@ -27,12 +23,52 @@ export const freelancerApi = baseApi.injectEndpoints({
       }),
       providesTags: ["freelancer"],
     }),
-
-  })
+    freelancerVerificationRequest: builder.mutation({
+      query: () => ({
+        url: "/users/profile-verify-requiest",
+        method: "POST",
+      }),
+      invalidatesTags: ["freelancer"],
+    }),
+    freelancerProposal: builder.mutation({
+      query: (data) => ({
+        url: "/apply-jobs/create-job",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["freelancer"],
+    }),
+    getAppliedJobs: builder.query({
+      query: () => ({
+        url: "/apply-jobs/freelancer",
+        method: "GET",
+      }),
+      providesTags: ["freelancer"],
+    }),
+    getAppliedTenders: builder.query({
+      query: () => ({
+        url: "/invoice/freelancer",
+        method: "GET",
+      }),
+      providesTags: ["freelancer"],
+    }),
+    jobResponseMessage: builder.mutation({
+      query: (id) => ({
+        url: `/tender/respond/${id}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["freelancer"],
+    }),
+  }),
 });
 
 // Export hooks
 export const {
   useGetAllFreeLancerQuery,
-  useGetTopFreeLancerQuery
+  useGetTopFreeLancerQuery,
+  useFreelancerVerificationRequestMutation,
+  useFreelancerProposalMutation,
+  useGetAppliedJobsQuery,
+  useGetAppliedTendersQuery,
+  useJobResponseMessageMutation,
 } = freelancerApi;

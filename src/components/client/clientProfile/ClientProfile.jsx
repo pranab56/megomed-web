@@ -2,8 +2,8 @@
 import { Button } from "@/components/ui/button";
 import provideIcon from "@/utils/IconProvider/provideIcon";
 import Image from "next/image";
-import { useParams } from "next/navigation";
-import React from "react";
+import { useParams, useRouter } from "next/navigation";
+import React, { useEffect } from "react";
 import { useGetClientPublicProfileQuery } from "@/features/clientProfile/ClientProfile";
 import { getImageUrl } from "@/utils/getImageUrl";
 import {
@@ -11,12 +11,45 @@ import {
   useIsFollowedQuery,
 } from "@/features/hireFreelancer/hireFreelancerApi";
 import toast from "react-hot-toast";
-function ClientProfile() {
+function ClientProfile({ setError }) {
   const params = useParams();
+  const router = useRouter();
   const id = params.id;
-  const { data, isLoading, error } = useGetClientPublicProfileQuery(id, {
-    skip: !id, // Skip the query if no ID is available
-  });
+  const { data, isLoading, error, isError } = useGetClientPublicProfileQuery(
+    id,
+    {
+      skip: !id, // Skip the query if no ID is available
+    }
+  );
+
+  // Basic logging to see what we're getting
+  console.log("=== COMPONENT RENDER ===");
+  console.log("id:", id);
+  console.log("isLoading:", isLoading);
+  console.log("isError:", isError);
+  console.log("error:", error);
+  console.log("data:", data);
+
+  // Immediate check for auth error in data
+  if (
+    data &&
+    typeof data === "object" &&
+    data.success === false &&
+    data.message === "You are not authorized"
+  ) {
+    console.log("🚨 IMMEDIATE AUTH ERROR DETECTED IN DATA!");
+    console.log("Full data object:", JSON.stringify(data, null, 2));
+    if (typeof window !== "undefined") {
+      window.location.href = "/unauthorized";
+    }
+    return (
+      <div className="space-y-4 w-full max-w-7xl mx-auto py-6 px-4 md:px-6 2xl:px-0">
+        <div className="text-center py-8">
+          <p className="text-red-500">Access denied. Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
 
   const [followClient, { isLoading: isFollowing }] =
     useFollowFreelancerMutation();
@@ -24,6 +57,41 @@ function ClientProfile() {
     useIsFollowedQuery(id);
 
   const followed = isFollowed?.data;
+
+  // Pass error to parent layout for centralized handling
+  useEffect(() => {
+    if (isError || error) {
+      console.log("ClientProfile: Passing error to layout");
+      setError(error);
+    }
+  }, [isError, error, setError]);
+
+  // Check if we have data but it might be an auth error in disguise
+  console.log("=== DATA CHECK ===");
+  console.log("data:", data);
+  console.log("data?.data:", data?.data);
+  console.log("data?.success:", data?.success);
+  console.log("data?.message:", data?.message);
+
+  // Check if the data itself contains an auth error
+  if (
+    data &&
+    data.success === false &&
+    data.message === "You are not authorized" &&
+    data.err?.statusCode === 401
+  ) {
+    console.log("🚨 AUTH ERROR FOUND IN DATA - REDIRECTING...");
+    if (typeof window !== "undefined") {
+      window.location.href = "/unauthorized";
+    }
+    return (
+      <div className="space-y-4 w-full max-w-7xl mx-auto py-6 px-4 md:px-6 2xl:px-0">
+        <div className="text-center py-8">
+          <p className="text-red-500">Access denied. Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
 
   const clientInfo = {
     name: data?.data?.fullName,
@@ -48,7 +116,7 @@ function ClientProfile() {
       const response = await followClient({
         followerUserId: id,
       }).unwrap();
-      toast.success(response?.data || "Client followed successfully!");
+      toast.success(response?.data?.message || "Client followed successfully!");
     } catch (error) {
       console.error("Failed to follow client:", error);
       toast.error("Failed to follow client. Please try again.");
@@ -66,16 +134,7 @@ function ClientProfile() {
     );
   }
 
-  // Error state
-  if (error) {
-    return (
-      <div className="space-y-4 w-full max-w-7xl mx-auto py-6 px-4 md:px-6 2xl:px-0">
-        <div className="text-center py-8">
-          <p className="text-red-500">Error loading client profile</p>
-        </div>
-      </div>
-    );
-  }
+  // Error handling is now done at the layout level
 
   return (
     <div className="space-y-4 w-full max-w-7xl mx-auto py-6 px-4 md:px-6 2xl:px-0">
@@ -93,7 +152,7 @@ function ClientProfile() {
       </div>
       <div className="flex gap-10 items-start py-2">
         <Image
-          src={clientInfo.profilePicture}
+          src={clientInfo.profilePicture || "/client/profile/client.png"}
           alt="client-profile"
           width={150}
           height={150}

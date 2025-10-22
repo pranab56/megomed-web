@@ -3,10 +3,10 @@ import { baseURL } from "./BaseURL";
 
 let socket = null;
 
-export const connectSocket = (userId) => {
+export const connectSocket = (userId = null) => {
   console.log("🔌 Connecting to socket...");
   console.log("🌐 Base URL:", baseURL);
-  console.log("👤 User ID:", userId);
+  console.log("👤 User ID:", userId || "No user ID provided");
 
   if (socket && socket.connected) {
     console.log("♻️ Reusing existing socket connection");
@@ -14,12 +14,18 @@ export const connectSocket = (userId) => {
   }
 
   console.log("🆕 Creating new socket connection");
-  socket = io(baseURL, {
-    auth: { userId },
+  const socketConfig = {
     transports: ["websocket", "polling"],
     timeout: 20000,
     forceNew: true,
-  });
+  };
+
+  // Only add auth if userId is provided
+  if (userId) {
+    socketConfig.auth = { userId };
+  }
+
+  socket = io(baseURL, socketConfig);
 
   socket.on("connect", () => {
     console.log("🔌 Socket Connected:", socket.id);

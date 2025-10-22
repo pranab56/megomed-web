@@ -138,7 +138,9 @@ function ProfileSections() {
       const response = await followFreelancer({
         followerUserId: id,
       }).unwrap();
-      toast.success(response?.data || "Freelancer followed successfully!");
+      toast.success(
+        response?.data?.message || "Freelancer followed successfully!"
+      );
     } catch (error) {
       console.error("Failed to follow freelancer:", error);
       toast.error("Failed to follow freelancer. Please try again.");

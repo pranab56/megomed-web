@@ -406,7 +406,7 @@ const ChatWindow = ({ clientId, chatId }) => {
         reason: reportReason,
         text: reportMessage,
         reportedUserId: clientId,
-        chatId: chatId,
+        // chatId: chatId,
       }).unwrap();
 
       toast.success(

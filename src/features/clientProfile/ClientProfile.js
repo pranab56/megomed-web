@@ -47,11 +47,33 @@ export const clientProfileApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["clientProfile"],
     }),
+    getSocialLink: builder.query({
+      query: () => ({
+        url: "/social-link",
+        method: "GET",
+      }),
+      providesTags: ["clientProfile"],
+    }),
     updateSocialLink: builder.mutation({
       query: (data) => ({
         url: "/freelancer-info/update",
         method: "PATCH",
         body: data,
+      }),
+      invalidatesTags: ["clientProfile"],
+    }),
+    updateClientInfo: builder.mutation({
+      query: (data) => ({
+        url: "/client-info/update",
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["clientProfile"],
+    }),
+    clientVerificationRequest: builder.mutation({
+      query: () => ({
+        url: "/users/profile-verify-requiest",
+        method: "POST",
       }),
       invalidatesTags: ["clientProfile"],
     }),
@@ -66,4 +88,7 @@ export const {
   useUpdateProfileInfoMutation,
   useUpdateSocialLinkMutation,
   useGetClientPublicProfileQuery,
+  useUpdateClientInfoMutation,
+  useClientVerificationRequestMutation,
+  useGetSocialLinkQuery,
 } = clientProfileApi;

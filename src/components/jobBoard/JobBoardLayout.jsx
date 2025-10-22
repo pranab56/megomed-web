@@ -3,6 +3,7 @@ import { useState } from "react";
 import { IoSearchOutline } from "react-icons/io5";
 import {
   useAllProjectByClientQuery,
+  useAllProjectByCompanyQuery,
   useGetAllJobsQuery,
 } from "../../features/jobBoard/jobBoardApi";
 import SideBar from "../common/SideBar";
@@ -59,6 +60,17 @@ const JobBoardLayoutContent = () => {
     }
   );
 
+  const companyQuery = useAllProjectByCompanyQuery(
+    {
+      categoryName: categoryName || "",
+      serviceTypeName: serviceTypeName || "",
+      searchTerm: searchTerm || "",
+    },
+    {
+      skip: userType !== "company",
+    }
+  );
+
   const freelancerQuery = useGetAllJobsQuery(
     {
       categoryName: categoryName || "",
@@ -72,7 +84,11 @@ const JobBoardLayoutContent = () => {
 
   // Use the appropriate query result based on user type
   const { data, isLoading, isError } =
-    userType === "client" ? clientQuery : freelancerQuery;
+    userType === "client"
+      ? clientQuery
+      : userType === "company"
+      ? companyQuery
+      : freelancerQuery;
 
   console.log("API Response Data:", data);
 
@@ -101,12 +117,12 @@ const JobBoardLayoutContent = () => {
               : setJobBannerFreelancer.text
           }
           buttonName={
-            userType === "client"
+            userType === "client" || userType === "company"
               ? setJobBannerClient.buttonName
               : setJobBannerFreelancer.buttonName
           }
           buttonLink={
-            userType === "client"
+            userType === "client" || userType === "company"
               ? setJobBannerClient.buttonLink
               : setJobBannerFreelancer.buttonLink
           }

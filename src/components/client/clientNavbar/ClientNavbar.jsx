@@ -1,4 +1,6 @@
 "use client";
+import HelpsAndSupport from "@/components/common/helpsAndSupport/helpsAndSupport";
+import NotificationBell from "@/components/common/NotificationBell";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -15,6 +17,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useGetMyprofileQuery } from "@/features/clientProfile/ClientProfile";
+import { getImageUrl } from "@/utils/getImageUrl";
 import provideIcon from "@/utils/IconProvider/provideIcon";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
@@ -34,6 +38,7 @@ const translations = {
   viewProfile: "View Profile",
   accountSettings: "Account Settings",
   billingPlans: "Billing & Plans",
+  dashboard: "Dashboard",
   helpSupport: "Help & Support",
   signOut: "Sign Out",
   client: "Client",
@@ -42,8 +47,10 @@ const translations = {
 function ClientNavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [currentUser, setCurrentUser] = useState({ type: "client" });
+  const [isHelpSheetOpen, setIsHelpSheetOpen] = useState(false);
+
   const pathname = usePathname();
+  const { data: userData } = useGetMyprofileQuery();
 
   // Navigation items - only client specific pages
   const navItems = [
@@ -57,11 +64,11 @@ function ClientNavBar() {
   ];
 
   // Debug: Check what's in navItems
-  console.log("Nav Items:", navItems);
-  console.log(
-    "Package route exists:",
-    navItems.find((item) => item.href === "/package")
-  );
+  // console.log("Nav Items:", navItems);
+  // console.log(
+  //   "Package route exists:",
+  //   navItems.find((item) => item.href === "/package")
+  // );
 
   // Helper function to determine if link is active
   const isActiveLink = (href) => {
@@ -70,14 +77,17 @@ function ClientNavBar() {
 
   // Mock user data
   const user = {
-    name: "John Client",
+    fullName: userData?.data?.fullName,
     role: translations.client,
-    avatar: "/client/profile/client.png",
+    avatar: userData?.data?.profile || "/client/profile/client.png",
   };
 
   const handleSignOut = () => {
     localStorage.clear();
     window.location.href = "/";
+  };
+  const handleHelpSheetClose = (open) => {
+    setIsHelpSheetOpen(open);
   };
 
   useEffect(() => {
@@ -99,7 +109,7 @@ function ClientNavBar() {
         {/* Desktop Navigation Links */}
         <div className="hidden lg:flex items-center space-x-8">
           {navItems.map((item, index) => {
-            console.log(`Rendering: ${item.label} -> ${item.href}`); // Debug each item
+            // console.log(`Rendering: ${item.label} -> ${item.href}`); // Debug each item
             return (
               <Link
                 key={index}
@@ -117,7 +127,8 @@ function ClientNavBar() {
         </div>
 
         {/* User Profile Section */}
-        <div className="hidden lg:flex items-center">
+        <div className="hidden lg:flex items-center gap-4">
+          <NotificationBell />
           <DropdownMenu>
             <DropdownMenuTrigger asChild className="h-12">
               <Button
@@ -125,15 +136,15 @@ function ClientNavBar() {
                 className="flex items-center space-x-3 shadow-md rounded-full  border hover:bg-gray-50 h-12"
               >
                 <Image
-                  src={user.avatar}
-                  alt={user.name}
+                  src={getImageUrl(user.avatar)}
+                  alt={user.fullName || "User"}
                   width={40}
                   height={40}
                   className="w-10 h-10 rounded-full  object-cover"
                 />
                 <div className="text-left">
                   <p className="text-sm font-medium text-[#012A8B]">
-                    {user.name}
+                    {user.fullName}
                   </p>
                   <p className="text-xs text-[#012A8B] ">{user.role}</p>
                 </div>
@@ -148,21 +159,20 @@ function ClientNavBar() {
                   {translations.viewProfile}
                 </Link>
               </DropdownMenuItem>
-              {/* <DropdownMenuItem asChild>
-                <Link href={`/settings`} className="w-full cursor-pointer">
-                  {translations.accountSettings}
-                </Link>
-              </DropdownMenuItem> */}
-              {/* <DropdownMenuItem asChild>
-                <Link href={`/billing`} className="w-full cursor-pointer">
-                  {translations.billingPlans}
-                </Link>
-              </DropdownMenuItem> */}
-              <DropdownMenuSeparator />
+
               <DropdownMenuItem asChild>
-                <Link href={`/help`} className="w-full cursor-pointer">
-                  {translations.helpSupport}
+                <Link
+                  href={`/client-dashboard`}
+                  className="w-full cursor-pointer"
+                >
+                  {translations.dashboard}
                 </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="w-full cursor-pointer"
+                onClick={() => setIsHelpSheetOpen(true)}
+              >
+                {translations.helpSupport}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -188,13 +198,13 @@ function ClientNavBar() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <img
-                      src={user.avatar}
-                      alt={user.name}
+                      src={getImageUrl(user.avatar)}
+                      alt={user.fullName || "client"}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div>
                       <DrawerTitle className="text-sm font-medium">
-                        {user.name}
+                        {user.fullName || "client"}
                       </DrawerTitle>
                       <p className="text-xs text-gray-500">{user.role}</p>
                     </div>
@@ -248,13 +258,12 @@ function ClientNavBar() {
                   >
                     <Link href={`/billing`}>{translations.billingPlans}</Link>
                   </Button> */}
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    asChild
+                  <DropdownMenuItem
+                    className="w-full cursor-pointer"
+                    onClick={() => setIsHelpSheetOpen(true)}
                   >
-                    <Link href={`/help`}>{translations.helpSupport}</Link>
-                  </Button>
+                    {translations.helpSupport}
+                  </DropdownMenuItem>
                   <Button
                     variant="ghost"
                     className="w-full justify-start text-red-600"
@@ -267,7 +276,12 @@ function ClientNavBar() {
             </DrawerContent>
           </Drawer>
         </div>
-      </div>
+      </div>{" "}
+      {/* Help & Support Sheet */}
+      <HelpsAndSupport
+        isOpen={isHelpSheetOpen}
+        onOpenChange={handleHelpSheetClose}
+      />
     </nav>
   );
 }
