@@ -5,16 +5,13 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetClose,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   HelpCircle,
   Send,
   Image as ImageIcon,
-  Paperclip,
   X,
   User,
   Bot,
@@ -47,6 +44,7 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
+  const currentUserId = localStorage.getItem("user");
   // API hooks
   const [createSupportChat, { isLoading: isSendingMessage }] =
     useCreateSupportChatMutation();
@@ -77,11 +75,9 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
   // Get current user ID from localStorage
   const getCurrentUserId = () => {
     try {
-      const token = localStorage.getItem("loginToken");
-      if (token) {
-        // You might need to decode the JWT token to get user ID
-        // For now, we'll use a placeholder - adjust based on your auth system
-        return "68e1e75ac082eb0c840ce0b1"; // Replace with actual user ID logic
+      const userId = localStorage.getItem("user");
+      if (userId) {
+        return userId;
       }
     } catch (error) {
       console.error("Error getting user ID:", error);
@@ -369,19 +365,38 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
     ) {
       const currentUserId = getCurrentUserId();
       const supportUserId = getSupportUserId();
-      const formattedMessages = supportChatData.data.resultAll.map(
-        (msg, index) => ({
-          id: msg._id || `msg-${index}`,
-          text: msg.message || "",
-          sender: msg.sender === currentUserId ? "user" : "support",
-          timestamp: new Date(msg.createdAt),
-          type: msg.image ? "image" : "text",
-          image: msg.image ? getImageUrl(msg.image) : null,
-        })
-      );
 
       console.log("📥 Current User ID:", currentUserId);
+      console.log("📥 Current User ID Type:", typeof currentUserId);
       console.log("📥 Support User ID (Admin):", supportUserId);
+      console.log("📥 Raw messages from API:", supportChatData.data.resultAll);
+
+      const formattedMessages = supportChatData.data.resultAll.map(
+        (msg, index) => {
+          const isCurrentUser = String(msg.sender) === String(currentUserId);
+
+          console.log(`📥 Message ${index + 1}:`, {
+            messageId: msg._id,
+            message: msg.message,
+            senderFromAPI: msg.sender,
+            senderType: typeof msg.sender,
+            currentUserId: currentUserId,
+            currentUserIdType: typeof currentUserId,
+            comparison: `"${msg.sender}" === "${currentUserId}"`,
+            isCurrentUser: isCurrentUser,
+            displayAs: isCurrentUser ? "user (right)" : "support (left)",
+          });
+
+          return {
+            id: msg._id || `msg-${index}`,
+            text: msg.message || "",
+            sender: isCurrentUser ? "user" : "support",
+            timestamp: new Date(msg.createdAt),
+            type: msg.image ? "image" : "text",
+            image: msg.image ? getImageUrl(msg.image) : null,
+          };
+        }
+      );
 
       console.log("📥 Loading chat messages:", supportChatData.data.resultAll);
       console.log("📥 Formatted messages:", formattedMessages);

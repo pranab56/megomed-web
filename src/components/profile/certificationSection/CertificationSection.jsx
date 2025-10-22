@@ -6,6 +6,7 @@ import {
   useUpdateFreelancerInfoCertificateMutation,
   useDeleteCertificateMutation,
 } from "../../../features/freelancerInfo&Certificate/freelancerInfo&CertificateApi";
+import { useGetMyprofileQuery } from "../../../features/clientProfile/ClientProfile";
 import { getImageUrl } from "../../../utils/getImageUrl";
 import toast from "react-hot-toast";
 import Image from "next/image";
@@ -17,6 +18,7 @@ function CertificationSection({ certificationData = [], isLoading = false }) {
   const [updateFreelancerInfoCertificate] =
     useUpdateFreelancerInfoCertificateMutation();
   const [deleteCertificate] = useDeleteCertificateMutation();
+  const { refetch } = useGetMyprofileQuery();
   const handleAddCertification = () => {
     setModalMode("add");
     setSelectedCertification(null);
@@ -32,6 +34,9 @@ function CertificationSection({ certificationData = [], isLoading = false }) {
     try {
       await deleteCertificate(imageUrl).unwrap();
       toast.success("Certification deleted successfully!");
+
+      // Refetch profile data to get updated certification data
+      await refetch();
     } catch (error) {
       console.error("Error deleting certification:", error);
       toast.error("Failed to delete certification. Please try again.");

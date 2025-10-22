@@ -99,7 +99,7 @@ function ProfileHeader({ setCoverPhoto }) {
     yearsOfExperience: "",
   });
 
-  const { data, isLoading } = useGetMyprofileQuery();
+  const { data, isLoading, refetch } = useGetMyprofileQuery();
   const [updateMyprofile, { isLoading: isUpdating }] =
     useUpdateMyprofileMutation();
   const [updateSocialLink, { isLoading: isDeletingSocialLink }] =
@@ -519,6 +519,9 @@ function ProfileHeader({ setCoverPhoto }) {
         response?.message ||
           "Freelancer verification request sent successfully!"
       );
+
+      // Refetch profile data to get updated verification status
+      await refetch();
     } catch (error) {
       // console.error("Failed to send freelancer verification request:", error);
       toast.error(
@@ -1183,9 +1186,17 @@ function ProfileHeader({ setCoverPhoto }) {
               <span>Pending Verification</span>
             </div>
           ) : data?.data?.isVarified === "revision" ? (
-            <div className="flex items-center gap-2 text-sm text-gray-700 bg-red-100 rounded-full px-2 py-1">
-              <Shield className="w-4 h-4 text-red-600" />
-              <span>Revision</span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-sm text-gray-700 bg-red-100 rounded-full px-2 py-1">
+                <Shield className="w-4 h-4 text-red-600" />
+                <span>Revision</span>
+              </div>
+              <Button
+                className="button-gradient"
+                onClick={() => handleGetVerified()}
+              >
+                Get Verified
+              </Button>
             </div>
           ) : (
             <Button

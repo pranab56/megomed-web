@@ -66,6 +66,39 @@ function ClientProfilePrivate({ translations }) {
     }
   };
 
+  const handleViewDocument = (documentUrl, documentName) => {
+    if (!documentUrl || documentUrl === "Not uploaded") {
+      toast.error("No document available to view");
+      return;
+    }
+    const fileExtension = documentUrl.split(".").pop().toLowerCase();
+    const fullUrl = getImageUrl(documentUrl);
+    if (
+      fileExtension === "pdf" ||
+      ["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(fileExtension)
+    ) {
+      window.open(fullUrl, "_blank");
+    } else if (fileExtension === "docx" || fileExtension === "doc") {
+      const link = document.createElement("a");
+      link.href = fullUrl;
+      link.download = documentName || "document";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      try {
+        window.open(fullUrl, "_blank");
+      } catch (error) {
+        const link = document.createElement("a");
+        link.href = fullUrl;
+        link.download = documentName || "document";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4 w-full max-w-7xl mx-auto py-6 px-4 md:px-6 2xl:px-0">
@@ -164,6 +197,7 @@ function ClientProfilePrivate({ translations }) {
       <ClientInformationSection
         documentInfo={documentInfo}
         onEditClick={() => setIsClientInfoModalOpen(true)}
+        onViewDocument={handleViewDocument}
       />
       <EditProfileDialog
         isOpen={isEditProfileDialogOpen}
@@ -182,7 +216,11 @@ function ClientProfilePrivate({ translations }) {
 
 export default ClientProfilePrivate;
 
-const ClientInformationSection = ({ onEditClick, documentInfo }) => {
+const ClientInformationSection = ({
+  onEditClick,
+  documentInfo,
+  onViewDocument,
+}) => {
   return (
     <div>
       <h1 className="h2-gradient-text text-2xl font-bold text-justify flex items-center gap-2">
@@ -236,7 +274,12 @@ const ClientInformationSection = ({ onEditClick, documentInfo }) => {
                 </p>
               </div>
             </div>
-            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            <button
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium border p-2 rounded-md cursor-pointer"
+              onClick={() =>
+                onViewDocument(documentInfo?.clientKBISFile, "KBIS Document")
+              }
+            >
               View
             </button>
           </div>
@@ -253,7 +296,12 @@ const ClientInformationSection = ({ onEditClick, documentInfo }) => {
                 </p>
               </div>
             </div>
-            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            <button
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium border p-2 rounded-md cursor-pointer"
+              onClick={() =>
+                onViewDocument(documentInfo?.clientRCFile, "RC Pro Document")
+              }
+            >
               View
             </button>
           </div>
@@ -268,7 +316,15 @@ const ClientInformationSection = ({ onEditClick, documentInfo }) => {
                 <p className="text-xs text-gray-500">VAT Certificate</p>
               </div>
             </div>
-            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            <button
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium border p-2 rounded-md cursor-pointer"
+              onClick={() =>
+                onViewDocument(
+                  documentInfo?.clientCertificateFile,
+                  "VAT Certificate"
+                )
+              }
+            >
               View
             </button>
           </div>

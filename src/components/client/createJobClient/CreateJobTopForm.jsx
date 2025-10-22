@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGetAllCategoryQuery } from "../../../features/category/categoryApi";
+import Image from "next/image";
 
 export default function CreateJobTopForm({
   onDataChange,
@@ -146,9 +147,16 @@ export default function CreateJobTopForm({
     <div className="max-w-7xl mx-auto py-6 px-4 md:px-6 2xl:px-0">
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Greeting */}
-        <div className="space-y-2">
+        <div className="space-y-10 flex flex-col items-start justify-start">
           {/* <h2 className="text-2xl font-medium text-blue-600">Hi MD SABBIR,</h2> */}
           <h1 className="text-5xl mb-8">Find your next great hire</h1>
+
+          <Image
+            src="/jobtender/hiringpage.png"
+            alt="Job Board"
+            width={800}
+            height={800}
+          />
         </div>
 
         {/* Job Form Fields */}
