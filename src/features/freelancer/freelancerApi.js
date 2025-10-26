@@ -59,6 +59,13 @@ export const freelancerApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["freelancer"],
     }),
+    allFreelancers: builder.query({
+      query: () => ({
+        url: `/users/all-users?role=freelancer&isVarified=varified`,
+        method: "GET",
+      }),
+      providesTags: ["freelancer"],
+    }),
   }),
 });
 
@@ -71,4 +78,5 @@ export const {
   useGetAppliedJobsQuery,
   useGetAppliedTendersQuery,
   useJobResponseMessageMutation,
+  useAllFreelancersQuery,
 } = freelancerApi;

@@ -2,6 +2,14 @@ import { baseApi } from "../../utils/apiBaseQuery";
 
 export const freelancerInfoCertificateApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    updateFreelancerInfo: builder.mutation({
+      query: (data) => ({
+        url: "/freelancer-info/update-info",
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["freelancer"],
+    }),
     updateFreelancerInfoCertificate: builder.mutation({
       query: (data) => ({
         url: "/freelancer-info/certification-info",
@@ -23,6 +31,7 @@ export const freelancerInfoCertificateApi = baseApi.injectEndpoints({
 
 // Export hooks
 export const {
+  useUpdateFreelancerInfoMutation,
   useUpdateFreelancerInfoCertificateMutation,
   useDeleteCertificateMutation,
 } = freelancerInfoCertificateApi;

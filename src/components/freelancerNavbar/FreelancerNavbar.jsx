@@ -70,13 +70,13 @@ function FreelancerNavBar() {
       label: "Invoices",
       href: `/invoices`,
     },
+    // {
+    //   label: "My Projects",
+    //   href: `/my-projects`,
+    // },
     {
-      label: "My Projects",
-      href: `/my-projects`,
-    },
-    {
-      label: "My Subscription",
-      href: `/my-subscription`,
+      label: "All Freelancers",
+      href: `/all-freelancers`,
     },
     {
       label: "Package",
@@ -187,8 +187,33 @@ function FreelancerNavBar() {
             <DropdownMenuContent align="end" className="w-60">
               <DropdownMenuItem asChild>
                 <Link href={`/profile`} className="w-full cursor-pointer">
-                  View Profile
+                  My Profile
                 </Link>
+              </DropdownMenuItem>
+
+              {/* <DropdownMenuItem asChild>
+                <Link href={`/billing`} className="w-full cursor-pointer">
+                  Billing & Plans
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator /> */}
+              <DropdownMenuItem
+                className="w-full cursor-pointer"
+                onClick={() => router.push("/freelancer-dashboard")}
+              >
+                Dashboard
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="w-full cursor-pointer"
+                onClick={() => router.push("/my-projects")}
+              >
+                My Projects
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="w-full cursor-pointer"
+                onClick={() => router.push("/my-subscription")}
+              >
+                My Subscription
               </DropdownMenuItem>
               {userData?.data?.isStripeConnectedAccount === true ? (
                 <DropdownMenuItem className="w-full cursor-pointer">
@@ -204,18 +229,6 @@ function FreelancerNavBar() {
                   <span className="w-4 h-4 text-red-500">Pending</span>
                 </DropdownMenuItem>
               )}
-              {/* <DropdownMenuItem asChild>
-                <Link href={`/billing`} className="w-full cursor-pointer">
-                  Billing & Plans
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator /> */}
-              <DropdownMenuItem
-                className="w-full cursor-pointer"
-                onClick={() => router.push("/freelancer-dashboard")}
-              >
-                Dashboard
-              </DropdownMenuItem>
               <DropdownMenuItem
                 className="w-full cursor-pointer"
                 onClick={() => setIsHelpSheetOpen(true)}
@@ -234,15 +247,18 @@ function FreelancerNavBar() {
         </div>
 
         {/* Mobile Menu */}
-        <div className="lg:hidden">
+        <div className="lg:hidden flex items-center gap-2">
+          {/* Notification Bell for Mobile */}
+          <NotificationBell />
+
           <Drawer open={isOpen} onOpenChange={setIsOpen}>
             <DrawerTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
               </Button>
             </DrawerTrigger>
-            <DrawerContent>
-              <DrawerHeader className="text-left">
+            <DrawerContent className="max-h-[85vh]">
+              <DrawerHeader className="text-left flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Image
@@ -272,53 +288,96 @@ function FreelancerNavBar() {
                   </DrawerClose>
                 </div>
               </DrawerHeader>
-              <div className="px-6 pb-6 space-y-2">
-                {/* Mobile Navigation */}
-                {navItems.map((item, index) => (
-                  <Button
-                    key={index}
-                    variant="ghost"
-                    className={`w-full justify-start ${
-                      isActiveLink(item.href) ? "bg-blue-50 text-blue-600" : ""
-                    }`}
-                    asChild
-                  >
-                    <Link href={item.href}>{item.label}</Link>
-                  </Button>
-                ))}
 
-                {/* Mobile User Actions */}
-                <div className="pt-4 border-t space-y-2">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    asChild
-                  >
-                    <Link href={`/profile/1`}>View Profile</Link>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    asChild
-                    onClick={handleConnectStripe}
-                  >
-                    Connect Stripe
-                  </Button>
+              <div className="flex-1 overflow-y-auto px-6 pb-6">
+                <div className="space-y-2">
+                  {/* Mobile Navigation */}
+                  {navItems.map((item, index) => (
+                    <Button
+                      key={index}
+                      variant="ghost"
+                      className={`w-full justify-start h-12 ${
+                        isActiveLink(item.href)
+                          ? "bg-blue-50 text-blue-600"
+                          : ""
+                      }`}
+                      asChild
+                    >
+                      <Link href={item.href}>{item.label}</Link>
+                    </Button>
+                  ))}
 
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => setIsHelpSheetOpen(true)}
-                  >
-                    Help & Support
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-red-600"
-                    onClick={handleSignOut}
-                  >
-                    Sign Out
-                  </Button>
+                  {/* Mobile User Actions */}
+                  <div className="pt-4 border-t space-y-2">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start h-12"
+                      asChild
+                    >
+                      <Link href={`/profile`}>My Profile</Link>
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start h-12"
+                      onClick={() => router.push("/freelancer-dashboard")}
+                    >
+                      Dashboard
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start h-12"
+                      onClick={() => router.push("/my-projects")}
+                    >
+                      My Projects
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start h-12"
+                      onClick={() => router.push("/my-subscription")}
+                    >
+                      My Subscription
+                    </Button>
+
+                    {/* Stripe Connection Status */}
+                    {userData?.data?.isStripeConnectedAccount === true ? (
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start h-12"
+                        disabled
+                      >
+                        Connect Stripe{" "}
+                        <span className="text-green-500 ml-2">✓ Connected</span>
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start h-12"
+                        onClick={handleConnectStripe}
+                      >
+                        Connect Stripe{" "}
+                        <span className="text-red-500 ml-2">Pending</span>
+                      </Button>
+                    )}
+
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start h-12"
+                      onClick={() => setIsHelpSheetOpen(true)}
+                    >
+                      Help & Support
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start h-12 text-red-600"
+                      onClick={handleSignOut}
+                    >
+                      Sign Out
+                    </Button>
+                  </div>
                 </div>
               </div>
             </DrawerContent>

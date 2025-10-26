@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RiUploadCloudLine } from "react-icons/ri";
-import { useUpdateFreelancerInfoCertificateMutation } from "@/features/freelancerInfo&Certificate/freelancerInfo&CertificateApi";
+import { useUpdateFreelancerInfoMutation } from "@/features/freelancerInfo&Certificate/freelancerInfo&CertificateApi";
 import { getImageUrl } from "@/utils/getImageUrl";
 import toast from "react-hot-toast";
 import { useGetMyprofileQuery } from "@/features/clientProfile/ClientProfile";
@@ -52,7 +52,7 @@ function FreeLancerInfoEditModal({ isOpen, onClose, clientInfo }) {
   });
 
   const [updateFreelancerInfo, { isLoading: isUpdating }] =
-    useUpdateFreelancerInfoCertificateMutation();
+    useUpdateFreelancerInfoMutation();
 
   // Get refetch function for profile data
   const { refetch: refetchProfile } = useGetMyprofileQuery();
