@@ -4,16 +4,17 @@ export const freelancerInfoCertificateApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     updateFreelancerInfoCertificate: builder.mutation({
       query: (data) => ({
-        url: "/freelancer-info/update-info",
+        url: "/freelancer-info/certification-info",
         method: "PATCH",
         body: data,
       }),
       invalidatesTags: ["freelancer"],
     }),
     deleteCertificate: builder.mutation({
-      query: (imageUrl) => ({
-        url: `/freelancer-info/delete-certificate?imageUrl=${imageUrl}`,
-        method: "DELETE",
+      query: (data) => ({
+        url: `/freelancer-info/certification-info`,
+        body: data,
+        method: "PATCH",
       }),
       invalidatesTags: ["freelancer"],
     }),
