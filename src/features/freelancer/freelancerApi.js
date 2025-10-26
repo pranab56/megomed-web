@@ -66,6 +66,35 @@ export const freelancerApi = baseApi.injectEndpoints({
       }),
       providesTags: ["freelancer"],
     }),
+    followRequests: builder.mutation({
+      query: (data) => ({
+        url: "/follow/create-follow",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["freelancer"],
+    }),
+    allFollowPending: builder.query({
+      query: () => ({
+        url: `/follow?status=pending&type=followers`,
+        method: "GET",
+      }),
+      providesTags: ["freelancer"],
+    }),
+    allFollowAccepted: builder.query({
+      query: () => ({
+        url: `/follow?status=accepted&type=followers`,
+        method: "GET",
+      }),
+      providesTags: ["freelancer"],
+    }),
+    followBack: builder.mutation({
+      query: (id) => ({
+        url: `/follow/accept-cancel/${id}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["freelancer"],
+    }),
   }),
 });
 
@@ -79,4 +108,8 @@ export const {
   useGetAppliedTendersQuery,
   useJobResponseMessageMutation,
   useAllFreelancersQuery,
+  useFollowRequestsMutation,
+  useAllFollowPendingQuery,
+  useAllFollowAcceptedQuery,
+  useFollowBackMutation,
 } = freelancerApi;

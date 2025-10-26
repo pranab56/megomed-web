@@ -10,9 +10,12 @@ import Image from "next/image";
 import { useAllFreelancersQuery } from "@/features/freelancer/freelancerApi";
 import { getImageUrl } from "@/utils/getImageUrl";
 import { useRouter } from "next/navigation";
+import { useFollowRequestsMutation } from "@/features/freelancer/freelancerApi";
 const FreelancerCards = () => {
   const [particles, setParticles] = useState([]);
   const { data, isLoading, isError, refetch } = useAllFreelancersQuery();
+  const [followRequests, { isLoading: isFollowing }] =
+    useFollowRequestsMutation();
   const router = useRouter();
   console.log(data);
   // Get current user ID with proper parsing
@@ -70,6 +73,21 @@ const FreelancerCards = () => {
     "Filtered freelancer IDs:",
     freelancers.map((f) => f._id)
   );
+
+  const handleFollow = async (freelancerId) => {
+    console.log("Follow freelancer:", freelancerId);
+    try {
+      const response = await followRequests({
+        followerUserId: freelancerId,
+      }).unwrap();
+      toast.success(
+        response?.data?.message || "Freelancer followed successfully!"
+      );
+    } catch (error) {
+      console.error("Failed to follow freelancer:", error);
+      toast.error("Failed to follow freelancer. Please try again.");
+    }
+  };
 
   return (
     <div className="min-h-screen  relative overflow-hidden">
@@ -225,7 +243,10 @@ const FreelancerCards = () => {
                         {freelancer.location && `📍 ${freelancer.location}`}
                       </p>
                     </div>
-                    <Button className="button-gradient text-white">
+                    <Button
+                      className="button-gradient text-white"
+                      onClick={() => handleFollow(freelancer._id)}
+                    >
                       Follow
                     </Button>
                   </div>
