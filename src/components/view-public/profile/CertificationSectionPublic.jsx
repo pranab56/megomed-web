@@ -16,7 +16,7 @@ function CertificationSectionPublic({ freelancerData }) {
   // Extract academic certificates from the data
   const academicCertificates =
     freelancerData?.freelancerId?.academicCertificateFiles || [];
-
+  const isVerified = freelancerData?.isVarified === "varifieds";
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [viewingCertification, setViewingCertification] = useState(null);
 
@@ -77,6 +77,7 @@ function CertificationSectionPublic({ freelancerData }) {
               className="p-6 relative hover:shadow-lg transition-shadow duration-200"
             >
               {/* Verification Status Icon */}
+
               <div className="absolute top-4 right-4">
                 <CheckCircle className="w-5 h-5 text-blue-500" />
               </div>
@@ -89,7 +90,6 @@ function CertificationSectionPublic({ freelancerData }) {
               >
                 <Award className="w-6 h-6 text-white" />
               </div>
-
               {/* Certification Details */}
               <div className="space-y-2 mb-4">
                 <h3 className="text-xl font-bold text-gray-900">
@@ -108,12 +108,13 @@ function CertificationSectionPublic({ freelancerData }) {
                   </span>
                 </div>
               </div>
-
               {/* Verified Button and View Button */}
               <div className="flex items-center justify-between">
-                <button className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-100 transition-colors">
-                  Verified
-                </button>
+                {isVerified ? (
+                  <button className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-100 transition-colors">
+                    Verified
+                  </button>
+                ) : null}
                 <VscEye
                   onClick={() => handleViewCertification(certification)}
                   size={25}
@@ -162,9 +163,11 @@ function CertificationSectionPublic({ freelancerData }) {
                     </p>
                   </div>
                   <div className="flex items-center justify-center">
-                    <div className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-medium">
-                      Verified
-                    </div>
+                    {isVerified ? (
+                      <div className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-medium">
+                        Verified
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>
