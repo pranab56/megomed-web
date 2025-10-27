@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,6 +28,17 @@ function FreelancerDashboardLayout() {
     "allFollowAccepted //////////////////////////",
     allFollowAccepted
   );
+
+  // Handle tab selection when category changes
+  useEffect(() => {
+    if (selectedCategory === "follows") {
+      const validFollowTabs = ["follow-requests", "followers"];
+      if (!validFollowTabs.includes(selectedTab)) {
+        setSelectedTab("follow-requests");
+      }
+    }
+  }, [selectedCategory, selectedTab]);
+
   // console.log(appliedJobs, appliedTenders);
   if (userType !== "freelancer") {
     return <div>You are not authorized to access this page</div>;
@@ -109,12 +120,6 @@ const MainContent = ({
 }) => {
   // Handle follows category differently
   if (selectedCategory === "follows") {
-    // Set default tab to follow-requests only if no valid tab is selected
-    const validFollowTabs = ["follow-requests", "followers"];
-    if (!validFollowTabs.includes(selectedTab)) {
-      setSelectedTab("follow-requests");
-    }
-
     return (
       <Card className="w-full">
         <CardHeader>
