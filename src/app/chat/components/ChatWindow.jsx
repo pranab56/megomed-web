@@ -309,8 +309,10 @@ const ChatWindow = ({ clientId, chatId }) => {
             : null,
           sender: {
             _id: loginUserId,
-            fullName: "You", // Add sender name for display
-            profile: null,
+            fullName: localStorage.getItem("userName") || "You",
+            email: localStorage.getItem("userEmail") || "",
+            profile: localStorage.getItem("userProfile") || null,
+            role: localStorage.getItem("role") || "",
           },
           createdAt: new Date().toISOString(),
           seen: false,
@@ -345,10 +347,20 @@ const ChatWindow = ({ clientId, chatId }) => {
           console.log(
             "📡 ChatWindow: Emitting new-message event for chat list update"
           );
+
+          // Get current user data from localStorage or context
+          const currentUserData = {
+            _id: loginUserId,
+            fullName: localStorage.getItem("userName") || "You",
+            email: localStorage.getItem("userEmail") || "",
+            profile: localStorage.getItem("userProfile") || null,
+            role: localStorage.getItem("role") || "",
+          };
+
           socket.emit("new-message", {
             ...newMessage,
             chatId: chatId,
-            sender: { _id: loginUserId, email: "", role: "" }, // Add sender details
+            sender: currentUserData,
           });
         }
       }
