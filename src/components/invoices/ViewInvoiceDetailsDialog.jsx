@@ -12,12 +12,24 @@ import Image from "next/image";
 // Define translations locally
 const dialogTranslations = {
   title: "Invoice Details",
-  clientName: "Client Name",
+  invoiceId: "Invoice ID",
+  clientName: "Client/Freelancer",
   serviceType: "Service Type",
-  projectName: "Project Name",
-  workingDay: "Working Day",
+  projectType: "Project Type",
+  tenderId: "Tender ID",
+  freelancerUserId: "Freelancer ID",
+  clientUserId: "Client ID",
+  date: "Date",
+  createdAt: "Created",
+  updatedAt: "Updated",
   totalAmount: "Total Amount",
   status: "Status",
+  paymentStatus: "Payment Status",
+  message: "Message",
+  deliveryMessage: "Delivery Message",
+  uploadDocuments: "Upload Documents",
+  deliveryFiles: "Delivery Files",
+  extendDate: "Extended Date",
   doneButton: "Done",
 };
 
@@ -26,17 +38,18 @@ export default function ViewInvoiceDetailsDialog({
   onClose,
   invoiceData = null,
 }) {
-  // Default invoice data if none provided
-  const defaultInvoiceData = {
-    clientName: "s. jean",
-    serviceType: "graphic",
-    projectName: "Project 1: CRM System",
-    workingDay: "5",
-    totalAmount: "$250",
+  // Use provided invoice data or fall back to default
+  const invoice = invoiceData || {
+    client: "No client info",
+    serviceType: "No service type",
+    amount: "$0",
     status: "Pending",
+    paymentStatus: "pending",
+    invoiceType: "unknown",
+    date: "No date",
+    message: "No message",
+    deliveryMessage: "No delivery message",
   };
-
-  const invoice = invoiceData || defaultInvoiceData;
 
   const handleDone = () => {
     onClose?.();
@@ -61,70 +74,236 @@ export default function ViewInvoiceDetailsDialog({
             </h3>
 
             <div className="space-y-3">
-              {/* Client Name */}
+              {/* Invoice ID */}
               <div className="flex items-start">
-                <span className="font-medium text-gray-900 min-w-[120px]">
+                <span className="font-medium text-gray-900 min-w-[140px]">
+                  {dialogTranslations.invoiceId}:
+                </span>
+                <span className="text-gray-700 ml-2">{invoice.id}</span>
+              </div>
+
+              {/* Client/Freelancer */}
+              <div className="flex items-start">
+                <span className="font-medium text-gray-900 min-w-[140px]">
                   {dialogTranslations.clientName}:
                 </span>
-                <span className="text-gray-700 ml-2">{invoice.clientName}</span>
+                <span className="text-gray-700 ml-2">{invoice.client}</span>
               </div>
 
               {/* Service Type */}
               <div className="flex items-start">
-                <span className="font-medium text-gray-900 min-w-[120px]">
+                <span className="font-medium text-gray-900 min-w-[140px]">
                   {dialogTranslations.serviceType}:
                 </span>
                 <span className="text-gray-700 ml-2">
-                  {invoice.serviceType}
+                  {invoice.serviceType || "N/A"}
                 </span>
               </div>
 
-              {/* Project Name */}
+              {/* Project Type */}
               <div className="flex items-start">
-                <span className="font-medium text-gray-900 min-w-[120px]">
-                  {dialogTranslations.projectName}:
+                <span className="font-medium text-gray-900 min-w-[140px]">
+                  {dialogTranslations.projectType}:
                 </span>
                 <span className="text-gray-700 ml-2">
-                  {invoice.projectName}
+                  {invoice.invoiceType || "N/A"}
                 </span>
               </div>
 
-              {/* Working Day */}
+              {/* Tender ID (if available) */}
+              {invoice.tenderId && (
+                <div className="flex items-start">
+                  <span className="font-medium text-gray-900 min-w-[140px]">
+                    {dialogTranslations.tenderId}:
+                  </span>
+                  <span className="text-gray-700 ml-2">{invoice.tenderId}</span>
+                </div>
+              )}
+
+              {/* Freelancer User ID */}
+              {invoice.freelancerUserId && (
+                <div className="flex items-start">
+                  <span className="font-medium text-gray-900 min-w-[140px]">
+                    {dialogTranslations.freelancerUserId}:
+                  </span>
+                  <span className="text-gray-700 ml-2">
+                    {invoice.freelancerUserId}
+                  </span>
+                </div>
+              )}
+
+              {/* Client User ID */}
+              {invoice.clientUserId && (
+                <div className="flex items-start">
+                  <span className="font-medium text-gray-900 min-w-[140px]">
+                    {dialogTranslations.clientUserId}:
+                  </span>
+                  <span className="text-gray-700 ml-2">
+                    {invoice.clientUserId}
+                  </span>
+                </div>
+              )}
+
+              {/* Date */}
               <div className="flex items-start">
-                <span className="font-medium text-gray-900 min-w-[120px]">
-                  {dialogTranslations.workingDay}:
+                <span className="font-medium text-gray-900 min-w-[140px]">
+                  {dialogTranslations.date}:
                 </span>
-                <span className="text-gray-700 ml-2">{invoice.workingDay}</span>
+                <span className="text-gray-700 ml-2">{invoice.date}</span>
               </div>
+
+              {/* Created At */}
+              {invoice.createdAt && (
+                <div className="flex items-start">
+                  <span className="font-medium text-gray-900 min-w-[140px]">
+                    {dialogTranslations.createdAt}:
+                  </span>
+                  <span className="text-gray-700 ml-2">
+                    {new Date(invoice.createdAt).toLocaleString()}
+                  </span>
+                </div>
+              )}
+
+              {/* Updated At */}
+              {invoice.updatedAt && (
+                <div className="flex items-start">
+                  <span className="font-medium text-gray-900 min-w-[140px]">
+                    {dialogTranslations.updatedAt}:
+                  </span>
+                  <span className="text-gray-700 ml-2">
+                    {new Date(invoice.updatedAt).toLocaleString()}
+                  </span>
+                </div>
+              )}
 
               {/* Total Amount */}
               <div className="flex items-start">
-                <span className="font-medium text-gray-900 min-w-[120px]">
+                <span className="font-medium text-gray-900 min-w-[140px]">
                   {dialogTranslations.totalAmount}:
                 </span>
                 <span className="text-gray-700 ml-2 font-semibold">
-                  {invoice.totalAmount}
+                  ${invoice.amount}
                 </span>
               </div>
 
               {/* Status */}
               <div className="flex items-start">
-                <span className="font-medium text-gray-900 min-w-[120px]">
+                <span className="font-medium text-gray-900 min-w-[140px]">
                   {dialogTranslations.status}:
                 </span>
                 <span
-                  className={`ml-2 px-2 py-1 rounded-md text-sm font-medium ${invoice.status === "Pending"
+                  className={`ml-2 px-2 py-1 rounded-md text-sm font-medium ${
+                    invoice.status === "pending"
                       ? "bg-yellow-100 text-yellow-800"
-                      : invoice.status === "Paid"
-                        ? "bg-green-100 text-green-800"
-                        : invoice.status === "Overdue"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-gray-100 text-gray-800"
-                    }`}
+                      : invoice.status === "accepted"
+                      ? "bg-blue-100 text-blue-800"
+                      : invoice.status === "delivered"
+                      ? "bg-green-100 text-green-800"
+                      : invoice.status === "declined"
+                      ? "bg-red-100 text-red-800"
+                      : invoice.status === "completed"
+                      ? "bg-purple-100 text-purple-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
                 >
-                  {invoice.status}
+                  {invoice.status
+                    ? invoice.status.charAt(0).toUpperCase() +
+                      invoice.status.slice(1)
+                    : "Unknown"}
                 </span>
               </div>
+
+              {/* Payment Status */}
+              <div className="flex items-start">
+                <span className="font-medium text-gray-900 min-w-[140px]">
+                  {dialogTranslations.paymentStatus}:
+                </span>
+                <span
+                  className={`ml-2 px-2 py-1 rounded-md text-sm font-medium ${
+                    invoice.paymentStatus === "pending"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-green-100 text-green-800"
+                  }`}
+                >
+                  {invoice.paymentStatus
+                    ? invoice.paymentStatus.charAt(0).toUpperCase() +
+                      invoice.paymentStatus.slice(1)
+                    : "Unknown"}
+                </span>
+              </div>
+
+              {/* Extended Date (if available) */}
+              {invoice.extendDate && (
+                <div className="flex items-start">
+                  <span className="font-medium text-gray-900 min-w-[140px]">
+                    {dialogTranslations.extendDate}:
+                  </span>
+                  <span className="text-gray-700 ml-2">
+                    {new Date(invoice.extendDate).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
+
+              {/* Message (if available) */}
+              {invoice.message && (
+                <div className="flex items-start">
+                  <span className="font-medium text-gray-900 min-w-[140px]">
+                    {dialogTranslations.message}:
+                  </span>
+                  <span className="text-gray-700 ml-2">{invoice.message}</span>
+                </div>
+              )}
+
+              {/* Delivery Message (if available) */}
+              {invoice.deliveryMessage && (
+                <div className="flex items-start">
+                  <span className="font-medium text-gray-900 min-w-[140px]">
+                    {dialogTranslations.deliveryMessage}:
+                  </span>
+                  <span className="text-gray-700 ml-2">
+                    {invoice.deliveryMessage}
+                  </span>
+                </div>
+              )}
+
+              {/* Upload Documents (if available) */}
+              {invoice.uploadDocuments &&
+                invoice.uploadDocuments.length > 0 && (
+                  <div className="flex items-start">
+                    <span className="font-medium text-gray-900 min-w-[140px]">
+                      {dialogTranslations.uploadDocuments}:
+                    </span>
+                    <div className="ml-2">
+                      {invoice.uploadDocuments.map((doc, index) => (
+                        <div
+                          key={index}
+                          className="text-blue-600 hover:underline text-sm"
+                        >
+                          {doc.split("\\").pop()}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {/* Delivery Files (if available) */}
+              {invoice.deliveryFiles && invoice.deliveryFiles.length > 0 && (
+                <div className="flex items-start">
+                  <span className="font-medium text-gray-900 min-w-[140px]">
+                    {dialogTranslations.deliveryFiles}:
+                  </span>
+                  <div className="ml-2">
+                    {invoice.deliveryFiles.map((file, index) => (
+                      <div
+                        key={index}
+                        className="text-blue-600 hover:underline text-sm"
+                      >
+                        {file.split("\\").pop()}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Logo */}

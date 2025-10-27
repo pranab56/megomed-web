@@ -422,7 +422,10 @@ const InvoicesContent = () => {
                     <div className="space-y-2">
                       <Button
                         className="button-gradient w-full"
-                        onClick={() => setIsViewInvoiceDetailsDialogOpen(true)}
+                        onClick={() => {
+                          setSelectedInvoice(invoice);
+                          setIsViewInvoiceDetailsDialogOpen(true);
+                        }}
                       >
                         <FileText className="w-4 h-4 mr-2" />
                         {invoiceTranslations.viewDetails}
@@ -491,9 +494,10 @@ const InvoicesContent = () => {
                       <div className="flex items-center gap-4">
                         <Button
                           className="button-gradient"
-                          onClick={() =>
-                            setIsViewInvoiceDetailsDialogOpen(true)
-                          }
+                          onClick={() => {
+                            setSelectedInvoice(invoice);
+                            setIsViewInvoiceDetailsDialogOpen(true);
+                          }}
                         >
                           <FileText className="w-4 h-4 mr-2" />
                           {invoiceTranslations.viewDetails}
@@ -622,6 +626,7 @@ const InvoicesContent = () => {
           <ViewInvoiceDetailsDialog
             isOpen={isViewInvoiceDetailsDialogOpen}
             onClose={() => setIsViewInvoiceDetailsDialogOpen(false)}
+            invoiceData={selectedInvoice}
           />
         )}
 
