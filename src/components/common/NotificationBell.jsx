@@ -235,7 +235,6 @@ function NotificationBell({ className = "" }) {
 
     // Cleanup on unmount
     return () => {
-      // console.log("🧹 Cleaning up socket listeners");
       socket.off("notification");
       socket.off(`notification::${userIdString}`);
     };

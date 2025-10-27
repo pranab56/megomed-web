@@ -141,8 +141,6 @@ const ChatWindow = ({ clientId, chatId }) => {
   useEffect(() => {
     const user = localStorage.getItem("user");
     const role = localStorage.getItem("role");
-    console.log("🔍 ChatWindow: Setting login user ID:", user);
-    console.log("🔍 ChatWindow: Setting user role:", role);
     setLoginUserId(user);
     setCurrentUserRole(role);
   }, []);
@@ -151,32 +149,58 @@ const ChatWindow = ({ clientId, chatId }) => {
   useEffect(() => {
     if (!loginUserId || !chatId) return;
 
-    console.log("🔌 ChatWindow: Setting up socket connection");
-    console.log("👤 User ID:", loginUserId);
-    console.log("💬 Chat ID:", chatId);
-
     // Use existing socket connection instead of creating new one
     let socket = getSocket();
     if (!socket || !socket.connected) {
-      console.log(
-        "❌ ChatWindow: No socket found or not connected, creating new connection"
-      );
       socket = connectSocket(loginUserId);
     } else {
-      console.log("✅ ChatWindow: Using existing socket connection");
-      console.log("🔌 Socket Connected:", socket.connected);
-      console.log("🆔 Socket ID:", socket.id);
+      // console.log("✅ ChatWindow: Using existing socket connection"); // eslint-disable-line no-console
     }
 
     // Listen for new messages in this specific chat
     const handleNewMessage = (messageData) => {
-      console.log("📨 ChatWindow: New message received:", messageData);
+      console.log("📨 ChatWindow: Received message:", messageData);
+      console.log("💬 Current Chat ID:", chatId);
+      console.log("💬 Message Chat ID:", messageData.chatId);
+      console.log("👤 Current User ID:", loginUserId);
+      console.log("👤 Sender:", messageData.sender);
 
-      // Only process messages for this chat
+      // Only process messages for this specific chat
       if (messageData.chatId === chatId) {
-        console.log(
-          "✅ ChatWindow: Message is for this chat, adding to real-time messages"
-        );
+        // Additional security check: verify user is participant in this chat
+        const isParticipantInChat = () => {
+          // Check if this chat exists in our API data (meaning user is a participant)
+          const existingApiChat =
+            AllChat?.data?.pinned?.find((item) => item.chat._id === chatId) ||
+            AllChat?.data?.unpinned?.find((item) => item.chat._id === chatId);
+          if (existingApiChat) {
+            console.log(
+              "✅ User is participant in this chat (found in API data)"
+            );
+            return true;
+          }
+
+          // Check if current user is the sender
+          const senderId =
+            typeof messageData.sender === "object"
+              ? messageData.sender._id
+              : messageData.sender;
+          if (senderId === loginUserId) {
+            console.log("✅ User is sender of this message");
+            return true;
+          }
+
+          console.log(
+            "❌ User is not a participant in this chat, ignoring message"
+          );
+          return false;
+        };
+
+        // Only process the message if user is a participant
+        if (!isParticipantInChat()) {
+          console.log("🚫 Ignoring message - user not participant in chat");
+          return;
+        }
 
         setRealTimeMessages((prevMessages) => {
           // Check if message already exists to avoid duplicates
@@ -184,13 +208,11 @@ const ChatWindow = ({ clientId, chatId }) => {
             (msg) => msg._id === messageData._id
           );
           if (exists) {
-            console.log("⚠️ ChatWindow: Message already exists, skipping");
+            console.log("⚠️ Message already exists, skipping");
             return prevMessages;
           }
 
-          console.log(
-            "➕ ChatWindow: Adding new message to real-time messages"
-          );
+          console.log("✅ Adding new message to ChatWindow");
           const newMessages = [
             ...prevMessages,
             {
@@ -219,7 +241,7 @@ const ChatWindow = ({ clientId, chatId }) => {
           return newMessages;
         });
       } else {
-        console.log("❌ ChatWindow: Message is for different chat, ignoring");
+        console.log("❌ Message is for different chat, ignoring");
       }
     };
 
@@ -228,18 +250,13 @@ const ChatWindow = ({ clientId, chatId }) => {
 
     // Also listen for specific chat events (new-message::chatid pattern)
     socket.onAny((eventName, ...args) => {
-      console.log("📡 ChatWindow: Received Socket Event:", eventName, args);
       if (eventName.startsWith("new-message::") && eventName.includes(chatId)) {
-        console.log(
-          "🎯 ChatWindow: Matched new-message:: pattern for this chat:",
-          eventName
-        );
         handleNewMessage(args[0]);
       }
     });
 
     // Test socket connection by emitting a test event
-    console.log("🧪 ChatWindow: Testing socket connection...");
+
     socket.emit("test-chatwindow", {
       message: "ChatWindow test",
       chatId: chatId,
@@ -248,7 +265,6 @@ const ChatWindow = ({ clientId, chatId }) => {
 
     // Cleanup on unmount or chat change
     return () => {
-      console.log("🧹 ChatWindow: Cleaning up socket listeners");
       socket.off("new-message", handleNewMessage);
     };
   }, [loginUserId, chatId]);
@@ -266,7 +282,7 @@ const ChatWindow = ({ clientId, chatId }) => {
 
   const handleCreateNewMessage = async () => {
     if (!formValues.message.trim() && !formValues.file) return;
-    console.log("🔍 ChatWindow: Form values:", formValues.message);
+
     try {
       const formData = new FormData();
 
@@ -282,15 +298,7 @@ const ChatWindow = ({ clientId, chatId }) => {
       formData.append("chatId", chatId);
       formData.append("receiver", clientId); // Add receiver field
 
-      // Debug: Log form data contents
-      console.log("📤 ChatWindow: Sending form data:");
-      console.log("  - message:", formValues.message);
-      console.log("  - chatId:", chatId);
-      console.log("  - receiver:", clientId);
-      console.log("  - file:", formValues.file?.name || "none");
-
       const result = await createMessage(formData).unwrap();
-      console.log("📤 ChatWindow: Message sent successfully:", result);
 
       // Add the sent message to real-time messages immediately for instant display
       if (result?.data) {
@@ -323,9 +331,6 @@ const ChatWindow = ({ clientId, chatId }) => {
         };
 
         setRealTimeMessages((prevMessages) => {
-          console.log(
-            "➕ ChatWindow: Adding sent message to real-time messages"
-          );
           const updatedMessages = [...prevMessages, newMessage];
 
           // Scroll to bottom after adding sent message
@@ -344,10 +349,6 @@ const ChatWindow = ({ clientId, chatId }) => {
         // Emit socket event to update chat list instantly
         const socket = getSocket();
         if (socket && socket.connected) {
-          console.log(
-            "📡 ChatWindow: Emitting new-message event for chat list update"
-          );
-
           // Get current user data from localStorage or context
           const currentUserData = {
             _id: loginUserId,
@@ -374,7 +375,7 @@ const ChatWindow = ({ clientId, chatId }) => {
       // Refetch messages to get the latest
       refetchMessages();
     } catch (error) {
-      console.error("Failed to send message:", error);
+      toast.error("Failed to send message! Please try again later.");
     }
   };
 
@@ -406,13 +407,6 @@ const ChatWindow = ({ clientId, chatId }) => {
       return;
     }
 
-    console.log("Report submitted:", {
-      reason: reportReason,
-      text: reportMessage,
-      reportedUserId: clientId,
-      chatId: chatId,
-    });
-
     try {
       const result = await report({
         reason: reportReason,
@@ -424,14 +418,12 @@ const ChatWindow = ({ clientId, chatId }) => {
       toast.success(
         "Report submitted successfully! We'll review your report within 24 hours."
       );
-      console.log("Report submitted successfully:", result);
 
       // Reset form and close modal
       setReportReason("");
       setReportMessage("");
       setShowReportModal(false);
     } catch (error) {
-      console.error("Failed to submit report:", error);
       toast.error("Failed to submit report! Please try again later.");
     }
   };
@@ -457,7 +449,6 @@ const ChatWindow = ({ clientId, chatId }) => {
       };
 
       const result = await createInvoice(invoiceData).unwrap();
-      console.log("Invoice created successfully:", result);
 
       setInvoiceForm({
         invoiceType: "tender",
@@ -469,7 +460,7 @@ const ChatWindow = ({ clientId, chatId }) => {
       });
       setShowInvoiceModal(false);
     } catch (error) {
-      console.error("Failed to create invoice:", error);
+      toast.error("Failed to create invoice! Please try again later.");
     }
   };
 
@@ -561,27 +552,6 @@ const ChatWindow = ({ clientId, chatId }) => {
 
   const toggleFileUpload = () => {
     setShowFileUpload(!showFileUpload);
-  };
-
-  const testChatWindowSocket = () => {
-    const socket = getSocket();
-    if (socket) {
-      console.log("🧪 ChatWindow Manual Test:");
-      console.log("🔌 Socket Connected:", socket.connected);
-      console.log("🆔 Socket ID:", socket.id);
-      console.log("💬 Chat ID:", chatId);
-      console.log("👤 User ID:", loginUserId);
-
-      // Emit test event
-      socket.emit("test-chatwindow", {
-        message: "Manual ChatWindow test",
-        chatId: chatId,
-        userId: loginUserId,
-        timestamp: new Date().toISOString(),
-      });
-    } else {
-      console.log("❌ No socket instance found in ChatWindow");
-    }
   };
 
   if (!clientId || !chatId) {
@@ -688,11 +658,8 @@ const ChatWindow = ({ clientId, chatId }) => {
                   if (token) {
                     const decoded = jwtDecode(token);
                     currentUserId = decoded.userId || decoded.id;
-                    console.log("🔑 JWT Decoded User ID:", currentUserId);
                   }
-                } catch (error) {
-                  console.error("❌ Error decoding JWT:", error);
-                }
+                } catch (error) {}
 
                 // Fallback to localStorage if JWT fails
                 if (!currentUserId) {
@@ -721,34 +688,6 @@ const ChatWindow = ({ clientId, chatId }) => {
                 // Final decision: if it's our message, show on right (sender side)
                 const finalIsCurrentUser = isCurrentUser || forceRight;
                 const isFirst = index === 0;
-
-                // Debug: Log message alignment
-                console.log("🔍 Message alignment debug:");
-                console.log("  - Message ID:", message._id);
-                console.log("  - Sender ID:", message.sender?._id);
-                console.log("  - Sender Name:", message.sender?.fullName);
-                console.log("  - JWT User ID:", currentUserId);
-                console.log("  - Login User ID:", loginUserId);
-                console.log("  - Is Our Message:", isOurMessage);
-                console.log("  - Is Current User:", isCurrentUser);
-                console.log("  - Force Right:", forceRight);
-                console.log("  - Final Is Current User:", finalIsCurrentUser);
-                console.log(
-                  "  - Match Check:",
-                  message.sender?._id,
-                  "===",
-                  currentUserId,
-                  "?",
-                  message.sender?._id === currentUserId
-                );
-                console.log(
-                  "  - Alignment:",
-                  finalIsCurrentUser ? "RIGHT (SENDER)" : "LEFT (RECEIVER)"
-                );
-                console.log(
-                  "  - Message Text:",
-                  message.message?.substring(0, 20) + "..."
-                );
 
                 return (
                   <motion.div

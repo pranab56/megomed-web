@@ -90,12 +90,6 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
     // Get all API messages except the welcome message
     const apiMessages = messages.filter((msg) => msg.id !== 1);
 
-    console.log("🔍 API Messages Debug:", {
-      totalMessages: messages.length,
-      apiMessagesCount: apiMessages.length,
-      realTimeMessagesCount: realTimeMessages.length,
-    });
-
     // Convert real-time messages to the same format
     const realTimeFormatted = realTimeMessages.map((msg) => {
       const currentUserId = getCurrentUserId();
@@ -103,15 +97,6 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
       // Handle both string and object sender formats
       const senderId =
         typeof msg.sender === "string" ? msg.sender : msg.sender?._id;
-
-      console.log("🔄 Processing real-time message:", {
-        messageId: msg._id,
-        messageText: msg.message,
-        sender: msg.sender,
-        senderId: senderId,
-        currentUserId: currentUserId,
-        isUser: senderId === currentUserId,
-      });
 
       return {
         id: msg._id,
@@ -134,15 +119,6 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
       (msg, index, self) => index === self.findIndex((m) => m.id === msg.id)
     );
 
-    console.log("📊 Combined Messages Debug:", {
-      apiMessagesCount: apiMessages.length,
-      realTimeMessagesCount: realTimeMessages.length,
-      realTimeFormattedCount: realTimeFormatted.length,
-      allMessagesCount: allMessages.length,
-      uniqueMessagesCount: uniqueMessages.length,
-      finalMessagesCount: uniqueMessages.length + 1,
-    });
-
     return [
       {
         id: 1,
@@ -162,9 +138,6 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
   // Auto-scroll when real-time messages are added
   useEffect(() => {
     if (realTimeMessages.length > 0) {
-      console.log(
-        "📜 Help & Support: Auto-scrolling for new real-time message"
-      );
       scrollToBottom();
     }
   }, [realTimeMessages]);
@@ -173,22 +146,13 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
   useEffect(() => {
     if (!chatId) return;
 
-    console.log("🔌 Help & Support: Setting up socket connection");
-    console.log("💬 Chat ID:", chatId);
-
     // Use existing socket connection instead of creating new one
     let socket = getSocket();
     if (!socket || !socket.connected) {
-      console.log(
-        "❌ Help & Support: No socket found or not connected, creating new connection"
-      );
       const currentUserId =
         localStorage.getItem("user") || localStorage.getItem("userId");
       socket = connectSocket(currentUserId);
     } else {
-      console.log("✅ Help & Support: Using existing socket connection");
-      console.log("🔌 Socket Connected:", socket.connected);
-      console.log("🆔 Socket ID:", socket.id);
     }
 
     // Listen for new messages in this specific chat
@@ -211,9 +175,6 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
             return prevMessages;
           }
 
-          console.log(
-            "➕ Help & Support: Adding new message to real-time messages"
-          );
           const newMessage = {
             _id: messageData._id,
             message: messageData.message,
@@ -261,12 +222,6 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
     const newSupportMessageEvent = `new-support-message::${chatId}`;
     const generalNewSupportEvent = "new-support-message";
 
-    console.log("👂 Help & Support: Setting up listeners for:");
-    console.log("  - Specific chat:", supportChatEvent);
-    console.log("  - General support:", generalSupportEvent);
-    console.log("  - New support specific:", newSupportMessageEvent);
-    console.log("  - New support general:", generalNewSupportEvent);
-
     // Listen for specific support chat messages
     socket.on(supportChatEvent, handleNewMessage);
 
@@ -289,25 +244,17 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
         eventName.startsWith("support-message::") &&
         eventName.includes(chatId)
       ) {
-        console.log(
-          "🎯 Help & Support: Matched support-message:: pattern for this chat:",
-          eventName
-        );
         handleNewMessage(args[0]);
       }
 
       // Check for general new-message events for this chat
       if (eventName.startsWith("new-message::") && eventName.includes(chatId)) {
-        console.log(
-          "🎯 Help & Support: Matched new-message:: pattern for this chat:",
-          eventName
-        );
         handleNewMessage(args[0]);
       }
     });
 
     // Test socket connection by emitting a test event
-    console.log("🧪 Help & Support: Testing socket connection...");
+
     socket.emit("test-support-chat", {
       message: "Help & Support test",
       chatId: chatId,
@@ -316,7 +263,6 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
 
     // Cleanup on unmount or chat change
     return () => {
-      console.log("🧹 Help & Support: Cleaning up socket listeners");
       socket.off("new-message", handleNewMessage);
       socket.off(supportChatEvent, handleNewMessage);
       socket.off(generalSupportEvent, handleNewMessage);
