@@ -229,6 +229,8 @@ const FollowRequestsContent = ({ followRequests }) => {
   // Get follow requests data from API
   const requests = followRequests?.data || [];
 
+  console.log("followRequests //////////////////////////", requests);
+
   const [followBack, { isLoading: isFollowing }] = useFollowBackMutation();
   const handleAccept = async (id) => {
     console.log("Follow back:", id);
@@ -261,13 +263,13 @@ const FollowRequestsContent = ({ followRequests }) => {
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
                 <span className="text-gray-600 font-semibold">
-                  {request.followerUserId?.slice(-2) || "U"}
+                  {request.userId?.slice(-2) || "U"}
                 </span>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">
-                  User ID: {request.followerUserId?.slice(0, 3)}...
-                  {request.followerUserId?.slice(-3)}
+                  User ID: {request.userId?.slice(0, 3)}...
+                  {request.userId?.slice(-3)}
                 </h3>
                 <p className="text-sm text-gray-600">
                   Status: {request.status}
@@ -317,13 +319,13 @@ const FollowersContent = ({ followers }) => {
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
                 <span className="text-gray-600 font-semibold">
-                  {follower.followerUserId?.slice(-2) || "U"}
+                  {follower.userId?.slice(-2) || "U"}
                 </span>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">
-                  User ID: {follower.followerUserId?.slice(0, 3)}...
-                  {follower.followerUserId?.slice(-3)}
+                  User ID: {follower.userId?.slice(0, 3)}...
+                  {follower.userId?.slice(-3)}
                 </h3>
                 <p className="text-sm text-gray-600">
                   Status: {follower.status}
@@ -338,7 +340,7 @@ const FollowersContent = ({ followers }) => {
               <button
                 onClick={() =>
                   window.open(
-                    `/profile/view-public/${follower.followerUserId}`,
+                    `/profile/view-public/${follower.userId}`,
                     "_blank"
                   )
                 }
