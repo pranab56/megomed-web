@@ -12,12 +12,13 @@ import {
   useFollowBackMutation,
 } from "@/features/freelancer/freelancerApi";
 import toast from "react-hot-toast";
-
+import { useRouter } from "next/navigation";
 function FreelancerDashboardLayout() {
   const currentUser = localStorage.getItem("role");
   const userType = currentUser;
   const [selectedCategory, setSelectedCategory] = useState("jobs");
   const [selectedTab, setSelectedTab] = useState("applied");
+  const router = useRouter();
   const { data: appliedJobs } = useGetAppliedJobsQuery();
   const { data: appliedTenders } = useGetAppliedTendersQuery();
 
@@ -243,11 +244,6 @@ const FollowRequestsContent = ({ followRequests }) => {
     }
   };
 
-  const handleReject = (id) => {
-    console.log("Reject follow request:", id);
-    // Add API call to reject follow request
-  };
-
   return (
     <div className="space-y-4">
       {requests.length === 0 ? (
@@ -296,12 +292,15 @@ const FollowRequestsContent = ({ followRequests }) => {
 
 // Followers Content Component
 const FollowersContent = ({ followers }) => {
+  const router = useRouter();
   // Get followers data from API
   const followersList = followers?.data || [];
+  console.log("followersList //////////////////////////", followersList);
 
-  const handleUnfollow = (id) => {
-    console.log("Unfollow user:", id);
-    // Add API call to unfollow user
+  const handleSendMessage = (id) => {
+    // const rawUser = localStorage.getItem("user");
+    // const currentUser = { current_user_id: rawUser.replace(/"/g, "") };
+    router.push(`/chat`);
   };
 
   return (
@@ -344,15 +343,15 @@ const FollowersContent = ({ followers }) => {
                     "_blank"
                   )
                 }
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 button-gradient transition-colors cursor-pointer"
               >
                 View Profile
               </button>
               <button
-                onClick={() => handleUnfollow(follower._id)}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                onClick={() => handleSendMessage(follower._id)}
+                className="px-4 py-2 button-gradient transition-colors cursor-pointer"
               >
-                Unfollow
+                Send Message
               </button>
             </div>
           </div>

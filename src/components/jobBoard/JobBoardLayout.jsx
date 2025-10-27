@@ -5,12 +5,14 @@ import {
   useAllProjectByClientQuery,
   useAllProjectByCompanyQuery,
   useGetAllJobsQuery,
+  useDeleteJobsMutation,
 } from "../../features/jobBoard/jobBoardApi";
 import SideBar from "../common/SideBar";
 import Banner from "../common/banner/Banner";
 import Heading from "../common/heading/Heading";
 import MainContent from "../common/maincontent/MainContent";
 import { Input } from "../ui/input";
+import toast from "react-hot-toast";
 
 // ✅ Real component — hooks at top level
 const JobBoardLayoutContent = () => {
@@ -36,7 +38,10 @@ const JobBoardLayoutContent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedServices, setSelectedServices] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
-
+  const [
+    deleteJobs,
+    { isLoading: deleteJobsLoading, isError: deleteJobsError },
+  ] = useDeleteJobsMutation();
   // Construct query parameters
   const serviceTypeName =
     selectedServices.length > 0 ? selectedServices.join(",") : "";
@@ -83,7 +88,7 @@ const JobBoardLayoutContent = () => {
   );
 
   // Use the appropriate query result based on user type
-  const { data, isLoading, isError } =
+  const { data, isLoading, isError, refetch } =
     userType === "client"
       ? clientQuery
       : userType === "company"
@@ -94,6 +99,25 @@ const JobBoardLayoutContent = () => {
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
+  };
+
+  const handleDeleteJob = async (jobId) => {
+    try {
+      console.log("Deleting job with ID:", jobId);
+      const result = await deleteJobs(jobId).unwrap();
+      console.log("Delete result:", result);
+
+      if (result.success) {
+        toast.success("Job deleted successfully");
+        // Refetch the data to update the UI
+        await refetch();
+      } else {
+        toast.error(result.message || "Failed to delete job");
+      }
+    } catch (error) {
+      console.error("Failed to delete job:", error);
+      toast.error(error?.data?.message || "Failed to delete job");
+    }
   };
 
   return (
@@ -162,6 +186,7 @@ const JobBoardLayoutContent = () => {
             jobs={data?.data || []}
             isLoading={isLoading}
             isError={isError}
+            handleDeleteJob={handleDeleteJob}
           />
         </div>
       </div>

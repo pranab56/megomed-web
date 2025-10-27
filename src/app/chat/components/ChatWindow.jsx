@@ -81,20 +81,27 @@ const ChatWindow = ({ clientId, chatId }) => {
 
   const [report, { isLoading: reportLoading }] = useReportMutation();
 
-  // Handle view profile based on current user role
+  // Handle view profile based on participant role
   const handleViewProfile = () => {
     if (!clientId) {
       toast.error("User ID not found");
       return;
     }
 
-    // If current user is freelancer, show client profile
-    if (currentUserRole === "freelancer") {
-      router.push(`/client-profile/${clientId}`);
-    }
-    // If current user is client, show freelancer profile
-    else if (currentUserRole === "client") {
+    // Get the participant's role from the chat data
+    const participant = result?.chat?.participants?.[0];
+    const participantRole = participant?.role;
+
+    console.log("Participant role:", participantRole);
+    console.log("Client ID:", clientId);
+
+    // Navigate based on participant's role
+    if (participantRole === "freelancer") {
       router.push(`/profile/view-public/${clientId}`);
+    } else if (participantRole === "client") {
+      router.push(`/client-profile/${clientId}`);
+    } else if (participantRole === "company") {
+      router.push(`/company-profile/${clientId}`);
     }
     // Fallback for unknown role
     else {
@@ -159,11 +166,11 @@ const ChatWindow = ({ clientId, chatId }) => {
 
     // Listen for new messages in this specific chat
     const handleNewMessage = (messageData) => {
-      console.log("📨 ChatWindow: Received message:", messageData);
-      console.log("💬 Current Chat ID:", chatId);
-      console.log("💬 Message Chat ID:", messageData.chatId);
-      console.log("👤 Current User ID:", loginUserId);
-      console.log("👤 Sender:", messageData.sender);
+      // console.log("📨 ChatWindow: Received message:", messageData);
+      // console.log("💬 Current Chat ID:", chatId);
+      // console.log("💬 Message Chat ID:", messageData.chatId);
+      // console.log("👤 Current User ID:", loginUserId);
+      // console.log("👤 Sender:", messageData.sender);
 
       // Only process messages for this specific chat
       if (messageData.chatId === chatId) {
@@ -434,56 +441,56 @@ const ChatWindow = ({ clientId, chatId }) => {
     setShowReportModal(false);
   };
 
-  const handleInvoiceSubmit = async () => {
-    try {
-      const invoiceData = {
-        invoiceType: invoiceForm.invoiceType,
-        clientUserId: invoiceForm.clientUserId,
-        tenderId:
-          invoiceForm.invoiceType === "tender"
-            ? invoiceForm.tenderId
-            : undefined,
-        serviceType: invoiceForm.serviceType,
-        amount: parseFloat(invoiceForm.amount),
-        date: new Date(invoiceForm.date).toISOString(),
-      };
+  // const handleInvoiceSubmit = async () => {
+  //   try {
+  //     const invoiceData = {
+  //       invoiceType: invoiceForm.invoiceType,
+  //       clientUserId: invoiceForm.clientUserId,
+  //       tenderId:
+  //         invoiceForm.invoiceType === "tender"
+  //           ? invoiceForm.tenderId
+  //           : undefined,
+  //       serviceType: invoiceForm.serviceType,
+  //       amount: parseFloat(invoiceForm.amount),
+  //       date: new Date(invoiceForm.date).toISOString(),
+  //     };
 
-      const result = await createInvoice(invoiceData).unwrap();
+  //     const result = await createInvoice(invoiceData).unwrap();
 
-      setInvoiceForm({
-        invoiceType: "tender",
-        clientUserId: clientId,
-        tenderId: "",
-        serviceType: "",
-        amount: "",
-        date: new Date().toISOString().split("T")[0],
-      });
-      setShowInvoiceModal(false);
-    } catch (error) {
-      toast.error("Failed to create invoice! Please try again later.");
-    }
-  };
+  //     setInvoiceForm({
+  //       invoiceType: "tender",
+  //       clientUserId: clientId,
+  //       tenderId: "",
+  //       serviceType: "",
+  //       amount: "",
+  //       date: new Date().toISOString().split("T")[0],
+  //     });
+  //     setShowInvoiceModal(false);
+  //   } catch (error) {
+  //     toast.error("Failed to create invoice! Please try again later.");
+  //   }
+  // };
 
-  const handleCloseInvoiceModal = () => {
-    setInvoiceForm({
-      invoiceType: "tender",
-      clientUserId: clientId,
-      tenderId: "",
-      serviceType: "",
-      amount: "",
-      date: new Date().toISOString().split("T")[0],
-    });
-    setShowInvoiceModal(false);
-  };
+  // const handleCloseInvoiceModal = () => {
+  //   setInvoiceForm({
+  //     invoiceType: "tender",
+  //     clientUserId: clientId,
+  //     tenderId: "",
+  //     serviceType: "",
+  //     amount: "",
+  //     date: new Date().toISOString().split("T")[0],
+  //   });
+  //   setShowInvoiceModal(false);
+  // };
 
-  const handleInvoiceTypeChange = (type) => {
-    setInvoiceForm({
-      ...invoiceForm,
-      invoiceType: type,
-      tenderId: type === "tender" ? invoiceForm.tenderId : "",
-      serviceType: type === "service" ? invoiceForm.serviceType : "",
-    });
-  };
+  // const handleInvoiceTypeChange = (type) => {
+  //   setInvoiceForm({
+  //     ...invoiceForm,
+  //     invoiceType: type,
+  //     tenderId: type === "tender" ? invoiceForm.tenderId : "",
+  //     serviceType: type === "service" ? invoiceForm.serviceType : "",
+  //   });
+  // };
 
   const getFileIcon = (fileName) => {
     const extension = fileName.split(".").pop().toLowerCase();
@@ -604,9 +611,20 @@ const ChatWindow = ({ clientId, chatId }) => {
             <div className="flex items-center space-x-4">
               <div className="flex space-x-2">
                 <Button variant="outline" size="sm" onClick={handleViewProfile}>
-                  {currentUserRole === "freelancer"
-                    ? "View Client Profile"
-                    : "View Freelancer Profile"}
+                  {(() => {
+                    const participant = result?.chat?.participants?.[0];
+                    const participantRole = participant?.role;
+
+                    if (participantRole === "freelancer") {
+                      return "View Freelancer Profile";
+                    } else if (participantRole === "client") {
+                      return "View Client Profile";
+                    } else if (participantRole === "company") {
+                      return "View Company Profile";
+                    } else {
+                      return "View Profile";
+                    }
+                  })()}
                 </Button>
                 <Button
                   variant="outline"
@@ -616,20 +634,12 @@ const ChatWindow = ({ clientId, chatId }) => {
                 >
                   Report
                 </Button>
-                <Button
+                {/* <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowInvoiceModal(true)}
                 >
                   Create Invoice
-                </Button>
-                {/* <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={testChatWindowSocket}
-                  className="bg-green-500 text-white hover:bg-green-600"
-                >
-                  Test Socket
                 </Button> */}
               </div>
             </div>
@@ -1038,7 +1048,7 @@ const ChatWindow = ({ clientId, chatId }) => {
       </div>
 
       {/* Create Invoice Modal */}
-      <Dialog open={showInvoiceModal} onOpenChange={setShowInvoiceModal}>
+      {/* <Dialog open={showInvoiceModal} onOpenChange={setShowInvoiceModal}>
         <DialogContent className="sm:max-w-lg bg-white">
           <div className="flex items-center justify-between">
             <DialogHeader>
@@ -1230,7 +1240,7 @@ const ChatWindow = ({ clientId, chatId }) => {
             </Button>
           </div>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </>
   );
 };

@@ -110,7 +110,7 @@ export const jobBoardApi = baseApi.injectEndpoints({
       providesTags: ["jobBoard"],
     }),
 
-    deleteJobs: builder.query({
+    deleteJobs: builder.mutation({
       query: (id) => ({
         url: `/jobs/${id}`,
         method: "DELETE",
@@ -126,7 +126,7 @@ export const {
   useAllProjectByClientQuery,
   useAllProjectByCompanyQuery,
   useCreateJobMutation,
-  useDeleteJobsQuery,
+  useDeleteJobsMutation,
   useGetAllJobsQuery,
   useSingleJobsQuery,
   useUpdateJobMutation,

@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientAppliedJobsTender from "./clientAppliedJobsTender";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGetClientDashboardQuery } from "@/features/clientDashboard/clientDashboardApi";
-
+import { useGetAllTendersbyClientQuery } from "@/features/clientDashboard/clientDashboardApi";
 function ClientDashboardLayout() {
   const currentUser = localStorage.getItem("role");
   const userType = currentUser;
@@ -16,11 +16,15 @@ function ClientDashboardLayout() {
     isLoading,
     error,
   } = useGetClientDashboardQuery();
+  const { data: allTenders, isLoading: tendersLoading } =
+    useGetAllTendersbyClientQuery();
+
+  // Debug logging
+  console.log("Client Dashboard - allTenders data:", allTenders);
+  console.log("Client Dashboard - clientDashboard data:", clientDashboard);
 
   // Organize dashboard data by category and status
   const organizedData = React.useMemo(() => {
-    if (!clientDashboard?.data) return { jobs: {}, tenders: {} };
-
     const result = {
       jobs: {
         applied: [],
@@ -36,23 +40,73 @@ function ClientDashboardLayout() {
       },
     };
 
-    // Sort applications by category and status
-    clientDashboard.data.forEach((item) => {
-      // Check if it's a job or tender based on jobId or tenderId
-      const category = item.jobId ? "jobs" : "tenders";
+    // Process job applications from clientDashboard
+    if (clientDashboard?.data) {
+      clientDashboard.data.forEach((item) => {
+        // Check if it's a job or tender based on jobId or tenderId
+        const category = item.jobId ? "jobs" : "tenders";
 
-      // Map status to the correct tab
-      let status = "applied";
-      if (item.status === "shortlist") status = "shortlisted";
-      else if (item.status === "accepted") status = "accepted";
-      else if (item.status === "rejected") status = "rejected";
+        // Map status to the correct tab
+        let status = "applied";
+        if (item.status === "shortlist") status = "shortlisted";
+        else if (item.status === "accepted") status = "accepted";
+        else if (item.status === "rejected") status = "rejected";
 
-      // Add to the right category and status bucket
-      result[category][status].push(item);
-    });
+        // Add to the right category and status bucket
+        result[category][status].push(item);
+      });
+    }
+
+    // Process tender invoices from allTenders
+    if (allTenders?.data) {
+      allTenders.data.forEach((invoice) => {
+        // Only process tender invoices
+        if (invoice.invoiceType === "tender") {
+          // Map invoice status to tender status
+          let status = "applied";
+          if (invoice.status === "approved") status = "accepted";
+          else if (invoice.status === "accepted") status = "accepted";
+          else if (invoice.status === "rejected") status = "rejected";
+          else if (invoice.status === "declined") status = "rejected";
+          else if (invoice.status === "shortlist") status = "shortlisted";
+          else if (invoice.status === "pending") status = "applied";
+
+          // Transform invoice data to match expected format
+          const tenderApplication = {
+            _id: invoice._id,
+            status: status,
+            price: invoice.amount,
+            availableDate: invoice.date,
+            coverMessage: invoice.message,
+            uploadDocuments: invoice.uploadDocuments || [],
+            freelancerUserId: {
+              _id: invoice.freelancerUserId,
+              // Note: We might need to fetch freelancer details separately
+              fullName: "Freelancer", // Placeholder - should be fetched from freelancer data
+              email: "",
+              profile: null,
+              role: "freelancer",
+            },
+            tenderId: {
+              _id: invoice.tenderId,
+              title: "Tender Project", // Placeholder - should be fetched from tender data
+              categoryName: "Tender",
+              description: "",
+            },
+            createdAt: invoice.createdAt,
+            updatedAt: invoice.updatedAt,
+          };
+
+          result.tenders[status].push(tenderApplication);
+        }
+      });
+    }
 
     return result;
-  }, [clientDashboard?.data]);
+  }, [clientDashboard?.data, allTenders?.data]);
+
+  // Debug final organized data
+  console.log("Client Dashboard - organizedData:", organizedData);
   if (userType !== "client") {
     return <div>You are not authorized to access this page</div>;
   }
@@ -67,7 +121,7 @@ function ClientDashboardLayout() {
           selectedCategory={selectedCategory}
           selectedTab={selectedTab}
           setSelectedTab={setSelectedTab}
-          isLoading={isLoading}
+          isLoading={isLoading || tendersLoading}
           error={error}
           data={organizedData}
         />

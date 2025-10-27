@@ -562,27 +562,6 @@ const InvoicesContent = () => {
                           </Button>
                           {console.log("invoice.status", invoice.status)}
 
-                          {/* {invoice.status === "delivered" ? (
-                            <Button
-                              className="button-gradient disabled cursor-not-allowed"
-                              disabled
-                            >
-                              <Truck className="w-4 h-4 mr-2 " />
-                              Delivered
-                            </Button>
-                          ) : (
-                            <Button
-                              className="button-gradient"
-                              onClick={() => {
-                                setSelectedInvoice(invoice);
-                                setIsProjectCompleteDialogOpen(true);
-                              }}
-                            >
-                              <Truck className="w-4 h-4 mr-2" />
-                              {invoiceTranslations.deliveryNow}
-                            </Button>
-                          )} */}
-
                           {invoice.status === "Delivered" ? (
                             <>
                               <Button

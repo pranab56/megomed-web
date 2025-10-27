@@ -14,7 +14,11 @@ import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import ProposalModalJobTender from "./ProposalModalJobTender";
 
-function JobTenderCard({ type = "tender", data }) {
+function JobTenderCard({
+  type = "tender",
+  data,
+  handleDeleteJob: onDeleteJob,
+}) {
   const router = useRouter();
   const showToast = useToast();
   const [respond, { isLoading: respondLoading }] = useRespondMutation();
@@ -61,28 +65,6 @@ function JobTenderCard({ type = "tender", data }) {
     );
   };
 
-  // const handleApplyJob = async (e) => {
-  //   e.preventDefault();
-
-  //   if (type === "tender") {
-  //     // Handle tender application
-  //     try {
-  //       const result = await respond(cardData._id).unwrap();
-  //       if (result.success) {
-  //         router.push(`/chat`);
-  //         toast.success(result.message || "Tender applied successfully!");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error applying to tender:", error);
-  //       showToast.error("Failed to apply for tender. Please try again.");
-  //     }
-  //   } else {
-  //     // Handle job application (redirect to job details)
-  //     console.log("Apply for job:", cardData._id);
-  //     router.push(`/job-details/${cardData._id}`);
-  //   }
-  // };
-
   const handleRespondToJob = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -94,6 +76,20 @@ function JobTenderCard({ type = "tender", data }) {
 
     console.log("JobTenderCard - Opening proposal modal");
     setOpenProposalModal(true);
+  };
+
+  const handleDeleteJobClick = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${data?.title}"? This action cannot be undone.`
+    );
+
+    if (confirmed && onDeleteJob) {
+      await onDeleteJob(data._id);
+    }
   };
 
   // Generate random user images for avatars
@@ -172,6 +168,14 @@ function JobTenderCard({ type = "tender", data }) {
               >
                 {type === "job" ? "View Job" : "View Tender"}
               </button>
+              {userType === "client" && (
+                <button
+                  onClick={handleDeleteJobClick}
+                  className="px-4 py-2 bg-transparent border-2 cursor-pointer border-white text-white rounded-lg font-medium hover:bg-white hover:text-black transition-all duration-200 text-sm"
+                >
+                  Delete Job
+                </button>
+              )}
               {userType === "freelancer" && (
                 <button
                   onClick={handleRespondToJob}

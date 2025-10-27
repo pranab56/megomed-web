@@ -24,6 +24,30 @@ export const clientDashboardApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["clientDashboard"],
     }),
+
+    getAllTendersbyClient: builder.query({
+      query: () => ({
+        url: "/invoice/client",
+        method: "GET",
+      }),
+      providesTags: ["clientDashboard"],
+    }),
+
+    tenderShortList: builder.mutation({
+      query: (data) => ({
+        url: `/invoice/invoice-shortlist-cancel/${data._id}?status=${data.status}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["clientDashboard"],
+    }),
+
+    tenderAccept: builder.mutation({
+      query: (data) => ({
+        url: `/invoice/invoice-approve/${data._id}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["clientDashboard"],
+    }),
   }),
 });
 
@@ -32,4 +56,7 @@ export const {
   useGetClientDashboardQuery,
   useCompanyVerificationRequestMutation,
   useClientJobSortingMutation,
+  useGetAllTendersbyClientQuery,
+  useTenderShortListMutation,
+  useTenderAcceptMutation,
 } = clientDashboardApi;
