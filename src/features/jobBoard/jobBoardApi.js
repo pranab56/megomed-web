@@ -117,6 +117,13 @@ export const jobBoardApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["jobBoard"],
     }),
+    deleteTenders: builder.mutation({
+      query: (id) => ({
+        url: `/tender/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["jobBoard"],
+    }),
     overrideExisting: true,
   }),
 });
@@ -130,4 +137,5 @@ export const {
   useGetAllJobsQuery,
   useSingleJobsQuery,
   useUpdateJobMutation,
+  useDeleteTendersMutation,
 } = jobBoardApi;

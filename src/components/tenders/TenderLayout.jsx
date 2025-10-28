@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import { IoSearchOutline } from "react-icons/io5";
+import toast from "react-hot-toast";
 import {
   useGetAllTenderByClientQuery,
   useGetAllTenderQuery,
+  useDeleteTenderMutation,
 } from "../../features/tender/tenderApi";
 import SideBar from "../common/SideBar";
 import Banner from "../common/banner/Banner";
@@ -17,6 +19,10 @@ const TenderLayoutContent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedServices, setSelectedServices] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [
+    deleteTender,
+    { isLoading: deleteTenderLoading, isError: deleteTenderError },
+  ] = useDeleteTenderMutation();
 
   // Safely access localStorage only on the client side
   useEffect(() => {
@@ -61,13 +67,32 @@ const TenderLayoutContent = () => {
   );
 
   // Use the appropriate query result based on user type
-  const { data, isLoading, isError } =
+  const { data, isLoading, isError, refetch } =
     userType === "client" ? clientQuery : freelancerQuery;
 
   console.log("API Response Data:", data);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
+  };
+
+  const handleDeleteTender = async (tenderId) => {
+    try {
+      console.log("Deleting tender with ID:", tenderId);
+      const result = await deleteTender(tenderId).unwrap();
+      console.log("Delete result:", result);
+
+      if (result.success) {
+        toast.success("Tender deleted successfully");
+        // Refetch the data to update the UI
+        await refetch();
+      } else {
+        toast.error(result.message || "Failed to delete tender");
+      }
+    } catch (error) {
+      console.error("Failed to delete tender:", error);
+      toast.error(error?.data?.message || "Failed to delete tender");
+    }
   };
 
   const setTenderBannerFreelancer = {
@@ -139,6 +164,7 @@ const TenderLayoutContent = () => {
             isLoading={isLoading}
             isError={isError}
             type="tender"
+            handleDeleteJob={handleDeleteTender}
           />
         </div>
       </div>

@@ -173,7 +173,7 @@ function JobTenderCard({
                   onClick={handleDeleteJobClick}
                   className="px-4 py-2 bg-transparent border-2 cursor-pointer border-white text-white rounded-lg font-medium hover:bg-white hover:text-black transition-all duration-200 text-sm"
                 >
-                  Delete Job
+                  {type === "job" ? "Delete Job" : "Delete Tender"}
                 </button>
               )}
               {userType === "freelancer" && (

@@ -328,44 +328,15 @@ function CreateTenderClientLayout() {
             <div className="space-y-4">
               <div className="flex flex-col gap-2">
                 <label className="font-medium">Project title*</label>
-                <Select
+                <input
+                  type="text"
                   value={tenderData.projectTitle}
-                  onValueChange={(value) =>
-                    updateTenderData("projectTitle", value)
+                  onChange={(e) =>
+                    updateTenderData("projectTitle", e.target.value)
                   }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select project title" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="User Experience Designer">
-                      User Experience Designer
-                    </SelectItem>
-                    <SelectItem value="UI Designer">UI Designer</SelectItem>
-                    <SelectItem value="Web Developer">Web Developer</SelectItem>
-                    <SelectItem value="Mobile Developer">
-                      Mobile Developer
-                    </SelectItem>
-                    <SelectItem value="Full Stack Developer">
-                      Full Stack Developer
-                    </SelectItem>
-                    <SelectItem value="Frontend Developer">
-                      Frontend Developer
-                    </SelectItem>
-                    <SelectItem value="Backend Developer">
-                      Backend Developer
-                    </SelectItem>
-                    <SelectItem value="DevOps Engineer">
-                      DevOps Engineer
-                    </SelectItem>
-                    <SelectItem value="Data Scientist">
-                      Data Scientist
-                    </SelectItem>
-                    <SelectItem value="Machine Learning Engineer">
-                      Machine Learning Engineer
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                  placeholder="Enter project title"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                />
               </div>
 
               {/* Category Dropdown */}

@@ -158,6 +158,14 @@ export const tenderApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["tender"],
     }),
+
+    deleteTender: builder.mutation({
+      query: (id) => ({
+        url: `/tender/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["tender"],
+    }),
   }),
   overrideExisting: true,
 });
@@ -174,4 +182,5 @@ export const {
   useApplyTenderMutation,
   useGetAllPostByClientPublicQuery,
   useResponseMessageMutation,
+  useDeleteTenderMutation,
 } = tenderApi;
