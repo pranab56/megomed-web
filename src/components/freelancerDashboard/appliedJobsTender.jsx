@@ -144,7 +144,13 @@ export function AppliedJobsTender({ category = "jobs", type = "applied" }) {
 
         if (chatId && clientUserId) {
           // Redirect to chat with both IDs
-          router.push(`/chat/${clientUserId}/${chatId}`);
+          // Add timestamp to force Next.js to treat it as a new navigation
+          const timestamp = new Date().getTime();
+          const chatUrl = `/chat/${clientUserId}/${chatId}?_=${timestamp}`;
+          console.log("Redirecting to:", chatUrl);
+
+          // Use replace instead of push to avoid back button issues
+          router.replace(chatUrl);
         } else {
           // Fallback to regular chat route if IDs are not available
           router.push("/chat/");

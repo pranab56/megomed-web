@@ -12,13 +12,24 @@ import { getImageUrl } from "../../../utils/getImageUrl";
 
 const ChatList = ({ setIsChatActive, status }) => {
   const router = useRouter();
-  const { id } = useParams();
+  const { id, clientId } = useParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [actionStates, setActionStates] = useState({});
   const [realTimeChats, setRealTimeChats] = useState([]);
   const chatListRef = useRef(null);
 
-  const { data, isLoading, error } = useMyChatListQuery();
+  const { data, isLoading, error, refetch } = useMyChatListQuery();
+
+  // Force refetch chat list when route parameters change
+  useEffect(() => {
+    console.log("ChatList: Route parameters changed, refetching data");
+    // Small delay to ensure route is fully updated
+    const timer = setTimeout(() => {
+      refetch();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [id, clientId, refetch]);
 
   console.log("chatlist data //////////////////////////", data);
 

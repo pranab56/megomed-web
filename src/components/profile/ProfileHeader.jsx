@@ -37,6 +37,7 @@ import { socialPlatforms } from "./socialPlatforms";
 import Link from "next/link";
 import { languageToCountryCode } from "@/utils/flag";
 import { useFreelancerVerificationRequestMutation } from "@/features/freelancer/freelancerApi";
+import { BsFillPeopleFill } from "react-icons/bs";
 function ProfileHeader({ setCoverPhoto }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSocialLinkDialogOpen, setIsSocialLinkDialogOpen] = useState(false);
@@ -1104,8 +1105,13 @@ function ProfileHeader({ setCoverPhoto }) {
           </div>
           {/* Profile Info */}
           <div className="flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 break-words text-center md:text-left">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 break-words text-center md:text-left flex items-center gap-2">
               {data?.data?.fullName || profileData.name}
+
+              <span className="flex items-center gap-2">
+                ({data?.data?.followers || 0} followers
+                <BsFillPeopleFill className="w-6 h-6 text-green-600" />)
+              </span>
             </h1>
 
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-600 mb-3 text-sm sm:text-base">
@@ -1169,10 +1175,6 @@ function ProfileHeader({ setCoverPhoto }) {
         {/* Status & Info */}
         <div className="flex flex-col sm:flex-row lg:flex-col items-center sm:items-center lg:items-end gap-3 w-full lg:w-auto">
           {/* Available Badge */}
-          {/* <Badge className="bg-none flex items-center">
-            <div className="w-2.5 h-2.5 bg-green-500 rounded-full mr-2"></div>
-            Available
-          </Badge> */}
 
           {/* Verified Freelancer */}
           {data?.data?.isVarified === "varified" ? (

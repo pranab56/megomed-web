@@ -43,9 +43,6 @@ function ProfileSections() {
   const [followFreelancer, { isLoading: isFollowing }] =
     useFollowFreelancerMutation();
 
-  console.log("Freelancer ID from params:", id);
-  console.log("API Response data:", data);
-  console.log("API Error:", error);
   const educationCertifications =
     data?.data?.freelancerId?.educationCertifications || [];
 
@@ -54,6 +51,8 @@ function ProfileSections() {
     const endYear = new Date(endDate).getFullYear();
     return `${startYear} - ${endYear}`;
   };
+
+  const userType = localStorage.getItem("role");
 
   if (isLoading) {
     return (
@@ -223,13 +222,15 @@ function ProfileSections() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3 flex flex-col items-center">
-              <Button
-                className="w-full md:w-40 button-gradient"
-                onClick={handleFollow}
-              >
-                <UserPlus className="w-4 h-4 mr-2" />
-                {followed === "true" ? "Unfollow" : "Follow"}
-              </Button>
+              {userType !== "freelancer" && (
+                <Button
+                  className="w-full md:w-40 button-gradient"
+                  onClick={handleFollow}
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  {followed === "true" ? "Unfollow" : "Follow"}
+                </Button>
+              )}
               <Link href="https://calendly.com/" target="_blank">
                 <Button className="w-full md:w-40 button-gradient ">
                   <Calendar className="w-4 h-4 mr-2" />
