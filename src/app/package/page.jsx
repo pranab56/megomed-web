@@ -131,7 +131,7 @@ const SubscriptionPlanContent = dynamic(
               </div>
 
               {/* Plans Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-center">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ">
                 {sortedPlans.map((plan) => {
                   // Check if this specific plan is loading
                   const isCurrentPlanLoading = loadingPlanId === plan._id;

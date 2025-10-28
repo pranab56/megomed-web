@@ -87,62 +87,6 @@ function ProfileSections({ profileData }) {
     }
   };
 
-  // if (isLoading || isDeleting) {
-  //   return (
-  //     <div className="w-full">
-  //       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  //         <Card className="max-h-60">
-  //           <CardHeader className="pb-4">
-  //             <CardTitle className="flex items-center gap-2 text-lg font-semibold text-blue-600 h2-gradient-text">
-  //               Education & Certifications
-  //             </CardTitle>
-  //           </CardHeader>
-  //           <CardContent>
-  //             <div className="flex flex-wrap gap-2">
-  //               {[...Array(3)].map((_, index) => (
-  //                 <div
-  //                   key={index}
-  //                   className="h-8 w-20 bg-gray-200 rounded animate-pulse"
-  //                 ></div>
-  //               ))}
-  //             </div>
-  //           </CardContent>
-  //         </Card>
-
-  //         <Card className="max-h-auto">
-  //           <CardHeader className="pb-4">
-  //             <CardTitle className="text-lg font-semibold text-blue-600 h2-gradient-text">
-  //               Projects
-  //             </CardTitle>
-  //           </CardHeader>
-  //           <CardContent className="space-y-3 flex flex-col items-center">
-  //             <div className="h-4 w-full bg-gray-200 rounded animate-pulse"></div>
-  //             <div className="h-10 w-full bg-gray-200 rounded animate-pulse"></div>
-  //           </CardContent>
-  //         </Card>
-
-  //         <Card className="max-h-60">
-  //           <CardHeader>
-  //             <CardTitle className="text-lg font-semibold text-blue-600 h2-gradient-text">
-  //               Contact
-  //             </CardTitle>
-  //           </CardHeader>
-  //           <CardContent>
-  //             <div className="space-y-3 flex flex-col items-center">
-  //               {[...Array(3)].map((_, index) => (
-  //                 <div
-  //                   key={index}
-  //                   className="h-10 w-full bg-gray-200 rounded animate-pulse"
-  //                 ></div>
-  //               ))}
-  //             </div>
-  //           </CardContent>
-  //         </Card>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="w-full ">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -150,7 +94,7 @@ function ProfileSections({ profileData }) {
         <Card className="max-h-60">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-lg font-semibold text-blue-600 h2-gradient-text">
-              Education & Certifications
+              Education
               {isFreelancerAndLoggedIn && (
                 <>
                   <Plus

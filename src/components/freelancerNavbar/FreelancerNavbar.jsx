@@ -203,12 +203,12 @@ function FreelancerNavBar() {
               >
                 Dashboard
               </DropdownMenuItem>
-              <DropdownMenuItem
+              {/* <DropdownMenuItem
                 className="w-full cursor-pointer"
                 onClick={() => router.push("/my-projects")}
               >
                 My Projects
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuItem
                 className="w-full cursor-pointer"
                 onClick={() => router.push("/my-subscription")}
@@ -325,13 +325,13 @@ function FreelancerNavBar() {
                       Dashboard
                     </Button>
 
-                    <Button
+                    {/* <Button
                       variant="ghost"
                       className="w-full justify-start h-12"
                       onClick={() => router.push("/my-projects")}
                     >
                       My Projects
-                    </Button>
+                    </Button> */}
 
                     <Button
                       variant="ghost"

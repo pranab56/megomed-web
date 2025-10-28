@@ -153,7 +153,7 @@ function ProfileSections() {
         <Card className="max-h-60">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-lg font-semibold text-blue-600 h2-gradient-text">
-              Education & Certifications
+              Education
             </CardTitle>
           </CardHeader>
           <CardContent>
