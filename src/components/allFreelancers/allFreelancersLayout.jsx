@@ -14,12 +14,13 @@ import { useFollowRequestsMutation } from "@/features/freelancer/freelancerApi";
 import toast from "react-hot-toast";
 const FreelancerCards = () => {
   const [particles, setParticles] = useState([]);
-  const { data, isLoading, isError, refetch } = useAllFreelancersQuery();
+  const [searchTerm, setSearchTerm] = useState("");
+  const { data, isLoading, isError, refetch } =
+    useAllFreelancersQuery(searchTerm);
   const [followRequests, { isLoading: isFollowing }] =
     useFollowRequestsMutation();
   const router = useRouter();
-  // console.log(data);
-  // Get current user ID with proper parsing
+
   let currentUserID;
   try {
     const userData = localStorage.getItem("user");
@@ -37,12 +38,14 @@ const FreelancerCards = () => {
     // console.error("Error getting user ID:", error);
   }
 
-  // console.log("Raw user data from localStorage:", localStorage.getItem("user"));
-  // console.log("Parsed currentUserID:", currentUserID);
-
   useEffect(() => {
     refetch();
   }, []);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
   useEffect(() => {
     const newParticles = Array.from({ length: 60 }, (_, i) => ({
@@ -62,18 +65,26 @@ const FreelancerCards = () => {
     (freelancer) => freelancer._id !== currentUserID
   );
 
-  // Debug logging
-  // console.log("All freelancers count:", allFreelancers.length);
-  // console.log("Filtered freelancers count:", freelancers.length);
-  // console.log("Current user ID:", currentUserID);
-  // console.log(
-  //   "All freelancer IDs:",
-  //   allFreelancers.map((f) => f._id)
-  // );
-  // console.log(
-  //   "Filtered freelancer IDs:",
-  //   freelancers.map((f) => f._id)
-  // );
+  // Client-side filtering for better UX (filters by name, designation, skills, location)
+  const filteredFreelancers = freelancers.filter((freelancer) => {
+    if (!searchTerm.trim()) return true;
+
+    const searchLower = searchTerm.toLowerCase();
+    const fullName = freelancer.fullName?.toLowerCase() || "";
+    const designation = freelancer.designation?.toLowerCase() || "";
+    const location = freelancer.location?.toLowerCase() || "";
+    const skills =
+      freelancer.freelancerId?.skills
+        ?.map((skill) => skill.skill?.toLowerCase())
+        .join(" ") || "";
+
+    return (
+      fullName.includes(searchLower) ||
+      designation.includes(searchLower) ||
+      location.includes(searchLower) ||
+      skills.includes(searchLower)
+    );
+  });
 
   const handleFollow = async (freelancerId) => {
     console.log("Follow freelancer:", freelancerId);
@@ -170,8 +181,10 @@ const FreelancerCards = () => {
           />
           <Input
             type="text"
-            placeholder="Search freelancers by name, skill, or category..."
+            placeholder="Search freelancers by Name"
             className="pl-12 py-6 bg-white/80 backdrop-blur-sm border-gray-200"
+            value={searchTerm}
+            onChange={handleSearchChange}
           />
         </div>
 
@@ -192,16 +205,20 @@ const FreelancerCards = () => {
         )}
 
         {/* Empty State */}
-        {!isLoading && !isError && freelancers.length === 0 && (
+        {!isLoading && !isError && filteredFreelancers.length === 0 && (
           <div className="flex justify-center items-center py-20">
-            <div className="text-lg text-gray-600">No freelancers found.</div>
+            <div className="text-lg text-gray-600">
+              {searchTerm.trim()
+                ? `No freelancers found matching "${searchTerm}"`
+                : "No freelancers found."}
+            </div>
           </div>
         )}
 
         {/* Freelancer Cards Grid */}
-        {!isLoading && !isError && freelancers.length > 0 && (
+        {!isLoading && !isError && filteredFreelancers.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {freelancers.map((freelancer) => (
+            {filteredFreelancers.map((freelancer) => (
               <Card
                 key={freelancer._id}
                 className="card-hover overflow-hidden bg-white/90 backdrop-blur-sm border-gray-200 p-0"

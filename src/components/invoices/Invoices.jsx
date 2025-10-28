@@ -394,10 +394,7 @@ const InvoicesContent = () => {
                         <span className="font-medium">Amount:</span>{" "}
                         {invoice.amount}
                       </p>
-                      <p>
-                        <span className="font-medium">Service:</span>{" "}
-                        {invoice.serviceType}
-                      </p>
+
                       <p>
                         <span className="font-medium">Date:</span>{" "}
                         {invoice.date}
@@ -527,10 +524,7 @@ const InvoicesContent = () => {
                           <span className="font-medium">Amount:</span>{" "}
                           {invoice.amount}
                         </p>
-                        <p>
-                          <span className="font-medium">Service:</span>{" "}
-                          {invoice.serviceType}
-                        </p>
+
                         <p>
                           <span className="font-medium">Date:</span>{" "}
                           {invoice.date}

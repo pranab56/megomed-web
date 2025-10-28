@@ -60,8 +60,10 @@ export const freelancerApi = baseApi.injectEndpoints({
       invalidatesTags: ["freelancer"],
     }),
     allFreelancers: builder.query({
-      query: () => ({
-        url: `/users/all-users?role=freelancer&isVarified=varified`,
+      query: (searchTerm) => ({
+        url: `/users/all-users?role=freelancer&isVarified=varified&searchTerm=${
+          searchTerm || ""
+        }`,
         method: "GET",
       }),
       providesTags: ["freelancer"],
