@@ -46,6 +46,7 @@ export const messageApi = baseApi.injectEndpoints({
       invalidatesTags: ["message"],
     }),
   }),
+  overrideExisting: false,
 });
 
 // Export hooks

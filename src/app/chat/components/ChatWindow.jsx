@@ -152,19 +152,6 @@ const ChatWindow = ({ clientId, chatId }) => {
     setCurrentUserRole(role);
   }, []);
 
-  // Force refetch messages when chat ID or client ID changes
-  useEffect(() => {
-    if (chatId && clientId) {
-      console.log(
-        "ChatWindow: Forcing refetch for chatId:",
-        chatId,
-        "clientId:",
-        clientId
-      );
-      refetchMessages();
-    }
-  }, [chatId, clientId, refetchMessages]);
-
   // Socket connection for real-time messages
   useEffect(() => {
     if (!loginUserId || !chatId) return;
