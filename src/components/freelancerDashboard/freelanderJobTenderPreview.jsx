@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getImageUrl } from "@/utils/getImageUrl";
 import { useGetMyprofileQuery } from "@/features/clientProfile/ClientProfile";
+import { TbMapPin } from "react-icons/tb";
 import {
   FileText,
   Calendar,
@@ -167,7 +168,7 @@ function ClientJobTenderPreview({
                 </p>
                 {userData?.data?.location && (
                   <p className="text-sm text-muted-foreground">
-                    📍 {userData.data.location}
+                    <TbMapPin /> {userData.data.location}
                   </p>
                 )}
               </div>

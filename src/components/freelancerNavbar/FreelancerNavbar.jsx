@@ -389,6 +389,7 @@ function FreelancerNavBar() {
       <HelpsAndSupport
         isOpen={isHelpSheetOpen}
         onOpenChange={handleHelpSheetClose}
+        showBuySubscriptionButton={userData?.data?.isSupported}
       />
     </nav>
   );

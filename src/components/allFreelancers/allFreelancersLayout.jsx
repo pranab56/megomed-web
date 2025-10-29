@@ -11,6 +11,7 @@ import { useAllFreelancersQuery } from "@/features/freelancer/freelancerApi";
 import { getImageUrl } from "@/utils/getImageUrl";
 import { useRouter } from "next/navigation";
 import { useFollowRequestsMutation } from "@/features/freelancer/freelancerApi";
+import { TbMapPin } from "react-icons/tb";
 import toast from "react-hot-toast";
 const FreelancerCards = () => {
   const [particles, setParticles] = useState([]);
@@ -113,7 +114,7 @@ const FreelancerCards = () => {
   };
 
   return (
-    <div className="min-h-screen  relative overflow-hidden">
+    <div className="min-h-screen  relative overflow-hidden ">
       {/* Animated Particles Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {particles.map((particle) => (
@@ -269,7 +270,12 @@ const FreelancerCards = () => {
                         {freelancer.designation || "Freelancer"}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {freelancer.location && `📍 ${freelancer.location}`}
+                        {freelancer.location && (
+                          <span className="flex items-center   gap-1">
+                            <TbMapPin className="w-4 h-4" />{" "}
+                            {freelancer.location}
+                          </span>
+                        )}
                       </p>
                     </div>
                     <Button

@@ -25,8 +25,10 @@ import {
 import toast from "react-hot-toast";
 import { getImageUrl } from "@/utils/getImageUrl";
 import { connectSocket, getSocket } from "@/utils/socket";
+import { useRouter } from "next/navigation";
 
-function HelpsAndSupport({ isOpen, onOpenChange }) {
+function HelpsAndSupport({ isOpen, onOpenChange, showBuySubscriptionButton }) {
+  const router = useRouter();
   const [chatId, setChatId] = useState(null);
   const [messages, setMessages] = useState([
     {
@@ -37,6 +39,7 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
       type: "text",
     },
   ]);
+
   const [newMessage, setNewMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -44,7 +47,22 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  const currentUserId = localStorage.getItem("user");
+  // Get current user ID from localStorage
+  const getCurrentUserId = () => {
+    try {
+      const userId = localStorage.getItem("user");
+      if (userId) {
+        // Remove quotes if they exist (sometimes localStorage stores with quotes)
+        return userId.replace(/^"(.*)"$/, "$1");
+      }
+    } catch (error) {
+      console.error("Error getting user ID:", error);
+    }
+    return null;
+  };
+
+  const currentUserId = getCurrentUserId();
+
   // API hooks
   const [createSupportChat, { isLoading: isSendingMessage }] =
     useCreateSupportChatMutation();
@@ -72,19 +90,6 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Get current user ID from localStorage
-  const getCurrentUserId = () => {
-    try {
-      const userId = localStorage.getItem("user");
-      if (userId) {
-        return userId;
-      }
-    } catch (error) {
-      console.error("Error getting user ID:", error);
-    }
-    return null;
-  };
-
   // Combine API messages with real-time messages
   const combinedMessages = useMemo(() => {
     // Get all API messages except the welcome message
@@ -92,16 +97,19 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
 
     // Convert real-time messages to the same format
     const realTimeFormatted = realTimeMessages.map((msg) => {
-      const currentUserId = getCurrentUserId();
-
       // Handle both string and object sender formats
       const senderId =
         typeof msg.sender === "string" ? msg.sender : msg.sender?._id;
 
+      // Ensure both values are strings and trim any whitespace
+      const senderIdStr = String(senderId).trim();
+      const userIdStr = String(currentUserId).trim();
+      const isCurrentUser = senderIdStr === userIdStr;
+
       return {
         id: msg._id,
         text: msg.message || "",
-        sender: senderId === currentUserId ? "user" : "support",
+        sender: isCurrentUser ? "user" : "support",
         timestamp: new Date(msg.createdAt),
         type: msg.image ? "image" : "text",
         image: msg.image ? getImageUrl(msg.image) : null,
@@ -114,10 +122,25 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
       (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
     );
 
-    // Remove duplicates based on message ID
-    const uniqueMessages = sortedMessages.filter(
-      (msg, index, self) => index === self.findIndex((m) => m.id === msg.id)
-    );
+    // Remove duplicates and temporary messages that have been replaced
+    const uniqueMessages = sortedMessages.filter((msg, index, self) => {
+      // Remove duplicates based on message ID
+      const isDuplicate = index !== self.findIndex((m) => m.id === msg.id);
+
+      // Remove temporary messages if we have a real message with the same content and sender
+      if (msg.isTemporary) {
+        const hasRealMessage = self.some(
+          (m) =>
+            !m.isTemporary &&
+            m.text === msg.text &&
+            m.sender === msg.sender &&
+            Math.abs(new Date(m.timestamp) - new Date(msg.timestamp)) < 5000 // Within 5 seconds
+        );
+        return !hasRealMessage; // Keep temporary only if no real message exists
+      }
+
+      return !isDuplicate;
+    });
 
     return [
       {
@@ -134,6 +157,24 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
   useEffect(() => {
     scrollToBottom();
   }, [combinedMessages]);
+
+  // Clean up temporary messages after 10 seconds
+  useEffect(() => {
+    const cleanupTemporaryMessages = () => {
+      setMessages((prev) =>
+        prev.filter((msg) => {
+          if (msg.isTemporary) {
+            const age = Date.now() - new Date(msg.timestamp).getTime();
+            return age < 10000; // Keep temporary messages for 10 seconds
+          }
+          return true;
+        })
+      );
+    };
+
+    const interval = setInterval(cleanupTemporaryMessages, 2000); // Check every 2 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   // Auto-scroll when real-time messages are added
   useEffect(() => {
@@ -157,21 +198,14 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
 
     // Listen for new messages in this specific chat
     const handleNewMessage = (messageData) => {
-      console.log("📨 Help & Support: New message received:", messageData);
-
       // Only process messages for this chat
       if (messageData.chatId === chatId) {
-        console.log(
-          "✅ Help & Support: Message is for this chat, adding to real-time messages"
-        );
-
         setRealTimeMessages((prevMessages) => {
           // Check if message already exists to avoid duplicates
           const exists = prevMessages.some(
             (msg) => msg._id === messageData._id
           );
           if (exists) {
-            console.log("⚠️ Help & Support: Message already exists, skipping");
             return prevMessages;
           }
 
@@ -188,31 +222,17 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
           };
 
           const updatedMessages = [...prevMessages, newMessage];
-          console.log("📝 Help & Support: Real-time messages updated:", {
-            previousCount: prevMessages.length,
-            newCount: updatedMessages.length,
-            newMessage: newMessage,
-          });
 
           return updatedMessages;
         });
 
-        // Show toast notification for new message (outside of state setter)
-        toast.success("New message received!");
-
         // Trigger chat refetch after a short delay to get the latest messages
         setTimeout(() => {
           if (chatId) {
-            console.log(
-              "🔄 Help & Support: Refetching chat after real-time message"
-            );
             refetchChat();
           }
         }, 500);
       } else {
-        console.log(
-          "❌ Help & Support: Message is for different chat, ignoring"
-        );
       }
     };
 
@@ -237,8 +257,6 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
 
     // Listen for any support-related events
     socket.onAny((eventName, ...args) => {
-      console.log("📡 Help & Support: Received Socket Event:", eventName, args);
-
       // Check for support-specific events
       if (
         eventName.startsWith("support-message::") &&
@@ -280,14 +298,8 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
       );
 
       if (hasAdmin) {
-        console.log(
-          "📥 Setting chatId from support chat data (admin found):",
-          chatData._id
-        );
-        console.log("📥 Participants:", chatData.participants);
         setChatId(chatData._id);
       } else {
-        console.log("📥 No admin found in participants, skipping chat");
       }
     }
   }, [supportChatByIdData, chatId]);
@@ -312,26 +324,12 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
       const currentUserId = getCurrentUserId();
       const supportUserId = getSupportUserId();
 
-      console.log("📥 Current User ID:", currentUserId);
-      console.log("📥 Current User ID Type:", typeof currentUserId);
-      console.log("📥 Support User ID (Admin):", supportUserId);
-      console.log("📥 Raw messages from API:", supportChatData.data.resultAll);
-
       const formattedMessages = supportChatData.data.resultAll.map(
         (msg, index) => {
-          const isCurrentUser = String(msg.sender) === String(currentUserId);
-
-          console.log(`📥 Message ${index + 1}:`, {
-            messageId: msg._id,
-            message: msg.message,
-            senderFromAPI: msg.sender,
-            senderType: typeof msg.sender,
-            currentUserId: currentUserId,
-            currentUserIdType: typeof currentUserId,
-            comparison: `"${msg.sender}" === "${currentUserId}"`,
-            isCurrentUser: isCurrentUser,
-            displayAs: isCurrentUser ? "user (right)" : "support (left)",
-          });
+          // Ensure both values are strings and trim any whitespace
+          const senderId = String(msg.sender).trim();
+          const userId = String(currentUserId).trim();
+          const isCurrentUser = senderId === userId;
 
           return {
             id: msg._id || `msg-${index}`,
@@ -344,20 +342,10 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
         }
       );
 
-      console.log("📥 Loading chat messages:", supportChatData.data.resultAll);
-      console.log("📥 Formatted messages:", formattedMessages);
-
       // Sort messages by timestamp (oldest first - 4PM at top, 5PM at bottom)
       const sortedMessages = formattedMessages.sort(
         (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
       );
-
-      console.log("📥 Sorted messages by time (4PM → 5PM):");
-      sortedMessages.forEach((msg, index) => {
-        console.log(
-          `  ${index + 1}. ${msg.timestamp.toLocaleTimeString()} - ${msg.text}`
-        );
-      });
 
       // Replace messages with loaded chat history
       setMessages([
@@ -413,26 +401,16 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
     }
 
     // Debug: Log FormData contents
-    console.log("📤 FormData contents:");
-    for (let [key, value] of formData.entries()) {
-      console.log(`  ${key}:`, value);
-    }
-
-    // Additional debugging
-    console.log("📤 FormData keys:", Array.from(formData.keys()));
-    console.log("📤 FormData values:", Array.from(formData.values()));
-    console.log("📤 FormData has message:", formData.has("message"));
-    console.log("📤 FormData has image:", formData.has("image"));
-    console.log("📤 FormData has chatId:", formData.has("chatId"));
-
-    // Add user message to UI immediately
+    // Add user message to UI immediately with a temporary ID
+    const tempId = `temp-${Date.now()}`;
     const messageData = {
-      id: Date.now(),
+      id: tempId,
       text: newMessage,
       sender: "user",
       timestamp: new Date(),
       type: selectedImage ? "image" : "text",
       image: selectedImage ? imagePreview : null,
+      isTemporary: true, // Mark as temporary
     };
 
     setMessages((prev) => [...prev, messageData]);
@@ -447,18 +425,7 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
 
     try {
       // Send to API
-      console.log("📤 Sending FormData to API...");
-      console.log(
-        "📤 FormData size:",
-        formData.get("message")?.length || 0,
-        "characters"
-      );
-      console.log("📤 Has image:", !!formData.get("image"));
-      console.log("📤 Has chatId:", !!formData.get("chatId"));
-
       const response = await createSupportChat(formData).unwrap();
-
-      console.log("📤 Support message sent successfully:", response);
 
       // Handle response
       if (response?.data) {
@@ -479,10 +446,6 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
       // Emit socket event for real-time updates
       const socket = getSocket();
       if (socket && socket.connected) {
-        console.log(
-          "📡 Help & Support: Emitting support-message event for real-time updates"
-        );
-
         const messageData = {
           _id: response.data._id,
           message: newMessage,
@@ -568,236 +531,257 @@ function HelpsAndSupport({ isOpen, onOpenChange }) {
 
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-      <SheetContent
-        side="right"
-        className="w-[400px] sm:w-[540px] flex flex-col"
-      >
-        <SheetHeader className="flex-shrink-0">
-          <SheetTitle className="flex items-center gap-2">
-            <HelpCircle className="h-5 w-5" />
-            Help & Support
-          </SheetTitle>
-          <SheetDescription>
-            Chat with our support team for assistance.
-          </SheetDescription>
-        </SheetHeader>
+      {showBuySubscriptionButton === false ? (
+        <SheetContent
+          side="right"
+          className="w-[400px] sm:w-[540px] flex flex-col"
+        >
+          <SheetHeader className="flex-shrink-0">
+            <SheetTitle>{null}</SheetTitle>
+            <SheetDescription>{null}</SheetDescription>
+          </SheetHeader>
+          <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+            <h1>You need to puschase subscription plan to continue</h1>
+            <Button
+              className="button-gradient mt-4"
+              onClick={() => router.push("/package")}
+            >
+              Buy Subscription
+            </Button>
+          </div>
+        </SheetContent>
+      ) : (
+        <SheetContent
+          side="right"
+          className="w-[400px] sm:w-[540px] flex flex-col"
+        >
+          <SheetHeader className="flex-shrink-0">
+            <SheetTitle className="flex items-center gap-2">
+              <HelpCircle className="h-5 w-5" />
+              Help & Support
+            </SheetTitle>
+            <SheetDescription>
+              Chat with our support team for assistance.
+            </SheetDescription>
+          </SheetHeader>
 
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
-          {isLoadingChatById && (
-            <div className="flex justify-center items-center py-4">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
-              <span className="ml-2 text-sm text-gray-500">
-                Loading chat info...
-              </span>
-            </div>
-          )}
-
-          {isLoadingChat && (
-            <div className="flex justify-center items-center py-4">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
-              <span className="ml-2 text-sm text-gray-500">
-                Loading messages...
-              </span>
-            </div>
-          )}
-
-          {chatByIdError && (
-            <div className="flex justify-center items-center py-4">
-              <div className="text-center">
-                <span className="text-sm text-red-500">
-                  {chatByIdError?.data?.message ||
-                    chatByIdError?.data?.errorSources?.[0]?.message ||
-                    "Failed to load chat info"}
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+            {isLoadingChatById && (
+              <div className="flex justify-center items-center py-4">
+                <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+                <span className="ml-2 text-sm text-gray-500">
+                  Loading chat info...
                 </span>
-                {chatByIdError?.data?.err?.statusCode === 401 && (
-                  <p className="text-xs text-red-400 mt-1">
-                    Please log in again to continue <br />
-                    or
-                    <br />
-                    You need to puschase subscription plan to continue
-                  </p>
-                )}
               </div>
-            </div>
-          )}
+            )}
 
-          {chatError && (
-            <div className="flex justify-center items-center py-4">
-              <div className="text-center">
-                <span className="text-sm text-red-500">
-                  {chatError?.data?.message ||
-                    chatError?.data?.errorSources?.[0]?.message ||
-                    "Failed to load chat messages"}
+            {isLoadingChat && (
+              <div className="flex justify-center items-center py-4">
+                <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+                <span className="ml-2 text-sm text-gray-500">
+                  Loading messages...
                 </span>
-                {chatError?.data?.err?.statusCode === 401 && (
-                  <p className="text-xs text-red-400 mt-1">
-                    Please log in again to continue <br />
-                    or
-                    <br />
-                    You need to puschase subscription plan to continue
-                  </p>
-                )}
               </div>
-            </div>
-          )}
+            )}
 
-          {!isLoadingChatById &&
-            !isLoadingChat &&
-            !chatByIdError &&
-            !chatError &&
-            !chatId && (
+            {chatByIdError && (
               <div className="flex justify-center items-center py-4">
                 <div className="text-center">
-                  <span className="text-sm text-gray-500">
-                    No support chat found with admin
+                  <span className="text-sm text-red-500">
+                    {chatByIdError?.data?.message ||
+                      chatByIdError?.data?.errorSources?.[0]?.message ||
+                      "Failed to load chat info"}
                   </span>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Please contact support to start a conversation
-                  </p>
+                  {chatByIdError?.data?.err?.statusCode === 401 && (
+                    <p className="text-xs text-red-400 mt-1">
+                      Please log in again to continue <br />
+                      or
+                      <br />
+                      You need to puschase subscription plan to continue
+                    </p>
+                  )}
                 </div>
               </div>
             )}
 
-          {/* Debug: Show real-time messages count */}
-          {realTimeMessages.length > 0 && (
-            <div className="bg-blue-100 p-2 rounded text-sm text-blue-800 mb-2">
-              Debug: {realTimeMessages.length} real-time messages received
-            </div>
-          )}
+            {chatError && (
+              <div className="flex justify-center items-center py-4">
+                <div className="text-center">
+                  <span className="text-sm text-red-500">
+                    {chatError?.data?.message ||
+                      chatError?.data?.errorSources?.[0]?.message ||
+                      "Failed to load chat messages"}
+                  </span>
+                  {chatError?.data?.err?.statusCode === 401 && (
+                    <p className="text-xs text-red-400 mt-1">
+                      Please log in again to continue <br />
+                      or
+                      <br />
+                      You need to puschase subscription plan to continue
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
-          {combinedMessages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.sender === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
+            {!isLoadingChatById &&
+              !isLoadingChat &&
+              !chatByIdError &&
+              !chatError &&
+              !chatId && (
+                <div className="flex justify-center items-center py-4">
+                  <div className="text-center">
+                    <span className="text-sm text-gray-500">
+                      No support chat found with admin
+                    </span>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Please contact support to start a conversation
+                    </p>
+                  </div>
+                </div>
+              )}
+
+            {/* Debug: Show real-time messages count
+            {realTimeMessages.length > 0 && (
+              <div className="bg-blue-100 p-2 rounded text-sm text-blue-800 mb-2">
+                Debug: {realTimeMessages.length} real-time messages received
+              </div>
+            )} */}
+
+            {combinedMessages.map((message) => (
               <div
-                className={`flex items-start gap-2 max-w-[80%] ${
-                  message.sender === "user" ? "flex-row-reverse" : "flex-row"
+                key={message.id}
+                className={`flex ${
+                  message.sender === "user" ? "justify-end" : "justify-start"
                 }`}
               >
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    message.sender === "user"
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-600"
+                  className={`flex items-start gap-2 max-w-[80%] ${
+                    message.sender === "user" ? "flex-row-reverse" : "flex-row"
                   }`}
                 >
-                  {message.sender === "user" ? (
-                    <User className="w-4 h-4" />
-                  ) : (
-                    <Bot className="w-4 h-4" />
-                  )}
-                </div>
-                <div
-                  className={`rounded-lg p-3 ${
-                    message.sender === "user"
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {message.type === "image" && message.image && (
-                    <div className="mb-2">
-                      <img
-                        src={message.image}
-                        alt="Uploaded"
-                        className="max-w-[200px] max-h-[200px] rounded object-cover"
-                      />
-                    </div>
-                  )}
-                  <p className="text-sm">{message.text}</p>
-                  <p
-                    className={`text-xs mt-1 ${
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
                       message.sender === "user"
-                        ? "text-blue-100"
-                        : "text-gray-500"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-600"
                     }`}
                   >
-                    {message.timestamp.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
+                    {message.sender === "user" ? (
+                      <User className="w-4 h-4" />
+                    ) : (
+                      <Bot className="w-4 h-4" />
+                    )}
+                  </div>
+                  <div
+                    className={`rounded-lg p-3 ${
+                      message.sender === "user"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {message.type === "image" && message.image && (
+                      <div className="mb-2">
+                        <img
+                          src={message.image}
+                          alt="Uploaded"
+                          className="max-w-[200px] max-h-[200px] rounded object-cover"
+                        />
+                      </div>
+                    )}
+                    <p className="text-sm">{message.text}</p>
+                    <p
+                      className={`text-xs mt-1 ${
+                        message.sender === "user"
+                          ? "text-blue-100"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      {message.timestamp.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
 
-        {/* Image Preview */}
-        {imagePreview && (
-          <div className="p-4 border-t bg-gray-50">
-            <div className="flex items-center gap-2">
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="w-16 h-16 object-cover rounded"
-              />
-              <div className="flex-1">
-                <p className="text-sm text-gray-600">Image selected</p>
-                <p className="text-xs text-gray-500">{selectedImage?.name}</p>
+          {/* Image Preview */}
+          {imagePreview && (
+            <div className="p-4 border-t bg-gray-50">
+              <div className="flex items-center gap-2">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-16 h-16 object-cover rounded"
+                />
+                <div className="flex-1">
+                  <p className="text-sm text-gray-600">Image selected</p>
+                  <p className="text-xs text-gray-500">{selectedImage?.name}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={removeImage}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={removeImage}
-                className="text-red-500 hover:text-red-700"
-              >
-                <X className="w-4 h-4" />
-              </Button>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Input Area */}
-        <div className="flex-shrink-0 p-4 border-t bg-white">
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <Textarea
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
-                className="min-h-[40px] max-h-[120px] resize-none"
-                rows={1}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageSelect}
-                className="hidden"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                className="h-10 w-10 p-0"
-              >
-                <ImageIcon className="w-4 h-4" />
-              </Button>
-              <Button
-                onClick={sendMessage}
-                disabled={
-                  (!newMessage.trim() && !selectedImage) || isSendingMessage
-                }
-                className="h-10 w-10 p-0"
-              >
-                {isSendingMessage ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </Button>
+          {/* Input Area */}
+          <div className="flex-shrink-0 p-4 border-t bg-white">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Textarea
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Type your message..."
+                  className="min-h-[40px] max-h-[120px] resize-none"
+                  rows={1}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="h-10 w-10 p-0"
+                >
+                  <ImageIcon className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={sendMessage}
+                  disabled={
+                    (!newMessage.trim() && !selectedImage) || isSendingMessage
+                  }
+                  className="h-10 w-10 p-0"
+                >
+                  {isSendingMessage ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </SheetContent>
+        </SheetContent>
+      )}
     </Sheet>
   );
 }
