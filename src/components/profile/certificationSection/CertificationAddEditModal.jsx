@@ -21,6 +21,7 @@ function CertificationAddEditModal({
   onClose,
   mode = "add", // "add" or "edit"
   certificationData = null,
+  onSuccess,
 }) {
   const [formData, setFormData] = useState({
     name: certificationData?.name || "",
@@ -123,6 +124,12 @@ function CertificationAddEditModal({
         images: [],
         imagePreviews: [],
       });
+
+      // Call onSuccess callback to refetch data
+      if (onSuccess) {
+        onSuccess();
+      }
+
       onClose();
     } catch (error) {
       console.error("Error saving certification:", error);

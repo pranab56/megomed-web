@@ -8,7 +8,7 @@ export const freelancerInfoCertificateApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ["freelancer"],
+      invalidatesTags: ["clientProfile"],
     }),
     updateFreelancerInfoCertificate: builder.mutation({
       query: (data) => ({
@@ -16,7 +16,7 @@ export const freelancerInfoCertificateApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ["freelancer"],
+      invalidatesTags: ["clientProfile"],
     }),
     deleteCertificate: builder.mutation({
       query: (data) => ({
@@ -24,7 +24,7 @@ export const freelancerInfoCertificateApi = baseApi.injectEndpoints({
         body: data,
         method: "PATCH",
       }),
-      invalidatesTags: ["freelancer"],
+      invalidatesTags: ["clientProfile"],
     }),
   }),
 });
