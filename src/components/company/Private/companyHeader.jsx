@@ -138,7 +138,7 @@ function CompanyHeaderPrivate() {
   return (
     <>
       <div className="w-full h-full">
-        <div className="w-full h-40 md:h-80 relative">
+        <div className="w-full h-40 md:h-80 ">
           <Image
             src={getImageUrl(companyData?.coverPhoto) || "/card_image.png"}
             alt="company-cover"
@@ -146,67 +146,71 @@ function CompanyHeaderPrivate() {
             height={1000}
             className="object-cover w-full h-full"
           />
-          <div className="absolute -bottom-25 md:-bottom-25 left-1/2 md:left-80 -translate-x-1/2 ">
-            <div className="flex flex-col items-center md:items-start ">
-              <Image
-                src={getImageUrl(companyData?.profile) || "/card_image.png"}
-                alt="company-logo"
-                width={100}
-                height={100}
-                className="object-cover w-24 h-24 md:w-50 md:h-50 bg-white rounded-md border-4 border-white shadow-2xl"
-              />
-              <h1 className="text-2xl font-bold mt-2 flex items-center gap-4">
-                {companyData?.companyName || "Company Name"}{" "}
-                {companyData?.isVarified == "varified" ? (
-                  <span className="shadow-2xl">
-                    <MdVerifiedUser size={20} className=" text-green-600" />
-                  </span>
-                ) : null}
-              </h1>
-              <p className="text-sm text-gray-500">
-                {companyData?.email || "Email"}
-              </p>
-              <p className="text-sm text-gray-500">
-                {companyData?.location || "Location"}
-              </p>
+          <div className="container mx-auto px-4 relative">
+            <div className="absolute -bottom-40 md:-bottom-25 left-1/2 md:left-30 -translate-x-1/2 ">
+              <div className="flex flex-col items-center md:items-start ">
+                <Image
+                  src={getImageUrl(companyData?.profile) || "/card_image.png"}
+                  alt="company-logo"
+                  width={100}
+                  height={100}
+                  className="object-cover w-24 h-24 md:w-50 md:h-50 bg-white rounded-md border-4 border-white shadow-2xl"
+                />
+                <div className="flex flex-col items-center md:items-start ">
+                  <h1 className="text-2xl font-bold mt-2 flex flex-col md:flex-row items-center text-center md:text-left gap-4">
+                    {companyData?.companyName || "Company Name"}{" "}
+                    {companyData?.isVarified == "varified" ? (
+                      <span className="shadow-2xl">
+                        <MdVerifiedUser size={20} className=" text-green-600" />
+                      </span>
+                    ) : null}
+                  </h1>
+                  <p className="text-sm text-gray-500">
+                    {companyData?.email || "Email"}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {companyData?.location || "Location"}
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="hidden  absolute -bottom-20 right-44 px-6 lg:flex gap-2 justify-end">
-            <Button
-              className="button-gradient"
-              onClick={() => setIsEditModalOpen(true)}
-            >
-              Edit
-            </Button>
-            {/* (
+            <div className="hidden  absolute -bottom-20 right-0 px-6 lg:flex gap-2 justify-end">
+              <Button
+                className="button-gradient"
+                onClick={() => setIsEditModalOpen(true)}
+              >
+                Edit
+              </Button>
+              {/* (
               <div className="flex items-center gap-2 text-sm text-gray-700 bg-green-100 rounded-full px-2 py-1">
                 <Shield className="w-4 h-4 text-green-600" />
                 <span>Verified Company</span>
               </div>
             ) */}
-            {companyData?.isVarified ===
-            "varified" ? null : companyData?.isVarified ===
-              "verified_request" ? (
-              <div className="flex items-center gap-2 text-sm text-gray-700 bg-yellow-100 rounded-full px-2 py-1">
-                <Shield className="w-4 h-4 text-yellow-600" />
-                <span>Pending Verification</span>
-              </div>
-            ) : companyData?.isVarified === "revision" ? (
-              <div className="flex items-center gap-2 text-sm text-gray-700 bg-red-100 rounded-full px-2 py-1">
-                <Shield className="w-4 h-4 text-red-600" />
-                <span>Revision</span>
-              </div>
-            ) : (
-              <Button
-                className="button-gradient"
-                onClick={() => handleGetVerified()}
-                disabled={isCompanyVerificationRequestLoading}
-              >
-                {isCompanyVerificationRequestLoading
-                  ? "Requesting..."
-                  : "Get Verified"}
-              </Button>
-            )}
+              {companyData?.isVarified ===
+              "varified" ? null : companyData?.isVarified ===
+                "verified_request" ? (
+                <div className="flex items-center gap-2 text-sm text-gray-700 bg-yellow-100 rounded-full px-2 py-1">
+                  <Shield className="w-4 h-4 text-yellow-600" />
+                  <span>Pending Verification</span>
+                </div>
+              ) : companyData?.isVarified === "revision" ? (
+                <div className="flex items-center gap-2 text-sm text-gray-700 bg-red-100 rounded-full px-2 py-1">
+                  <Shield className="w-4 h-4 text-red-600" />
+                  <span>Revision</span>
+                </div>
+              ) : (
+                <Button
+                  className="button-gradient"
+                  onClick={() => handleGetVerified()}
+                  disabled={isCompanyVerificationRequestLoading}
+                >
+                  {isCompanyVerificationRequestLoading
+                    ? "Requesting..."
+                    : "Get Verified"}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
