@@ -4,9 +4,13 @@ import { Button } from "@/components/ui/button";
 import ClientJobTenderPreview from "./clientJobTenderPreview";
 import { AvatarFallback, AvatarImage, Avatar } from "@/components/ui/avatar";
 import { getImageUrl } from "@/utils/getImageUrl";
-import { useClientJobSortingMutation } from "@/features/clientDashboard/clientDashboardApi";
+import {
+  useClientJobSortingMutation,
+  useTenderShortListMutation,
+  useTenderAcceptMutation,
+} from "@/features/clientDashboard/clientDashboardApi";
 import toast from "react-hot-toast";
-
+import { useRouter } from "next/navigation";
 export function ClientAppliedJobsTender({
   category = "jobs",
   type = "applied",
@@ -16,17 +20,86 @@ export function ClientAppliedJobsTender({
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [clientJobSorting, { isLoading: isSorting }] =
     useClientJobSortingMutation();
+  const [tenderShortList, { isLoading: isTenderSorting }] =
+    useTenderShortListMutation();
+  const [tenderAccept, { isLoading: isTenderAccepting }] =
+    useTenderAcceptMutation();
+  const router = useRouter();
+  // Debug logging
+  console.log(
+    `ClientAppliedJobsTender - Category: ${category}, Type: ${type}, Items:`,
+    items
+  );
 
   const handleSorting = async (applicationId, status) => {
-    try {
-      const response = await clientJobSorting({ jobID: applicationId, status });
-      if (response.data) {
-        toast.success("Application status updated successfully");
+    console.log(
+      `Handling sorting: ${applicationId}, status: ${status}, category: ${category}`
+    );
+
+    if (category === "tenders") {
+      if (status === "accept") {
+        // Use tender accept mutation for accepting tenders
+        try {
+          const result = await tenderAccept({
+            _id: applicationId,
+          }).unwrap(); // Use unwrap() to get the actual response data
+
+          console.log("Tender accept response:", result);
+
+          if (result.success && result.data && result.data.url) {
+            toast.success(
+              "Tender accepted successfully. Redirecting to payment..."
+            );
+            // Open Stripe checkout URL in a new tab
+            window.open(result.data.url, "_blank");
+          } else {
+            toast.error("Failed to process tender acceptance");
+          }
+        } catch (error) {
+          console.error("Tender accept error:", error);
+          toast.error(error?.data?.message || "Failed to accept tender");
+        }
       } else {
-        toast.error("Failed to update application status");
+        // Use tender shortlist mutation for shortlist and decline
+        try {
+          const result = await tenderShortList({
+            _id: applicationId,
+            status: status,
+          }).unwrap();
+
+          console.log("Tender shortlist response:", result);
+
+          if (result.success) {
+            toast.success("Tender status updated successfully");
+          } else {
+            toast.error("Failed to update tender status");
+          }
+        } catch (error) {
+          console.error("Tender shortlist error:", error);
+          toast.error(error?.data?.message || "Failed to update tender status");
+        }
       }
-    } catch (error) {
-      toast.error("Failed to update application status");
+    } else {
+      // Use job sorting mutation for jobs
+      try {
+        const result = await clientJobSorting({
+          jobID: applicationId,
+          status,
+        }).unwrap();
+
+        console.log("Job sorting response:", result);
+
+        if (result.success) {
+          toast.success("Job application status updated successfully");
+        } else {
+          toast.error("Failed to update job application status");
+        }
+      } catch (error) {
+        console.error("Job sorting error:", error);
+        toast.error(
+          error?.data?.message || "Failed to update job application status"
+        );
+      }
     }
   };
 
@@ -55,6 +128,11 @@ export function ClientAppliedJobsTender({
         {items.map((application, index) => {
           const jobOrTender = application.jobId || application.tenderId;
           const freelancer = application.freelancerUserId;
+
+          // Debug each application
+          console.log(`Application ${index}:`, application);
+          console.log(`JobOrTender:`, jobOrTender);
+          console.log(`Freelancer:`, freelancer);
 
           return (
             <Card
@@ -135,37 +213,65 @@ export function ClientAppliedJobsTender({
                       >
                         Preview
                       </Button>
-                      <Button className="button-gradient">Message</Button>
+                      <Button
+                        className="button-gradient"
+                        onClick={() => router.push(`/chat`)}
+                      >
+                        Message
+                      </Button>
                     </div>
                     <div className="flex flex-wrap gap-2 md:mt-8">
                       {type === "applied" && (
                         <>
-                          <Button
-                            className="button-gradient"
-                            onClick={() =>
-                              handleSorting(application._id, "shortlist")
-                            }
-                            disabled={isSorting}
-                          >
-                            {isSorting ? "Processing..." : "Shortlist"}
-                          </Button>
+                          {/* Only show Shortlist button if not already shortlisted */}
+                          {!(
+                            category === "tenders" &&
+                            application.status === "shortlisted"
+                          ) && (
+                            <Button
+                              className="button-gradient"
+                              onClick={() =>
+                                handleSorting(application._id, "shortlist")
+                              }
+                              disabled={
+                                isSorting ||
+                                isTenderSorting ||
+                                isTenderAccepting
+                              }
+                            >
+                              {isSorting || isTenderSorting || isTenderAccepting
+                                ? "Processing..."
+                                : "Shortlist"}
+                            </Button>
+                          )}
                           <Button
                             className="button-gradient"
                             onClick={() =>
                               handleSorting(application._id, "accept")
                             }
-                            disabled={isSorting}
+                            disabled={
+                              isSorting || isTenderSorting || isTenderAccepting
+                            }
                           >
-                            {isSorting ? "Processing..." : "Accept"}
+                            {isSorting || isTenderSorting || isTenderAccepting
+                              ? "Processing..."
+                              : "Accept"}
                           </Button>
                           <Button
                             variant="destructive"
                             onClick={() =>
-                              handleSorting(application._id, "rejected")
+                              handleSorting(
+                                application._id,
+                                category === "tenders" ? "decline" : "rejected"
+                              )
                             }
-                            disabled={isSorting}
+                            disabled={
+                              isSorting || isTenderSorting || isTenderAccepting
+                            }
                           >
-                            {isSorting ? "Processing..." : "Reject"}
+                            {isSorting || isTenderSorting || isTenderAccepting
+                              ? "Processing..."
+                              : "Reject"}
                           </Button>
                         </>
                       )}
@@ -177,18 +283,29 @@ export function ClientAppliedJobsTender({
                             onClick={() =>
                               handleSorting(application._id, "accept")
                             }
-                            disabled={isSorting}
+                            disabled={
+                              isSorting || isTenderSorting || isTenderAccepting
+                            }
                           >
-                            {isSorting ? "Processing..." : "Accept"}
+                            {isSorting || isTenderSorting || isTenderAccepting
+                              ? "Processing..."
+                              : "Accept"}
                           </Button>
                           <Button
                             variant="destructive"
                             onClick={() =>
-                              handleSorting(application._id, "rejected")
+                              handleSorting(
+                                application._id,
+                                category === "tenders" ? "decline" : "rejected"
+                              )
                             }
-                            disabled={isSorting}
+                            disabled={
+                              isSorting || isTenderSorting || isTenderAccepting
+                            }
                           >
-                            {isSorting ? "Processing..." : "Reject"}
+                            {isSorting || isTenderSorting || isTenderAccepting
+                              ? "Processing..."
+                              : "Reject"}
                           </Button>
                         </>
                       )}

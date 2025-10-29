@@ -50,20 +50,13 @@ export default function CreateTenderTopForm() {
         <div className="space-y-4">
           <div className="flex flex-col gap-2 ">
             <label className="font-medium">Project title*</label>
-            <Select
+            <input
+              type="text"
               value={projectTitle}
-              onValueChange={(value) => setProjectTitle(value)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select project title" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ux-designer">
-                  User Experience Designer
-                </SelectItem>
-                <SelectItem value="ui-designer">UI Designer</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(e) => setProjectTitle(e.target.value)}
+              placeholder="Enter project title"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            />
           </div>
 
           <div className="flex flex-col gap-2 ">

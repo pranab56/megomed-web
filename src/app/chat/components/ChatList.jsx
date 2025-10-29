@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BsCheckAll, BsSearch } from "react-icons/bs";
 import { useMyChatListQuery } from "../../../features/chat/chatApi";
 import { connectSocket, getSocket } from "../../../utils/socket";
+import { getImageUrl } from "../../../utils/getImageUrl";
 
 const ChatList = ({ setIsChatActive, status }) => {
   const router = useRouter();
@@ -19,104 +20,158 @@ const ChatList = ({ setIsChatActive, status }) => {
 
   const { data, isLoading, error } = useMyChatListQuery();
 
+  console.log("chatlist data //////////////////////////", data);
+
   // Socket connection and real-time updates
   useEffect(() => {
     // Get current user ID from localStorage
     const currentUserId =
       typeof window !== "undefined" ? localStorage.getItem("user") : null;
 
-    console.log("🚀 Initializing Socket Connection...");
-    console.log("👤 Current User ID:", currentUserId);
-
     if (currentUserId) {
       const socket = connectSocket(currentUserId);
-      console.log("🔌 Socket Instance Created:", socket);
 
       // Listen for new messages
       const handleNewMessage = (messageData) => {
-        console.log("📨 NEW MESSAGE RECEIVED:");
-        console.log("📋 Message Data:", messageData);
-        console.log("💬 Message Text:", messageData.message);
+        console.log("📨 ChatList: Received message:", messageData);
+        console.log("👤 Current User ID:", currentUserId);
+        console.log("💬 Chat ID:", messageData.chatId);
         console.log("👤 Sender:", messageData.sender);
-        console.log("🆔 Chat ID:", messageData.chatId);
-        console.log("⏰ Created At:", messageData.createdAt);
-        console.log("👁️ Seen:", messageData.seen);
-        console.log("🖼️ Has Image:", !!messageData.image);
+
+        // First, check if this message is for a chat where current user is a participant
+        // We need to verify this user should receive this message
+        const isParticipantInChat = () => {
+          // Check if this chat exists in our API data (meaning user is a participant)
+          const existingApiChat = apiChats.find(
+            (apiChat) => apiChat._id === messageData.chatId
+          );
+          if (existingApiChat) {
+            console.log(
+              "✅ User is participant in this chat (found in API data)"
+            );
+            return true;
+          }
+
+          // Check if this is a new chat and current user is the sender or receiver
+          const senderId =
+            typeof messageData.sender === "object"
+              ? messageData.sender._id
+              : messageData.sender;
+          if (senderId === currentUserId) {
+            console.log("✅ User is sender of this message");
+            return true;
+          }
+
+          // For now, we'll be more restrictive and only allow messages from existing chats
+          console.log(
+            "❌ User is not a participant in this chat, ignoring message"
+          );
+          return false;
+        };
+
+        // Only process the message if user is a participant
+        if (!isParticipantInChat()) {
+          console.log("🚫 Ignoring message - user not participant in chat");
+          return;
+        }
 
         setRealTimeChats((prevChats) => {
-          console.log("📊 Previous Chats Count:", prevChats.length);
-          console.log(
-            "🔍 Looking for existing chat with ID:",
-            messageData.chatId
-          );
-
           const existingChatIndex = prevChats.findIndex(
             (chat) => chat._id === messageData.chatId
           );
 
-          console.log("🔍 Existing Chat Index:", existingChatIndex);
-
           if (existingChatIndex !== -1) {
-            console.log("✅ UPDATING EXISTING CHAT");
             // Update existing chat
             const updatedChats = [...prevChats];
             const currentUnreadCount =
               updatedChats[existingChatIndex].unreadCount || 0;
-            const isFromOtherUser = messageData.sender._id !== currentUserId;
+
+            // Handle sender data - it might be an object or just an ID string
+            let senderId = messageData.sender;
+            if (
+              typeof messageData.sender === "object" &&
+              messageData.sender._id
+            ) {
+              senderId = messageData.sender._id;
+            }
+
+            const isFromOtherUser = senderId !== currentUserId;
             const newUnreadCount = isFromOtherUser
               ? currentUnreadCount + 1
               : currentUnreadCount;
 
-            console.log("📈 Unread Count Update:");
-            console.log("  - Current:", currentUnreadCount);
-            console.log("  - Is from other user:", isFromOtherUser);
-            console.log("  - New count:", newUnreadCount);
-
+            // Preserve existing participant data and only update message-related fields
             updatedChats[existingChatIndex] = {
               ...updatedChats[existingChatIndex],
               lastMessage: {
                 _id: messageData._id,
                 text: messageData.message,
                 image: messageData.image,
-                sender: messageData.sender,
+                sender:
+                  typeof messageData.sender === "object"
+                    ? messageData.sender
+                    : { _id: messageData.sender },
                 createdAt: messageData.createdAt,
                 seen: messageData.seen,
                 replyTo: messageData.replyTo,
                 isPinned: messageData.isPinned,
                 reactionUsers: messageData.reactionUsers || [],
               },
-              unreadCount:
-                messageData.sender._id !== currentUserId
-                  ? (updatedChats[existingChatIndex].unreadCount || 0) + 1
-                  : updatedChats[existingChatIndex].unreadCount,
+              unreadCount: isFromOtherUser
+                ? (updatedChats[existingChatIndex].unreadCount || 0) + 1
+                : updatedChats[existingChatIndex].unreadCount,
               updatedAt: messageData.createdAt,
+              // Keep existing participant data intact
+              participants: updatedChats[existingChatIndex].participants,
             };
             return updatedChats;
           } else {
-            console.log("🆕 CREATING NEW CHAT");
-            console.log("👤 New Chat Sender:", messageData.sender);
-            console.log("🆔 New Chat ID:", messageData.chatId);
+            // Handle sender data - it might be an object or just an ID string
+            let senderData = messageData.sender;
+            if (typeof senderData === "string") {
+              // If sender is just an ID, we need to get the full sender data
+              // For now, create a basic sender object with the ID
+              senderData = { _id: senderData };
+            }
+
+            // Try to find participant data from API data
+            let participantData = [{ _id: senderData._id, ...senderData }];
+
+            // Look for this chat in the original API data to get complete participant info
+            const originalApiChat = apiChats.find(
+              (apiChat) => apiChat._id === messageData.chatId
+            );
+            if (originalApiChat && originalApiChat.participants?.[0]) {
+              participantData = originalApiChat.participants;
+              console.log(
+                "✅ Found participant data from API:",
+                participantData
+              );
+            } else {
+              console.log(
+                "⚠️ No API participant data found, using sender data:",
+                participantData
+              );
+            }
 
             // Add new chat if it doesn't exist
             return [
               ...prevChats,
               {
                 _id: messageData.chatId,
-                participants: [
-                  { _id: messageData.sender._id, ...messageData.sender },
-                ],
+                participants: participantData,
                 lastMessage: {
                   _id: messageData._id,
                   text: messageData.message,
                   image: messageData.image,
-                  sender: messageData.sender,
+                  sender: senderData,
                   createdAt: messageData.createdAt,
                   seen: messageData.seen,
                   replyTo: messageData.replyTo,
                   isPinned: messageData.isPinned,
                   reactionUsers: messageData.reactionUsers || [],
                 },
-                unreadCount: messageData.sender._id !== currentUserId ? 1 : 0,
+                unreadCount: senderData._id !== currentUserId ? 1 : 0,
                 status: "active",
                 isPinned: false,
                 createdAt: messageData.createdAt,
@@ -128,41 +183,30 @@ const ChatList = ({ setIsChatActive, status }) => {
       };
 
       // Listen for new-message events for all chats
-      console.log("👂 Setting up 'new-message' event listener");
+
       socket.on("new-message", handleNewMessage);
 
       // Also listen for specific chat events (new-message::chatid pattern)
       socket.onAny((eventName, ...args) => {
-        console.log("📡 Received Socket Event:", eventName, args);
         if (eventName.startsWith("new-message::")) {
-          console.log("🎯 Matched new-message:: pattern:", eventName);
           handleNewMessage(args[0]);
         }
       });
 
       // Log all available socket events
-      console.log(
-        "📡 Socket Events Available:",
-        Object.keys(socket._callbacks || {})
-      );
-      console.log("🔌 Socket Connected Status:", socket.connected);
-      console.log("🆔 Socket ID:", socket.id);
 
       // Test socket connection by emitting a test event
-      console.log("🧪 Testing socket connection...");
+
       socket.emit("test-connection", {
         message: "Hello from client",
         userId: currentUserId,
       });
 
       // Listen for test response
-      socket.on("test-response", (data) => {
-        console.log("✅ Test response received:", data);
-      });
+      socket.on("test-response", (data) => {});
 
       // Cleanup on unmount
       return () => {
-        console.log("🧹 Cleaning up socket listeners");
         socket.off("new-message", handleNewMessage);
       };
     }
@@ -203,10 +247,6 @@ const ChatList = ({ setIsChatActive, status }) => {
   }, [data]);
 
   const chatsToShow = useMemo(() => {
-    console.log("🔄 MERGING CHATS:");
-    console.log("📊 API Chats Count:", apiChats.length);
-    console.log("⚡ Real-time Chats Count:", realTimeChats.length);
-
     // Merge API chats with real-time updates
     const mergedChats = [...apiChats];
 
@@ -216,15 +256,17 @@ const ChatList = ({ setIsChatActive, status }) => {
         (chat) => chat._id === realTimeChat._id
       );
       if (existingIndex !== -1) {
-        console.log("🔄 Updating existing chat:", realTimeChat._id);
-        mergedChats[existingIndex] = realTimeChat;
+        // Merge real-time data with existing API data to preserve participant info
+        mergedChats[existingIndex] = {
+          ...mergedChats[existingIndex], // Keep API participant data
+          lastMessage: realTimeChat.lastMessage,
+          unreadCount: realTimeChat.unreadCount,
+          updatedAt: realTimeChat.updatedAt,
+        };
       } else {
-        console.log("➕ Adding new real-time chat:", realTimeChat._id);
         mergedChats.push(realTimeChat);
       }
     });
-
-    console.log("📊 Final Merged Chats Count:", mergedChats.length);
 
     if (!mergedChats.length) return [];
 
@@ -305,7 +347,7 @@ const ChatList = ({ setIsChatActive, status }) => {
       if (socket && socket.connected) {
         const currentUserId =
           typeof window !== "undefined" ? localStorage.getItem("user") : null;
-        console.log("📡 ChatList: Emitting chat-selected event");
+
         socket.emit("chat-selected", {
           chatId: chat._id,
           userId: currentUserId,
@@ -315,7 +357,6 @@ const ChatList = ({ setIsChatActive, status }) => {
       // You might want to call an API to mark messages as read here
       // Example: await markMessagesAsRead(chat._id);
     } catch (error) {
-      console.error("Error selecting chat:", error);
     } finally {
       setActionStates((prev) => ({
         ...prev,
@@ -329,7 +370,6 @@ const ChatList = ({ setIsChatActive, status }) => {
     try {
       return moment(timestamp).fromNow();
     } catch (error) {
-      console.error("Error formatting time:", error);
       return "Just now";
     }
   };
@@ -341,26 +381,59 @@ const ChatList = ({ setIsChatActive, status }) => {
   const testSocketConnection = () => {
     const socket = getSocket();
     if (socket) {
-      console.log("🧪 Manual Socket Test:");
-      console.log("🔌 Socket Connected:", socket.connected);
-      console.log("🆔 Socket ID:", socket.id);
-      console.log("📡 Socket URL:", socket.io.uri);
-
       // Emit test event
       socket.emit("test-connection", {
         message: "Manual test from client",
         timestamp: new Date().toISOString(),
       });
     } else {
-      console.log("❌ No socket instance found");
     }
   };
 
   const getParticipantInfo = (chat) => {
     // Get the first participant (assuming it's the other user)
     const participant = chat.participants?.[0];
+
+    // If participant exists but has incomplete data, try to get it from the last message sender
+    if (
+      participant &&
+      (!participant.fullName || participant.fullName === "Unknown User")
+    ) {
+      const lastMessageSender = chat.lastMessage?.sender;
+      if (lastMessageSender && typeof lastMessageSender === "object") {
+        return {
+          ...participant,
+          fullName:
+            lastMessageSender.fullName ||
+            participant.fullName ||
+            "Unknown User",
+          email: lastMessageSender.email || participant.email || "",
+          profile: lastMessageSender.profile || participant.profile || null,
+          role: lastMessageSender.role || participant.role || "",
+        };
+      }
+    }
+
+    // If we still don't have good data, try to find it from the original API data
+    if (
+      !participant ||
+      !participant.fullName ||
+      participant.fullName === "Unknown User"
+    ) {
+      // Look for this chat in the original API data
+      const originalChat = apiChats.find((apiChat) => apiChat._id === chat._id);
+      if (originalChat && originalChat.participants?.[0]) {
+        return originalChat.participants[0];
+      }
+    }
+
     return (
-      participant || { fullName: "Unknown User", email: "", profile: null }
+      participant || {
+        fullName: "Unknown User",
+        email: "",
+        profile: null,
+        role: "",
+      }
     );
   };
 
@@ -464,7 +537,7 @@ const ChatList = ({ setIsChatActive, status }) => {
                   >
                     <div className="relative">
                       <Avatar className="h-12 w-12">
-                        <AvatarImage src={participant?.profile} />
+                        <AvatarImage src={getImageUrl(participant?.profile)} />
                         <AvatarFallback>
                           {getAvatarFallback(participant?.fullName)}
                         </AvatarFallback>

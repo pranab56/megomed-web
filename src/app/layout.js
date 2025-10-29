@@ -1,7 +1,7 @@
 "use client";
 
-import LanguageInitializer from "@/components/common/LanguageInitializer";
-import AuthInitializer from "@/components/providers/AuthInitializer";
+import LanguageInitializer from "../components/common/LanguageInitializer";
+import AuthInitializer from "../components/providers/AuthInitializer";
 import { Inter } from "next/font/google";
 import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";

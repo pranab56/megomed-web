@@ -1,19 +1,27 @@
 const { baseURL } = require("./BaseURL");
 
 export const getImageUrl = (imageUrl) => {
-  // Check if the imageUrl is empty
-  if (!imageUrl || imageUrl.trim() === "") {
+  // Handle null, undefined, or non-string types
+  if (!imageUrl) {
+    return null;
+  }
+
+  // Convert to string if it's not already
+  const urlString = typeof imageUrl === "string" ? imageUrl : String(imageUrl);
+
+  // Check if the imageUrl is empty after trimming
+  if (urlString.trim() === "") {
     return null;
   }
 
   // Check if the imageUrl starts with "http" (already a full URL)
-  if (imageUrl.startsWith("http")) {
+  if (urlString.startsWith("http")) {
     // Even for full URLs, normalize backslashes to forward slashes
-    return imageUrl.replace(/\\/g, "/");
+    return urlString.replace(/\\/g, "/");
   }
 
   // Handle relative paths - normalize backslashes to forward slashes
-  const normalizedPath = imageUrl.replace(/\\/g, "/");
+  const normalizedPath = urlString.replace(/\\/g, "/");
 
   // Ensure the path starts with a forward slash
   const pathWithSlash = normalizedPath.startsWith("/")

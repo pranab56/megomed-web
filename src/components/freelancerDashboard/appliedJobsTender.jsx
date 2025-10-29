@@ -129,7 +129,26 @@ export function AppliedJobsTender({ category = "jobs", type = "applied" }) {
 
       if (response.success) {
         toast.success("Message sent successfully");
-        router.push(`/chat`);
+
+        // Extract the chat ID from response
+        const chatId = response.data?._id;
+
+        // Get client/job poster user ID
+        const clientUserId = isTenderApplication
+          ? application.clientUserId
+          : application.jobPosterUserId?._id;
+
+        console.log("Chat ID:", chatId);
+        console.log("Client/Job Poster User ID:", clientUserId);
+        console.log("Full application data:", application);
+
+        if (chatId && clientUserId) {
+          // Redirect to chat with both IDs
+          router.push(`/chat/${clientUserId}/${chatId}`);
+        } else {
+          // Fallback to regular chat route if IDs are not available
+          router.push("/chat/");
+        }
       }
     } catch (error) {
       console.error("Message error:", error);

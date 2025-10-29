@@ -15,10 +15,13 @@ import toast from "react-hot-toast";
 
 function NotificationBell({ className = "" }) {
   // console.log("🚀 NotificationBell component mounted");
+  const userRole = localStorage.getItem("role");
+  console.log("userRole //////////////////////////", userRole);
 
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  console.log("notifications //////////////////////////", notifications);
 
   // Get current user ID from Redux or localStorage
   const currentUser = useSelector((state) => state.currentUser?.currentUser);
@@ -133,27 +136,6 @@ function NotificationBell({ className = "" }) {
       const notificationsArray = Array.isArray(data) ? data : [data];
       // console.log("📦 Processing notifications array:", notificationsArray);
 
-      // If we received any notifications at all, make sure badge updates
-      if (notificationsArray && notificationsArray.length > 0) {
-        // Count unread notifications in the array
-        const newUnreadCount = notificationsArray.filter(
-          (n) => !n.isRead
-        ).length;
-        //  console.log(
-        //   "📊 New unread notifications in this batch:",
-        //   newUnreadCount
-        // );
-
-        if (newUnreadCount > 0) {
-          // Update badge count immediately
-          setUnreadCount((prev) => {
-            const newCount = prev + newUnreadCount;
-            // console.log("🔔 Updating badge count from", prev, "to", newCount);
-            return newCount;
-          });
-        }
-      }
-
       // Add ALL notifications to the state at once
       const validNotifications = notificationsArray.filter((notification) => {
         if (!notification) {
@@ -163,7 +145,19 @@ function NotificationBell({ className = "" }) {
 
         // console.log("🔄 Processing notification:", notification);
 
-        // Check user ID if available
+        // Role-based filtering
+        if (notification.role) {
+          // console.log("🔄 Notification role:", notification.role);
+          // console.log("🔄 Current user role:", userRole);
+
+          // Only show notifications that match the current user's role
+          if (userRole && notification.role !== userRole) {
+            // console.log("⏭️ Notification role doesn't match user role, skipping");
+            return false;
+          }
+        }
+
+        // Check user ID if available (for user-specific notifications)
         if (notification.userId) {
           // console.log("🔄 Notification userId:", notification.userId);
           // console.log("🔄 Current userId (string):", userIdString);
@@ -187,6 +181,27 @@ function NotificationBell({ className = "" }) {
 
         return true;
       });
+
+      // If we have valid notifications, count unread ones for badge
+      if (validNotifications && validNotifications.length > 0) {
+        // Count unread notifications in the valid array
+        const newUnreadCount = validNotifications.filter(
+          (n) => !n.isRead
+        ).length;
+        // console.log(
+        //   "📊 New unread notifications in this batch:",
+        //   newUnreadCount
+        // );
+
+        if (newUnreadCount > 0) {
+          // Update badge count immediately
+          setUnreadCount((prev) => {
+            const newCount = prev + newUnreadCount;
+            // console.log("🔔 Updating badge count from", prev, "to", newCount);
+            return newCount;
+          });
+        }
+      }
 
       // If we have valid notifications, add them all to state
       if (validNotifications.length > 0) {
@@ -220,11 +235,10 @@ function NotificationBell({ className = "" }) {
 
     // Cleanup on unmount
     return () => {
-      // console.log("🧹 Cleaning up socket listeners");
       socket.off("notification");
       socket.off(`notification::${userIdString}`);
     };
-  }, [userIdString]);
+  }, [userIdString, userRole]);
 
   // Notification helper functions
   const markAsRead = (notificationId) => {

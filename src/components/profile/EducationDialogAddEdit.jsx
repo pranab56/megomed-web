@@ -29,8 +29,8 @@ export default function EducationDialogAddEdit({
   isEditing,
 }) {
   const translations = {
-    addTitle: "Add Education & Certifications",
-    editTitle: "Edit Education & Certifications",
+    addTitle: "Add Education",
+    editTitle: "Edit Education",
     degree: "Degree",
     degreePlaceholder: "Select Degree",
     degreeRequired: "Degree is required",

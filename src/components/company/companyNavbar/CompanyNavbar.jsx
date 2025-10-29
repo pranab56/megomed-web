@@ -63,14 +63,11 @@ function CompanyNavbar() {
       label: "Inbox",
       href: `/chat`,
     },
-    {
-      label: "Invoices",
-      href: `/invoices`,
-    },
-    {
-      label: "My Projects",
-      href: `/my-projects`,
-    },
+
+    // {
+    //   label: "My Projects",
+    //   href: `/my-projects`,
+    // },
     {
       label: "My Subscription",
       href: `/my-subscription`,
@@ -190,26 +187,7 @@ function CompanyNavbar() {
                   View Profile
                 </Link>
               </DropdownMenuItem>
-              {/* {userData?.data?.isStripeConnectedAccount === true ? (
-                <DropdownMenuItem className="w-full cursor-pointer">
-                  Connect Stripe{" "}
-                  <span className="text-green-500">Connected</span>
-                </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem
-                  className="w-full cursor-pointer flex items-center gap-2"
-                  onClick={handleConnectStripe}
-                >
-                  Connect Stripe{" "}
-                  <span className="w-4 h-4 text-red-500">Pending</span>
-                </DropdownMenuItem>
-              )} */}
-              {/* <DropdownMenuItem asChild>
-                <Link href={`/billing`} className="w-full cursor-pointer">
-                  Billing & Plans
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator /> */}
+
               <DropdownMenuItem
                 className="w-full cursor-pointer"
                 onClick={() => router.push("/company-dashboard")}
@@ -332,10 +310,16 @@ function CompanyNavbar() {
         </div>
       </div>
 
+      {console.log(
+        "userData?.data?.isSupported //////////////////////////",
+        userData?.data?.isSupported
+      )}
+
       {/* Help & Support Sheet */}
       <HelpsAndSupport
         isOpen={isHelpSheetOpen}
         onOpenChange={handleHelpSheetClose}
+        showBuySubscriptionButton={userData?.data?.isSupported}
       />
     </nav>
   );

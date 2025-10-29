@@ -122,21 +122,6 @@ function ProjectListPrivate({ translations }) {
           <h1 className="h2-gradient-text text-2xl font-bold text-justify">
             Company Life
           </h1>
-          <div className="flex gap-2">
-            <Button
-              className="bg-transparent shadow-none h2-gradient-text"
-              onClick={handleAddPost}
-            >
-              Add New Post <LucideCirclePlus className="text-blue-500" />
-            </Button>
-            {/* Remove the general edit button or keep it for bulk edit if needed */}
-            {/* <Button
-              className="bg-transparent shadow-none h2-gradient-text"
-              onClick={() => handleEditPost(posts[0])} // Example: edit first post
-            >
-              Edit Post <FiEdit className="text-blue-500" />
-            </Button> */}
-          </div>
         </div>
 
         <div className="max-w-7xl mx-auto py-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

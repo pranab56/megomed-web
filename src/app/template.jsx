@@ -2,7 +2,7 @@
 
 import Providers from "@/components/providers/Providers";
 import { usePathname } from "next/navigation";
-import Navigation from '../components/navigation/Navigation';
+import Navigation from "@/components/navigation/Navigation";
 
 export default function Template({ children }) {
   const pathname = usePathname();
@@ -18,7 +18,6 @@ export default function Template({ children }) {
       ) : (
         // Non-auth pages - with navigation
         <Navigation>{children}</Navigation>
-        
       )}
     </Providers>
   );

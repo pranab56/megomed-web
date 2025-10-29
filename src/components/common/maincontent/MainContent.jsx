@@ -12,7 +12,13 @@ import { useState } from "react";
 import FilterDrawer from "../FilterDrawer";
 import JobTenderCard from "../JobTenderCard";
 
-function MainContent({ type = "job", jobs = [], isLoading, isError }) {
+function MainContent({
+  type = "job",
+  jobs = [],
+  isLoading,
+  isError,
+  handleDeleteJob,
+}) {
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [displayedItems, setDisplayedItems] = useState(6);
   const [sortOption, setSortOption] = useState("newest"); // Added state for sorting
@@ -89,9 +95,9 @@ function MainContent({ type = "job", jobs = [], isLoading, isError }) {
             <p className="text-gray-600 mt-1">
               {type === "job"
                 ? mainContentTranslations.jobBoardSubtitle ||
-                "Find the perfect opportunities that match your skills"
+                  "Find the perfect opportunities that match your skills"
                 : mainContentTranslations.tendersSubtitle ||
-                "Explore available tenders and submit your proposals"}
+                  "Explore available tenders and submit your proposals"}
             </p>
           </div>
 
@@ -108,7 +114,8 @@ function MainContent({ type = "job", jobs = [], isLoading, isError }) {
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-500">
               {mainContentTranslations.showingResults || "Showing"}{" "}
-              {itemsToDisplay.length} of {jobs.length} {mainContentTranslations.resultsText || "results"}
+              {itemsToDisplay.length} of {jobs.length}{" "}
+              {mainContentTranslations.resultsText || "results"}
             </span>
 
             <Select value={sortOption} onValueChange={handleSortChange}>
@@ -126,13 +133,6 @@ function MainContent({ type = "job", jobs = [], isLoading, isError }) {
                 <SelectItem value="oldest">
                   {mainContentTranslations.sortOldest || "Oldest First"}
                 </SelectItem>
-                {/* You can add budget sorting if your Job object has a 'budget' field */}
-                {/* <SelectItem value="budget-high">
-                  {mainContentTranslations.sortBudgetHigh || "Highest Budget"}
-                </SelectItem>
-                <SelectItem value="budget-low">
-                  {mainContentTranslations.sortBudgetLow || "Lowest Budget"}
-                </SelectItem> */}
               </SelectContent>
             </Select>
           </div>
@@ -153,6 +153,7 @@ function MainContent({ type = "job", jobs = [], isLoading, isError }) {
             type={type}
             data={job} // Pass the entire job object
             className="h-full"
+            handleDeleteJob={handleDeleteJob}
           />
         ))}
       </div>

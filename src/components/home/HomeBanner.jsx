@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import dynamic from "next/dynamic";
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
 import { useSelector } from "react-redux";
 
 // Dynamic import with no SSR to prevent hydration errors

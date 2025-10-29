@@ -1,21 +1,45 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AppliedJobsTender from "./appliedJobsTender";
 import {
+  useAllFollowPendingQuery,
+  useAllFollowAcceptedQuery,
   useGetAppliedJobsQuery,
   useGetAppliedTendersQuery,
+  useFollowBackMutation,
 } from "@/features/freelancer/freelancerApi";
-
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 function FreelancerDashboardLayout() {
   const currentUser = localStorage.getItem("role");
   const userType = currentUser;
   const [selectedCategory, setSelectedCategory] = useState("jobs");
   const [selectedTab, setSelectedTab] = useState("applied");
+  const router = useRouter();
   const { data: appliedJobs } = useGetAppliedJobsQuery();
   const { data: appliedTenders } = useGetAppliedTendersQuery();
+
+  const { data: allFollowPending } = useAllFollowPendingQuery();
+  const { data: allFollowAccepted } = useAllFollowAcceptedQuery();
+  console.log("allFollowPending //////////////////////////", allFollowPending);
+  console.log(
+    "allFollowAccepted //////////////////////////",
+    allFollowAccepted
+  );
+
+  // Handle tab selection when category changes
+  useEffect(() => {
+    if (selectedCategory === "follows") {
+      const validFollowTabs = ["follow-requests", "followers"];
+      if (!validFollowTabs.includes(selectedTab)) {
+        setSelectedTab("follow-requests");
+      }
+    }
+  }, [selectedCategory, selectedTab]);
+
   // console.log(appliedJobs, appliedTenders);
   if (userType !== "freelancer") {
     return <div>You are not authorized to access this page</div>;
@@ -33,6 +57,8 @@ function FreelancerDashboardLayout() {
           setSelectedTab={setSelectedTab}
           appliedJobs={appliedJobs}
           appliedTenders={appliedTenders}
+          allFollowPending={allFollowPending}
+          allFollowAccepted={allFollowAccepted}
         />
       </div>
     </div>
@@ -67,6 +93,16 @@ const Sidebar = ({ selectedCategory, setSelectedCategory }) => {
             >
               Tenders
             </li>
+            <li
+              className={`text-lg font-medium cursor-pointer rounded-lg p-1 hover:ml-1 transition-all ${
+                selectedCategory === "follows"
+                  ? "gradient bg-primary/10 border-l-4 border-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => setSelectedCategory("follows")}
+            >
+              Follows
+            </li>
           </ul>
         </CardContent>
       </Card>
@@ -80,7 +116,35 @@ const MainContent = ({
   setSelectedTab,
   appliedJobs,
   appliedTenders,
+  allFollowPending,
+  allFollowAccepted,
 }) => {
+  // Handle follows category differently
+  if (selectedCategory === "follows") {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>
+            <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+              <TabsList>
+                <TabsTrigger value="follow-requests">
+                  Follow Requests
+                </TabsTrigger>
+                <TabsTrigger value="followers">Followers</TabsTrigger>
+              </TabsList>
+              <TabsContent value="follow-requests" className="mt-4">
+                <FollowRequestsContent followRequests={allFollowPending} />
+              </TabsContent>
+              <TabsContent value="followers" className="mt-4">
+                <FollowersContent followers={allFollowAccepted} />
+              </TabsContent>
+            </Tabs>
+          </CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   // Get current data based on selected category
   const currentData =
     selectedCategory === "jobs" ? appliedJobs : appliedTenders;
@@ -158,5 +222,141 @@ const MainContent = ({
         </CardTitle>
       </CardHeader>
     </Card>
+  );
+};
+
+// Follow Requests Content Component
+const FollowRequestsContent = ({ followRequests }) => {
+  // Get follow requests data from API
+  const requests = followRequests?.data || [];
+
+  console.log("followRequests //////////////////////////", requests);
+
+  const [followBack, { isLoading: isFollowing }] = useFollowBackMutation();
+  const handleAccept = async (id) => {
+    console.log("Follow back:", id);
+    try {
+      const response = await followBack(id).unwrap();
+      toast.success(response?.data?.message || "Follow back successfully!");
+    } catch (error) {
+      console.error("Failed to follow back:", error);
+      toast.error("Failed to follow back. Please try again.");
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {requests.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          <p>No follow requests at the moment</p>
+        </div>
+      ) : (
+        requests.map((request) => (
+          <div
+            key={request._id}
+            className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-600 font-semibold">
+                  {request.userId?.slice(-2) || "U"}
+                </span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">
+                  User ID: {request.userId?.slice(0, 3)}...
+                  {request.userId?.slice(-3)}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Status: {request.status}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Requested {new Date(request.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handleAccept(request._id)}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Follow Back
+              </button>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+};
+
+// Followers Content Component
+const FollowersContent = ({ followers }) => {
+  const router = useRouter();
+  // Get followers data from API
+  const followersList = followers?.data || [];
+  console.log("followersList //////////////////////////", followersList);
+
+  const handleSendMessage = (id) => {
+    // const rawUser = localStorage.getItem("user");
+    // const currentUser = { current_user_id: rawUser.replace(/"/g, "") };
+    router.push(`/chat`);
+  };
+
+  return (
+    <div className="space-y-4">
+      {followersList.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          <p>No followers yet</p>
+        </div>
+      ) : (
+        followersList.map((follower) => (
+          <div
+            key={follower._id}
+            className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-600 font-semibold">
+                  {follower.userId?.slice(-2) || "U"}
+                </span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">
+                  User ID: {follower.userId?.slice(0, 3)}...
+                  {follower.userId?.slice(-3)}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Status: {follower.status}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Following since{" "}
+                  {new Date(follower.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() =>
+                  window.open(
+                    `/profile/view-public/${follower.userId}`,
+                    "_blank"
+                  )
+                }
+                className="px-4 py-2 button-gradient transition-colors cursor-pointer"
+              >
+                View Profile
+              </button>
+              <button
+                onClick={() => handleSendMessage(follower._id)}
+                className="px-4 py-2 button-gradient transition-colors cursor-pointer"
+              >
+                Send Message
+              </button>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
   );
 };

@@ -10,13 +10,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getImageUrl } from "@/utils/getImageUrl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+import { useRouter } from "next/navigation";
 function ClientJobTenderPreview({
   isOpen,
   onClose,
   applicationData,
   category = "jobs",
 }) {
+  const router = useRouter();
   if (!applicationData) return null;
 
   // Extract data from application object
@@ -245,8 +246,7 @@ function ClientJobTenderPreview({
             <Button
               className="button-gradient px-8"
               onClick={() => {
-                console.log("Message clicked");
-                // Handle message action
+                router.push(`/chat`);
               }}
             >
               Message Freelancer

@@ -13,6 +13,7 @@ import { baseURL } from "../../../utils/BaseURL";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useHireFreelancerMutation } from "@/features/hireFreelancer/hireFreelancerApi";
+import { TbMapPin } from "react-icons/tb";
 
 function ServiceCard({ data, freelancer }) {
   // Use either data or freelancer prop, prefer freelancer if both exist
@@ -212,7 +213,9 @@ function ServiceCard({ data, freelancer }) {
 
         {/* Location */}
         {location && (
-          <p className="text-xs text-gray-500 mb-2">📍 {location}</p>
+          <p className="text-xs text-gray-500 mb-2">
+            <TbMapPin className="w-4 h-4" /> {location}
+          </p>
         )}
 
         {/* Button at bottom */}

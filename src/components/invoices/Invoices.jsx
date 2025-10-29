@@ -394,10 +394,7 @@ const InvoicesContent = () => {
                         <span className="font-medium">Amount:</span>{" "}
                         {invoice.amount}
                       </p>
-                      <p>
-                        <span className="font-medium">Service:</span>{" "}
-                        {invoice.serviceType}
-                      </p>
+
                       <p>
                         <span className="font-medium">Date:</span>{" "}
                         {invoice.date}
@@ -422,7 +419,10 @@ const InvoicesContent = () => {
                     <div className="space-y-2">
                       <Button
                         className="button-gradient w-full"
-                        onClick={() => setIsViewInvoiceDetailsDialogOpen(true)}
+                        onClick={() => {
+                          setSelectedInvoice(invoice);
+                          setIsViewInvoiceDetailsDialogOpen(true);
+                        }}
                       >
                         <FileText className="w-4 h-4 mr-2" />
                         {invoiceTranslations.viewDetails}
@@ -491,9 +491,10 @@ const InvoicesContent = () => {
                       <div className="flex items-center gap-4">
                         <Button
                           className="button-gradient"
-                          onClick={() =>
-                            setIsViewInvoiceDetailsDialogOpen(true)
-                          }
+                          onClick={() => {
+                            setSelectedInvoice(invoice);
+                            setIsViewInvoiceDetailsDialogOpen(true);
+                          }}
                         >
                           <FileText className="w-4 h-4 mr-2" />
                           {invoiceTranslations.viewDetails}
@@ -523,10 +524,7 @@ const InvoicesContent = () => {
                           <span className="font-medium">Amount:</span>{" "}
                           {invoice.amount}
                         </p>
-                        <p>
-                          <span className="font-medium">Service:</span>{" "}
-                          {invoice.serviceType}
-                        </p>
+
                         <p>
                           <span className="font-medium">Date:</span>{" "}
                           {invoice.date}
@@ -561,27 +559,6 @@ const InvoicesContent = () => {
                             {invoiceTranslations.extendDeliveryDate}
                           </Button>
                           {console.log("invoice.status", invoice.status)}
-
-                          {/* {invoice.status === "delivered" ? (
-                            <Button
-                              className="button-gradient disabled cursor-not-allowed"
-                              disabled
-                            >
-                              <Truck className="w-4 h-4 mr-2 " />
-                              Delivered
-                            </Button>
-                          ) : (
-                            <Button
-                              className="button-gradient"
-                              onClick={() => {
-                                setSelectedInvoice(invoice);
-                                setIsProjectCompleteDialogOpen(true);
-                              }}
-                            >
-                              <Truck className="w-4 h-4 mr-2" />
-                              {invoiceTranslations.deliveryNow}
-                            </Button>
-                          )} */}
 
                           {invoice.status === "Delivered" ? (
                             <>
@@ -643,6 +620,7 @@ const InvoicesContent = () => {
           <ViewInvoiceDetailsDialog
             isOpen={isViewInvoiceDetailsDialogOpen}
             onClose={() => setIsViewInvoiceDetailsDialogOpen(false)}
+            invoiceData={selectedInvoice}
           />
         )}
 

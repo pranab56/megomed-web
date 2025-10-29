@@ -63,13 +63,6 @@ function ClientNavBar() {
     { label: translations.package, href: `/package` }, // This is the package route
   ];
 
-  // Debug: Check what's in navItems
-  // console.log("Nav Items:", navItems);
-  // console.log(
-  //   "Package route exists:",
-  //   navItems.find((item) => item.href === "/package")
-  // );
-
   // Helper function to determine if link is active
   const isActiveLink = (href) => {
     return pathname === href;
@@ -277,10 +270,15 @@ function ClientNavBar() {
           </Drawer>
         </div>
       </div>{" "}
+      {/* {console.log(
+        "userData?.data?.isSupported //////////////////////////",
+        userData?.data?.isSupported
+      )} */}
       {/* Help & Support Sheet */}
       <HelpsAndSupport
         isOpen={isHelpSheetOpen}
         onOpenChange={handleHelpSheetClose}
+        showBuySubscriptionButton={userData?.data?.isSupported}
       />
     </nav>
   );

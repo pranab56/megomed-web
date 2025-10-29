@@ -35,7 +35,7 @@ function CommentSection() {
       <Card className=" shadow-sm hover:shadow-md transition-shadow">
         <CardContent className="">
           <div
-            className={`h-20 flex  text-gray-500 ${
+            className={`h-24 flex  text-gray-500 overflow-y-auto ${
               comment
                 ? "items-start justify-start"
                 : "items-center justify-center"

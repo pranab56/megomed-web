@@ -13,6 +13,7 @@ import { socialPlatforms } from "@/components/profile/socialPlatforms";
 import { useGetFreelancerPublicProfileQuery } from "@/features/clientProfile/ClientProfile";
 import { useParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
+import { BsFillPeopleFill } from "react-icons/bs";
 
 function ProfileHeader({ setCoverPhoto, data }) {
   const [profileImage, setProfileImage] = useState(
@@ -90,11 +91,16 @@ function ProfileHeader({ setCoverPhoto, data }) {
           <div className="flex-1">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 break-words text-center md:text-left flex items-center gap-2">
               {data?.fullName || profileData.name}
+
               {data?.isVarified === "varified" && (
                 <span className="flex items-center gap-2">
-                  <MdVerifiedUser className="w-4 h-4 text-green-600" />
+                  <MdVerifiedUser className="w-6 h-6 text-green-600" />
                 </span>
               )}
+              <span className="flex items-center gap-2">
+                ({data?.followers || 0} followers
+                <BsFillPeopleFill className="w-6 h-6 text-green-600" />)
+              </span>
             </h1>
 
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-600 mb-3 text-sm sm:text-base">
