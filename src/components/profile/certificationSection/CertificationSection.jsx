@@ -223,6 +223,10 @@ function CertificationSection({ certificationData = [], isLoading = false }) {
         onClose={handleCloseModal}
         mode={modalMode}
         certificationData={selectedCertification}
+        onSuccess={async () => {
+          // Refetch profile data to get updated certification data
+          await refetch();
+        }}
       />
 
       {/* Image Viewer Modal */}
